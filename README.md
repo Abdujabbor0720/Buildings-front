@@ -11,10 +11,10 @@ Andijon viloyati hokimligi monitoring platformasining admin paneli.
 ```bash
 npm install
 cp .env.example .env     # VITE_API_URL bo‘sh qolsa — Vite proksisi ishlatiladi
-npm run dev              # http://localhost:5173
+npm run dev              # http://localhost:4444
 ```
 
-Backend `http://localhost:4000` da ishlayotgan bo‘lishi kerak.
+Backend `http://localhost:3333` da ishlayotgan bo‘lishi kerak.
 `vite.config.ts` dagi proksi `/api` so‘rovlarini o‘sha yerga uzatadi —
 shuning uchun dev rejimda CORS muammosi umuman tug‘ilmaydi.
 
