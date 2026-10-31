@@ -186,19 +186,40 @@ oq fon «chaqnab» ketmasligi uchun.
 
 ---
 
-## 5. Prod uchun
+## 5. Deploy
 
 ```bash
-npm run build          # → dist/
+npm ci --include=dev && npm run build     # → dist/
 ```
 
-`dist/` statik server (nginx) orqali beriladi. `VITE_API_URL` ni
-backend manziliga qo‘ying (masalan `https://api.example.uz/api/v1`) —
-u yig‘ish paytida kodga yoziladi.
+`dist/` — statik fayllar. Ularni **nginx** tarqatadi; tayyor namuna:
+**`deploy/nginx.example.conf`** (izohlar bilan).
 
-SPA bo‘lgani uchun nginx'da barcha yo‘llar `index.html` ga
-yo‘naltirilishi kerak:
+### 5.1. API manzili — ikki yo'l
 
-```nginx
-location / { try_files $uri $uri/ /index.html; }
-```
+Ilova sukut bo'yicha **`/api/v1`** nisbiy yo'lini chaqiradi
+(`shared/api/client.ts`).
+
+**Tavsiya etiladigan: bitta domen.** Nginx frontendni tarqatadi va
+`/api/` ni backendga (`127.0.0.1:3333`) uzatadi. Shunda:
+
+- CORS umuman tug'ilmaydi;
+- `VITE_API_URL` **kerak emas**;
+- backend manzili o'zgarsa frontendni **qayta qurish shart emas** —
+  faqat nginx sozlamasi o'zgaradi.
+
+**Alohida domen.** U holda `VITE_API_URL=https://api.example.uz/api/v1`
+va backendda `CORS_ORIGINS` frontend domenini o'z ichiga olishi kerak.
+
+⚠️ **`VITE_*` o'zgaruvchilari YIG'ISH PAYTIDA kodga yoziladi**, ishga
+tushganda emas. Deploy paneli ularni faqat runtime'da bersa, ular
+bandlga TUSHMAYDI va ilova baribir `/api/v1` ga murojaat qiladi.
+Ular `npm run build` dan OLDIN muhitda bo'lishi shart.
+
+### 5.2. Nginx'dagi uchta majburiy qator
+
+| Qator | Busiz nima bo'ladi |
+|---|---|
+| `try_files $uri $uri/ /index.html` | `/objects/123` sahifasini yangilaganda **404** |
+| `client_max_body_size 110M` | 100 MB li fayl yuklashda **413** (Node'ga yetib bormaydi) |
+| `index.html` keshlanmasligi | Deploydan keyin foydalanuvchi eski sahifa va yo'q fayllar bilan **oq ekran** ko'radi |
