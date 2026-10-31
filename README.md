@@ -195,7 +195,27 @@ npm ci --include=dev && npm run build     # → dist/
 `dist/` — statik fayllar. Ularni **nginx** tarqatadi; tayyor namuna:
 **`deploy/nginx.example.conf`** (izohlar bilan).
 
-### 5.1. API manzili — ikki yo'l
+### 5.1. Domenlar
+
+| | Domen |
+|---|---|
+| Frontend | `https://qurilish.mysrv.uz` |
+| Backend (API) | `https://qurilish-api.mysrv.uz` |
+
+Alohida domen tanlangani uchun **ikkalasi ham** kerak:
+
+| Qayerda | Qiymat |
+|---|---|
+| Frontend paneli (**build-time**) | `VITE_API_URL=https://qurilish-api.mysrv.uz/api/v1` |
+| Backend paneli | `CORS_ORIGINS=https://qurilish.mysrv.uz` |
+
+HTTPS bir marta:
+
+```bash
+certbot --nginx -d qurilish.mysrv.uz
+```
+
+### 5.2. API manzili — ikki yo'l
 
 Ilova sukut bo'yicha **`/api/v1`** nisbiy yo'lini chaqiradi
 (`shared/api/client.ts`).
@@ -216,7 +236,7 @@ tushganda emas. Deploy paneli ularni faqat runtime'da bersa, ular
 bandlga TUSHMAYDI va ilova baribir `/api/v1` ga murojaat qiladi.
 Ular `npm run build` dan OLDIN muhitda bo'lishi shart.
 
-### 5.2. Nginx'dagi uchta majburiy qator
+### 5.3. Nginx'dagi majburiy qatorlar
 
 | Qator | Busiz nima bo'ladi |
 |---|---|
