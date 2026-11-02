@@ -7,14 +7,25 @@ import type { AiVerdict, DelayStatus, MilestoneStatus, ObjectHealth, ObjectStatu
  * bir rangda, jadvaldagisi boshqa rangda bo‘lib qolardi — foydalanuvchi esa
  * ikkalasini bir ekranda ko‘radi.
  *
- * ⚠️ BREND RANGI (to‘q sariq) BU YERDA ISHLATILMAYDI. U interfeys urg‘usi:
- * faol menyu, havola, fokus halqasi. Ma’lumot rangi bilan bir xil bo‘lsa,
- * «faol bo‘lim» bilan «kechikayotgan obyekt» bir ko‘rinishda bo‘lib qolardi.
+ * ⚠️ BREND RANGI (ko‘k) BU YERDA ISHLATILMAYDI. U interfeys urg‘usi:
+ * faol menyu, havola, fokus halqasi, asosiy tugma. Ma’lumot rangi bilan
+ * bir xil bo‘lsa, «faol bo‘lim» bilan «reja asosidagi obyekt» bir
+ * ko‘rinishda bo‘lib qolardi.
+ *
+ * ⚠️ HAMMA HEX VALIDATORDAN O‘TGAN (OKLab ΔE, protan/deutan/tritan).
+ * Qo‘lda «chiroyliroq» rang qo‘yilsa, u butun to‘plamni yiqitadi —
+ * o‘zgartirishdan oldin qaytadan o‘lchang.
+ *
+ * ⚠️ «Kechikayotgan» QAHRABO, «xavfli» esa TO‘Q QIZIL. Ikkalasi ham
+ * to‘q sariq/qizil bo‘lganda ular oddiy ko‘z bilan ham ajralmasdi
+ * (normal ko‘rishda ΔE 12.5, chegara 15) — xaritada yonma-yon turgan
+ * ikki tuman bir xil ko‘rinardi. Endi ular YORQINLIK bilan ajraladi:
+ * qahrabo yorug‘, qizil to‘q.
  *
  * ⚠️ RANG — YAGONA BELGI EMAS. Har bir chipda matn, xaritada afsona va
- * ko‘rsatma, diagrammada to‘g‘ridan-to‘g‘ri yorliq bor. Issiq ranglar
- * (qizil ↔ sariq) deyteranopiyada bir-biriga yaqin ko‘rinadi — buni rang
- * bilan hal qilib bo‘lmaydi, shuning uchun matn HAR DOIM yonida turadi.
+ * ko‘rsatma, diagrammada to‘g‘ridan-to‘g‘ri yorliq bor. Yashil ↔ qizil
+ * deyteranopiyada baribir yaqin (ΔE 8.7) — buni rang bilan to‘liq hal
+ * qilib bo‘lmaydi, shuning uchun matn HAR DOIM yonida turadi.
  */
 
 export interface StatusMeta {
@@ -50,40 +61,40 @@ export const HEALTH_META: Record<ObjectHealth, StatusMeta> = {
   on_schedule: {
     label: 'Reja asosida',
     chip: CHIP.ok,
-    hex: '#12805C',
-    hexDark: '#2FA37C',
+    hex: '#0A924B',
+    hexDark: '#2BA162',
     bar: 'bg-ok-500',
     dot: 'bg-ok-500',
   },
   delayed: {
     label: 'Kechikayotgan',
     chip: CHIP.warn,
-    hex: '#BE7A00',
-    hexDark: '#D7A32A',
+    hex: '#DE9C31',
+    hexDark: '#B7810F',
     bar: 'bg-warn-500',
     dot: 'bg-warn-500',
   },
   at_risk: {
     label: 'Xavfli holatda',
     chip: CHIP.danger,
-    hex: '#B42318',
-    hexDark: '#F0675A',
+    hex: '#AC1730',
+    hexDark: '#B63039',
     bar: 'bg-danger-500',
     dot: 'bg-danger-500',
   },
   not_started: {
     label: 'Boshlanmagan',
     chip: CHIP.neutral,
-    hex: '#B4B4BC',
-    hexDark: '#8A8A94',
+    hex: '#94A6BD',
+    hexDark: '#64788F',
     bar: 'bg-neutral-400',
     dot: 'bg-neutral-400',
   },
   completed: {
     label: 'Topshirilgan',
     chip: CHIP.done,
-    hex: '#5B4BC4',
-    hexDark: '#9284E8',
+    hex: '#7B47BF',
+    hexDark: '#8459C3',
     bar: 'bg-done-500',
     dot: 'bg-done-500',
   },
@@ -97,8 +108,8 @@ export const STATUS_META: Record<ObjectStatus, StatusMeta> = {
   in_progress: {
     label: 'Jarayonda',
     chip: CHIP.ok,
-    hex: '#12805C',
-    hexDark: '#2FA37C',
+    hex: '#0A924B',
+    hexDark: '#2BA162',
     bar: 'bg-ok-500',
     dot: 'bg-ok-500',
   },
@@ -106,26 +117,26 @@ export const STATUS_META: Record<ObjectStatus, StatusMeta> = {
   suspended: {
     label: 'To‘xtatilgan',
     chip: CHIP.warn,
-    hex: '#BE7A00',
-    hexDark: '#D7A32A',
+    hex: '#DE9C31',
+    hexDark: '#B7810F',
     bar: 'bg-warn-500',
     dot: 'bg-warn-500',
   },
   cancelled: {
     label: 'Bekor qilingan',
     chip: 'bg-neutral-100 text-neutral-500 line-through ring-1 ring-inset ring-neutral-300/70 dark:bg-white/6 dark:text-neutral-400',
-    hex: '#71717A',
-    hexDark: '#71717A',
+    hex: '#64788F',
+    hexDark: '#64788F',
     bar: 'bg-neutral-500',
     dot: 'bg-neutral-500',
   },
 };
 
 export const RISK_META: Record<RiskLevel, StatusMeta> = {
-  low: { label: 'Past', chip: CHIP.ok, hex: '#12805C', hexDark: '#2FA37C', bar: 'bg-ok-500', dot: 'bg-ok-500' },
-  medium: { label: 'O‘rta', chip: CHIP.warn, hex: '#BE7A00', hexDark: '#D7A32A', bar: 'bg-warn-500', dot: 'bg-warn-500' },
-  high: { label: 'Yuqori', chip: CHIP.danger, hex: '#DE5D50', hexDark: '#E8857A', bar: 'bg-danger-400', dot: 'bg-danger-400' },
-  critical: { label: 'Kritik', chip: CHIP.danger, hex: '#B42318', hexDark: '#F0675A', bar: 'bg-danger-500', dot: 'bg-danger-500' },
+  low: { label: 'Past', chip: CHIP.ok, hex: '#0A924B', hexDark: '#2BA162', bar: 'bg-ok-500', dot: 'bg-ok-500' },
+  medium: { label: 'O‘rta', chip: CHIP.warn, hex: '#DE9C31', hexDark: '#B7810F', bar: 'bg-warn-500', dot: 'bg-warn-500' },
+  high: { label: 'Yuqori', chip: CHIP.danger, hex: '#D1545B', hexDark: '#C9646A', bar: 'bg-danger-400', dot: 'bg-danger-400' },
+  critical: { label: 'Kritik', chip: CHIP.danger, hex: '#AC1730', hexDark: '#B63039', bar: 'bg-danger-500', dot: 'bg-danger-500' },
 };
 
 export const MILESTONE_LABELS: Record<MilestoneStatus, string> = {
@@ -137,20 +148,20 @@ export const MILESTONE_LABELS: Record<MilestoneStatus, string> = {
 };
 
 export const DELAY_STATUS_META: Record<DelayStatus, StatusMeta> = {
-  open: { label: 'Ochiq', chip: CHIP.danger, hex: '#B42318', hexDark: '#F0675A', bar: 'bg-danger-500', dot: 'bg-danger-500' },
-  mitigating: { label: 'Bartaraf etilmoqda', chip: CHIP.warn, hex: '#BE7A00', hexDark: '#D7A32A', bar: 'bg-warn-500', dot: 'bg-warn-500' },
-  resolved: { label: 'Hal qilingan', chip: CHIP.ok, hex: '#12805C', hexDark: '#2FA37C', bar: 'bg-ok-500', dot: 'bg-ok-500' },
+  open: { label: 'Ochiq', chip: CHIP.danger, hex: '#AC1730', hexDark: '#B63039', bar: 'bg-danger-500', dot: 'bg-danger-500' },
+  mitigating: { label: 'Bartaraf etilmoqda', chip: CHIP.warn, hex: '#DE9C31', hexDark: '#B7810F', bar: 'bg-warn-500', dot: 'bg-warn-500' },
+  resolved: { label: 'Hal qilingan', chip: CHIP.ok, hex: '#0A924B', hexDark: '#2BA162', bar: 'bg-ok-500', dot: 'bg-ok-500' },
 };
 
 export const AI_VERDICT_META: Record<AiVerdict, StatusMeta> = {
-  confirmed: { label: 'AI tasdiqladi', chip: CHIP.ok, hex: '#12805C', hexDark: '#2FA37C', bar: 'bg-ok-500', dot: 'bg-ok-500' },
-  suspicious: { label: 'AI shubhali deb topdi', chip: CHIP.warn, hex: '#BE7A00', hexDark: '#D7A32A', bar: 'bg-warn-500', dot: 'bg-warn-500' },
-  rejected: { label: 'AI rad etdi', chip: CHIP.danger, hex: '#B42318', hexDark: '#F0675A', bar: 'bg-danger-500', dot: 'bg-danger-500' },
+  confirmed: { label: 'AI tasdiqladi', chip: CHIP.ok, hex: '#0A924B', hexDark: '#2BA162', bar: 'bg-ok-500', dot: 'bg-ok-500' },
+  suspicious: { label: 'AI shubhali deb topdi', chip: CHIP.warn, hex: '#DE9C31', hexDark: '#B7810F', bar: 'bg-warn-500', dot: 'bg-warn-500' },
+  rejected: { label: 'AI rad etdi', chip: CHIP.danger, hex: '#AC1730', hexDark: '#B63039', bar: 'bg-danger-500', dot: 'bg-danger-500' },
   pending: {
     label: 'Tekshirilmoqda',
     chip: CHIP.neutral,
-    hex: '#B4B4BC',
-    hexDark: '#8A8A94',
+    hex: '#94A6BD',
+    hexDark: '#64788F',
     bar: 'bg-neutral-400',
     dot: 'bg-neutral-400',
   },
@@ -183,9 +194,9 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
 };
 
 export const CONTRACTOR_STATUS_META: Record<ContractorStatus, StatusMeta> = {
-  active: { label: 'Faol', chip: CHIP.ok, hex: '#12805C', hexDark: '#2FA37C', bar: 'bg-ok-500', dot: 'bg-ok-500' },
-  suspended: { label: 'To‘xtatilgan', chip: CHIP.warn, hex: '#BE7A00', hexDark: '#D7A32A', bar: 'bg-warn-500', dot: 'bg-warn-500' },
-  blacklisted: { label: 'Qora ro‘yxatda', chip: CHIP.danger, hex: '#B42318', hexDark: '#F0675A', bar: 'bg-danger-500', dot: 'bg-danger-500' },
+  active: { label: 'Faol', chip: CHIP.ok, hex: '#0A924B', hexDark: '#2BA162', bar: 'bg-ok-500', dot: 'bg-ok-500' },
+  suspended: { label: 'To‘xtatilgan', chip: CHIP.warn, hex: '#DE9C31', hexDark: '#B7810F', bar: 'bg-warn-500', dot: 'bg-warn-500' },
+  blacklisted: { label: 'Qora ro‘yxatda', chip: CHIP.danger, hex: '#AC1730', hexDark: '#B63039', bar: 'bg-danger-500', dot: 'bg-danger-500' },
 };
 
 /**
@@ -211,28 +222,23 @@ export const CONTRACTOR_STATUS_META: Record<ContractorStatus, StatusMeta> = {
  * ma’no bitta kartada uchrashadi.
  */
 export const CATEGORICAL_HEX = [
-  '#DC6A06', // 1 — to‘q sariq
-  '#2A72C8', // 2 — ko‘k
-  '#3E8A1E', // 3 — o‘t-yashil
-  '#7C4DD6', // 4 — binafsha
-  '#C9315F', // 5 — pushti-qizil
-  '#A97400', // 6 — oltin
-  '#0E8FA6', // 7 — moviy-yashil
+  '#0F5FE0', // 1 — ko‘k
+  '#0A6E3A', // 2 — to‘q yashil
+  '#EC9A35', // 3 — qahrabo
+  '#7628B2', // 4 — binafsha
+  '#B32430', // 5 — to‘q qizil
 ] as const;
 
 export const CATEGORICAL_HEX_DARK = [
-  '#D1741A',
-  '#4A8AD0',
-  '#5FA83A',
-  '#8A72DC',
-  '#E8607F',
-  '#B88726',
-  '#1C9BB2',
+  '#487CDE',
+  '#00793D',
+  '#BF8532',
+  '#9763CC',
+  '#C74A4D',
 ] as const;
 
-/** «Boshqa» / turkumsiz qoldiq. */
-export const CATEGORICAL_REST_HEX = '#B4B4BC';
-export const CATEGORICAL_REST_HEX_DARK = '#8A8A94';
+export const CATEGORICAL_REST_HEX = '#8A9CB0';
+export const CATEGORICAL_REST_HEX_DARK = '#6F8299';
 
 /** Indeks bo‘yicha rang — ro‘yxat uzunroq bo‘lsa oxirgisi neytral qoladi. */
 export function categoricalHex(index: number, dark = false): string {
@@ -264,9 +270,28 @@ export function progressTone(percent: number): string {
  * shuning uchun ikkala qator alohida yozilgan va validatordan o‘tgan
  * (monoton yorug‘lik, qadam ΔL ≥ 0.06, yorug‘ uchi fon bilan ≥ 2:1).
  */
-export const DEADLINE_RAMP = ['#7A3D00', '#A85400', '#D86C00', '#FF8C1A'] as const;
-export const DEADLINE_RAMP_DARK = ['#FFC48F', '#FF9A3D', '#D96A00', '#9E4F00'] as const;
+export const DEADLINE_RAMP = ['#0038B2', '#005FDB', '#598CDC', '#7DB2FF'] as const;
+export const DEADLINE_RAMP_DARK = ['#8FBFFF', '#4794FF', '#206EE3', '#0047BA'] as const;
+
+/**
+ * XARITA ZICHLIGI — obyekt SONI bo‘yicha ketma-ket (sequential) shkala.
+ *
+ * Bitta rang oilasi (ko‘k), yorqinlik monoton pasayadi: ko‘proq obyekt =
+ * to‘qroq tuman. Qadam ΔL ≥ 0.05 (OKLCH) — undan kichik qadam bosma
+ * nusxada va arzon monitorda butunlay yo‘qoladi.
+ *
+ * ⚠️ Bu shkala HOLAT ranglaridan (yashil/qahrabo/qizil) ATAYLAB ajratilgan:
+ * tuman ustidagi belgi holatni ko‘rsatadi, poligon esa sonini. Ikkalasi
+ * bir xil oilada bo‘lsa, xarita bitta o‘zgaruvchini ikki marta aytib,
+ * ikkinchisini umuman aytmay qolardi.
+ *
+ * ⚠️ Qorong‘i rejim avtomatik «aylantirish» EMAS: qora fonda shkala
+ * to‘qdan yorug‘ga qarab o‘sadi, aks holda eng zich tuman fon bilan
+ * qo‘shilib ketardi.
+ */
+export const DENSITY_RAMP = ['#eff4fc', '#d5e2f7', '#bbd1f3', '#a0bff0', '#86aeec', '#6b9ce8'] as const;
+export const DENSITY_RAMP_DARK = ['#11151c', '#172438', '#1e3457', '#244477', '#2a5598', '#3066bb'] as const;
 
 /** «Muddati o‘tgan» — bu TARTIB emas, HOLAT: rampadan tashqarida. */
-export const DEADLINE_OVERDUE_HEX = '#B42318';
-export const DEADLINE_OVERDUE_HEX_DARK = '#F0675A';
+export const DEADLINE_OVERDUE_HEX = '#AC1730';
+export const DEADLINE_OVERDUE_HEX_DARK = '#B63039';

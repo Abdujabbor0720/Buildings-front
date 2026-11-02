@@ -44,7 +44,7 @@ export function Pagination({ meta, onPageChange, onLimitChange, className }: Pag
             <select
               value={meta.limit}
               onChange={(event) => onLimitChange(Number(event.target.value))}
-              className="num h-7 rounded-full surface px-2 text-meta shadow-[0_0_0_1px_rgb(16_20_15/0.1)] focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]"
+              className="num h-7 rounded-md surface px-2 text-meta shadow-[0_0_0_1px_rgb(16_42_76/0.12)] focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]"
             >
               {LIMITS.map((limit) => (
                 <option key={limit} value={limit}>
@@ -78,7 +78,7 @@ export function Pagination({ meta, onPageChange, onLimitChange, className }: Pag
                 onClick={() => onPageChange(page)}
                 aria-current={page === meta.page ? 'page' : undefined}
                 className={cn(
-                  'num grid h-7 min-w-7 place-items-center rounded-full px-1.5 text-meta transition-colors',
+                  'num grid h-7 min-w-7 place-items-center rounded-md px-1.5 text-meta transition-colors',
                   page === meta.page
                     ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950'
                     : 'text-muted hover:bg-neutral-100 hover:text-strong dark:hover:bg-white/8',

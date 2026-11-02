@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Headset, PanelLeftClose, PanelLeftOpen, Send, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { NAV_GROUPS } from '@/shared/constants/nav';
+import { NAV_ITEMS } from '@/shared/constants/nav';
 import { cn } from '@/shared/utils/cn';
 import { useAuthStore } from '@/store/auth.store';
 import { useUiStore } from '@/store/ui.store';
@@ -12,16 +12,16 @@ interface SidebarProps {
 }
 
 /**
- * Yon menyu — YORUG‘.
+ * Yon menyu — TO‘Q DENGIZ KO‘KI.
  *
- * ⚠️ To‘q ko‘k panel ataylab tashlandi: u ekranning chap uchdan birini
- * og‘irlashtirib, ma’lumot joylashgan oq maydonni «qisib» qo‘yadi va
- * tayyor shablon taassurotini beradi. Yorug‘ panelda e’tibor
- * ma’lumotda qoladi, menyu esa faqat kerak bo‘lganda ko‘zga tashlanadi.
+ * Panel ranglari `index.css` dagi `--rail-*` to‘plamidan keladi, oddiy
+ * `--ink-*` dan EMAS: panel to‘q, sahifa yorug‘ — bitta matn rangi
+ * to‘plami ikkalasiga yaramaydi. Qorong‘i rejimga o‘tganda sahifa
+ * o‘zgaradi, panel esa deyarli o‘zgarmaydi; shu sababli ular ajratilgan.
  *
- * Faol band — QORA matn + ichki yuza + chapda sariq ko‘rsatkich.
- * Rang bilan birga SHAKL ham o‘zgaradi (ko‘rsatkich chizig‘i), shuning
- * uchun faol band rang ko‘rmaydiganlarga ham bilinadi.
+ * Faol band — TO‘LDIRILGAN ko‘k to‘rtburchak + oq matn. To‘q fonda
+ * nozik ko‘rsatkich chizig‘i (yorug‘ paneldagi yechim) ko‘rinmay
+ * qolardi, shuning uchun bu yerda butun band bo‘yaladi.
  */
 export function Sidebar({ mobile = false }: SidebarProps) {
   const collapsed = useUiStore((state) => state.sidebarCollapsed) && !mobile;
@@ -30,33 +30,36 @@ export function Sidebar({ mobile = false }: SidebarProps) {
   const can = useAuthStore((state) => state.can);
   const user = useAuthStore((state) => state.user);
 
-  // Ruxsati yo‘q bo‘lim umuman ko‘rsatilmaydi; guruh bo‘sh qolsa — guruh ham.
-  const groups = NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => !item.permission || can(item.permission) || !user),
-  })).filter((group) => group.items.length > 0);
+  // Ruxsati yo‘q bo‘lim umuman ko‘rsatilmaydi.
+  const items = NAV_ITEMS.filter((item) => !item.permission || can(item.permission) || !user);
 
   return (
     <aside
       className={cn(
-        'surface flex h-full flex-col border-r border-subtle transition-[width] duration-200',
-        collapsed ? 'w-[68px]' : 'w-[244px]',
+        'rail flex h-full flex-col transition-[width] duration-200',
+        collapsed ? 'w-[72px]' : 'w-[228px]',
       )}
     >
       {/* ───── Logotip ───── */}
       <div
         className={cn(
-          'flex h-14 shrink-0 items-center gap-2.5 border-b border-subtle px-4',
+          'flex shrink-0 items-center gap-2.5 px-4 pt-4 pb-3',
           collapsed && 'justify-center px-2',
         )}
       >
         <BuildingMark />
         {!collapsed ? (
           <div className="min-w-0 flex-1">
-            <p className="truncate text-ui leading-[1.15] font-semibold tracking-[-0.015em] text-strong">
+            <p className="rail-ink truncate text-ui leading-[1.2] font-semibold tracking-[-0.015em]">
               Andijon viloyati
+              <br />
+              hokimligi
             </p>
-            <p className="text-faint truncate text-micro leading-[1.3]">Qurilish nazorati</p>
+            <p className="rail-ink-muted truncate text-nano leading-[1.35]">
+              Qurilish obyektlari
+              <br />
+              nazorati tizimi
+            </p>
           </div>
         ) : null}
 
@@ -65,7 +68,7 @@ export function Sidebar({ mobile = false }: SidebarProps) {
             type="button"
             onClick={() => setMobileNav(false)}
             aria-label="Menyuni yopish"
-            className="grid size-8 place-items-center rounded-full text-muted transition-colors hover:bg-neutral-100 hover:text-strong dark:hover:bg-white/8"
+            className="rail-ink-muted grid size-8 place-items-center rounded-lg transition-colors hover:bg-white/10 hover:text-white"
           >
             <X className="size-4" />
           </button>
@@ -73,86 +76,52 @@ export function Sidebar({ mobile = false }: SidebarProps) {
       </div>
 
       {/* ───── Menyu ───── */}
-      <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Asosiy menyu">
-        {groups.map((group, index) => (
-          <div key={group.title ?? 'root'} className={cn(index > 0 && 'mt-5')}>
-            {group.title && !collapsed ? <p className="t-label mb-1.5 px-2.5">{group.title}</p> : null}
-            {/* Yig‘ilgan holatda guruhlar nozik chiziq bilan ajraladi —
-                sarlavha sig‘maydi, lekin tuzilma yo‘qolmasligi kerak. */}
-            {group.title && collapsed ? <div className="mx-2 mb-2 border-t border-subtle" /> : null}
-
-            <ul className="space-y-0.5">
-              {group.items.map((item) => (
-                <li key={item.to}>
-                  <NavLink
-                    to={item.to}
-                    end={item.end}
-                    onClick={() => mobile && setMobileNav(false)}
-                    title={collapsed ? item.label : undefined}
-                    className={({ isActive }) =>
-                      cn(
-                        'group relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-ui transition-colors duration-150',
-                        collapsed && 'justify-center px-0',
-                        isActive
-                          ? 'surface-inset font-medium text-strong'
-                          : 'text-muted hover:bg-neutral-100/70 hover:text-strong dark:hover:bg-white/6',
-                      )
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {/* Chapdagi sariq ko‘rsatkich — faol bandni rangdan
-                            tashqari SHAKL bilan ham belgilaydi. */}
-                        {isActive ? (
-                          <span
-                            aria-hidden
-                            className={cn(
-                              'absolute top-1/2 left-0 h-4.5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-500',
-                              collapsed && 'left-0',
-                            )}
-                          />
-                        ) : null}
-                        <item.icon
-                          className={cn(
-                            'size-[17px] shrink-0 transition-colors',
-                            isActive ? 'text-brand-600 dark:text-brand-400' : 'text-faint group-hover:text-muted',
-                          )}
-                          strokeWidth={isActive ? 2.1 : 1.8}
-                        />
-                        {!collapsed ? <span className="truncate">{item.label}</span> : null}
-                      </>
-                    )}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <nav className="flex-1 overflow-y-auto px-3 py-2" aria-label="Asosiy menyu">
+        <ul className="space-y-0.5">
+          {items.map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                end={item.end}
+                onClick={() => mobile && setMobileNav(false)}
+                title={collapsed ? item.label : undefined}
+                className={({ isActive }) =>
+                  cn('rail-item', collapsed && 'justify-center px-0', isActive && 'rail-item-active')
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <item.icon className="size-[18px] shrink-0" strokeWidth={isActive ? 2.1 : 1.7} />
+                    {!collapsed ? <span className="truncate">{item.label}</span> : null}
+                  </>
+                )}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
       </nav>
 
-      {/* ───── Yordam markazi ─────
-          Yorqin blok EMAS: u har ekranda ko‘zni tortib, asosiy
-          ma’lumot bilan e’tibor uchun raqobatlashardi. */}
-      <div className="px-3 pb-3">
+      {/* ───── Yordam markazi ───── */}
+      <div className="px-3 pb-2">
         {collapsed ? (
           <a
             href="tel:1148"
             title="Yordam markazi · 1148"
-            className="surface-inset grid h-10 place-items-center rounded-lg text-muted transition-colors hover:text-strong"
+            className="rail-ink-muted grid h-10 place-items-center rounded-lg bg-white/8 transition-colors hover:bg-white/14 hover:text-white"
           >
-            <Headset className="size-4" />
+            <Headset className="size-[18px]" />
           </a>
         ) : (
           <a
             href="tel:1148"
-            className="surface-inset flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-neutral-200/60 dark:hover:bg-white/8"
+            className="flex items-center gap-2.5 rounded-xl bg-brand-500 px-3 py-2.5 transition-colors hover:bg-brand-600"
           >
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-500/12 text-brand-600 dark:text-brand-400">
-              <Headset className="size-4" />
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white/20 text-white">
+              <Headset className="size-[18px]" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="text-faint block text-micro">Yordam markazi · 24/7</span>
-              <span className="num block text-head leading-tight">1148</span>
+              <span className="block text-nano text-white/75">Yordam markazi · 24/7</span>
+              <span className="num block text-lede leading-tight text-white">1148</span>
             </span>
           </a>
         )}
@@ -160,10 +129,10 @@ export function Sidebar({ mobile = false }: SidebarProps) {
 
       {/* ───── Mobil ilova ───── */}
       {!collapsed ? (
-        <div className="border-t border-subtle px-4 py-3">
-          <p className="t-label mb-2">Mobil ilova</p>
+        <div className="px-4 pt-1 pb-3">
+          <p className="rail-ink-muted mb-2 text-nano">Mobil ilovani yuklab oling</p>
           <div className="flex items-center gap-1.5">
-            <StoreLink href="https://t.me/" label="Telegram">
+            <StoreLink href="https://t.me/shaffofqurilish_bot" label="Telegram">
               <Send className="size-[15px]" />
             </StoreLink>
             <StoreLink href="https://apps.apple.com/" label="App Store">
@@ -182,7 +151,7 @@ export function Sidebar({ mobile = false }: SidebarProps) {
           type="button"
           onClick={toggleSidebar}
           aria-label={collapsed ? 'Menyuni yoyish' : 'Menyuni yig‘ish'}
-          className="text-faint flex items-center justify-center gap-2 border-t border-subtle py-2.5 text-micro font-medium transition-colors hover:bg-neutral-100/70 hover:text-strong dark:hover:bg-white/6"
+          className="rail-ink-muted rail-line flex items-center justify-center gap-2 border-t py-2.5 text-micro font-medium transition-colors hover:bg-white/8 hover:text-white"
         >
           {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
           {!collapsed ? 'Yig‘ish' : null}
@@ -200,21 +169,23 @@ function StoreLink({ href, label, children }: { href: string; label: string; chi
       rel="noreferrer noopener"
       title={label}
       aria-label={label}
-      className="text-faint surface-inset grid size-8 place-items-center rounded-lg transition-colors hover:bg-neutral-200/70 hover:text-strong dark:hover:bg-white/10"
+      className="rail-ink-muted grid size-8 place-items-center rounded-lg bg-white/8 transition-colors hover:bg-white/16 hover:text-white"
     >
       {children}
     </a>
   );
 }
 
-/** Brend belgisi — sariq kvadrat + oq bino silueti. */
+/** Brend belgisi — to‘q sariq kvadrat + oq bino silueti.
+ *  ⚠️ To‘q sariq — panelda YAGONA iliq rang. U logotipni ko‘k menyudan
+ *  ajratib turadi; boshqa joyda ishlatilsa, bu vazifani yo‘qotadi. */
 function BuildingMark() {
   return (
-    <span className="grid size-8 shrink-0 place-items-center rounded-[7px] bg-brand-500 shadow-[0_1px_2px_rgb(179_89_0/0.3)]">
-      <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" aria-hidden>
+    <span className="grid size-9 shrink-0 place-items-center rounded-[9px] bg-warn-500 shadow-[0_2px_6px_rgb(226_112_28/0.4)]">
+      <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" aria-hidden>
         <path d="M3.5 21V8.6l6.2-3.6 6.2 3.6V21H3.5Z" fill="#fff" fillOpacity="0.95" />
-        <path d="M16.2 21v-8.1l4.3-2.5v10.6h-4.3Z" fill="#fff" fillOpacity="0.62" />
-        <g fill="#E87200">
+        <path d="M16.2 21v-8.1l4.3-2.5v10.6h-4.3Z" fill="#fff" fillOpacity="0.6" />
+        <g fill="#C25A13">
           <rect x="5.9" y="10.6" width="2.1" height="2.1" rx="0.4" />
           <rect x="11.1" y="10.6" width="2.1" height="2.1" rx="0.4" />
           <rect x="5.9" y="14.6" width="2.1" height="2.1" rx="0.4" />

@@ -46,7 +46,7 @@ export function LoginPage() {
           ⚠️ To‘q ko‘k gradient panel ATAYLAB tashlandi. Uning o‘rnida
           «qog‘oz» fon va yirik tipografika: ekran reklama bannerga emas,
           rasmiy hujjat muqovasiga o‘xshashi kerak. */}
-      <aside className="app-wash surface-sunken relative hidden overflow-hidden border-r border-subtle p-12 lg:flex lg:flex-col lg:justify-between xl:p-16">
+      <aside className="surface-sunken relative hidden overflow-hidden border-r border-subtle p-12 lg:flex lg:flex-col lg:justify-between xl:p-16">
         <div className="relative">
           <div className="flex items-center gap-3">
             <BrandMark />

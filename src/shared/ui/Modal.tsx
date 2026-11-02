@@ -49,7 +49,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             >
               <DialogPanel
                 className={cn(
-                  'surface w-full rounded-2xl shadow-[0_0_0_1px_rgb(22_20_15/0.07),0_1px_2px_rgb(22_20_15/0.04),0_24px_56px_-20px_rgb(22_20_15/0.4)]',
+                  'surface w-full rounded-2xl shadow-[0_0_0_1px_rgb(16_42_76/0.07),0_1px_2px_rgb(16_42_76/0.04),0_24px_56px_-20px_rgb(16_42_76/0.4)]',
                   SIZES[size],
                 )}
               >

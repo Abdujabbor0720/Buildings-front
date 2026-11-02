@@ -106,7 +106,7 @@ export function GlobalSearch() {
         {isFetching ? (
           <Loader2 className="text-faint size-3.5 animate-spin" />
         ) : (
-          <kbd className="text-faint rounded-[4px] px-1.5 text-nano shadow-[0_0_0_1px_rgb(16_20_15/0.12)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.14)]">/</kbd>
+          <kbd className="text-faint rounded-[4px] px-1.5 text-nano shadow-[0_0_0_1px_rgb(16_42_76/0.12)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.14)]">/</kbd>
         )}
       </span>
 

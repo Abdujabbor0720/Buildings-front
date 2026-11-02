@@ -243,7 +243,7 @@ export function NewPhotoReportModal({ open, onClose }: { open: boolean; onClose:
                 disabled={busy}
                 className={cn(
                   'text-faint grid aspect-[4/3] place-items-center rounded-lg transition-colors',
-                  'shadow-[inset_0_0_0_1px_rgb(16_20_15/0.12)] hover:bg-neutral-100/70 hover:text-strong',
+                  'shadow-[inset_0_0_0_1px_rgb(16_42_76/0.12)] hover:bg-neutral-100/70 hover:text-strong',
                   'dark:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.14)] dark:hover:bg-white/6',
                 )}
               >

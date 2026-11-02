@@ -63,7 +63,7 @@ export function Tabs<T extends string>({
   return (
     <div
       role="tablist"
-      className={cn('inline-flex items-center gap-0.5 rounded-full surface-inset p-0.5', className)}
+      className={cn('inline-flex items-center gap-0.5 rounded-lg surface-inset p-0.5', className)}
     >
       {options.map((option) => {
         const active = option.value === value;
@@ -75,10 +75,10 @@ export function Tabs<T extends string>({
             aria-selected={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'rounded-full font-medium whitespace-nowrap transition-all duration-150',
+              'rounded-md font-medium whitespace-nowrap transition-all duration-150',
               size === 'sm' ? 'px-3 py-1 text-meta' : 'px-4 py-1.5 text-ui',
               active
-                ? 'surface text-strong shadow-[0_0_0_1px_rgb(16_20_15/0.07),0_1px_2px_rgb(16_24_40/0.06)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]'
+                ? 'surface text-strong shadow-[0_0_0_1px_rgb(16_42_76/0.08),0_1px_2px_rgb(16_42_76/0.06)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]'
                 : 'text-muted hover:text-strong',
             )}
           >

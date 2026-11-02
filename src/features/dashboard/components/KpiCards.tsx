@@ -1,4 +1,13 @@
 import type { ReactNode } from 'react';
+import {
+  Building2,
+  CircleCheckBig,
+  Clock,
+  Construction,
+  Database,
+  ShieldAlert,
+  type LucideIcon,
+} from 'lucide-react';
 import type { DashboardSummary } from '@/shared/api/types';
 import { HEALTH_META } from '@/shared/constants/health';
 import { useChartColors } from '@/shared/hooks/useChartColors';
@@ -7,46 +16,64 @@ import { MONTHS_UZ_CAP } from '@/shared/utils/date.utils';
 import { cn } from '@/shared/utils/cn';
 import { formatCompact, formatCount, formatPercent } from '@/shared/utils/money.utils';
 
+/**
+ * Plitka ranglari — TO‘LIQ yozilgan klass nomlari.
+ *
+ * ⚠️ `bg-${tone}-100` kabi yig‘ilmaydi: Tailwind klasslarni fayl
+ * MATNIDAN qidiradi va yig‘ilgan nomni topa olmaydi — plitka rangsiz,
+ * shaffof bo‘lib qolardi.
+ */
+const TILE = {
+  brand: 'bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
+  ok: 'bg-ok-100 text-ok-700 dark:bg-ok-500/15 dark:text-ok-300',
+  warn: 'bg-warn-100 text-warn-700 dark:bg-warn-500/15 dark:text-warn-300',
+  danger: 'bg-danger-100 text-danger-700 dark:bg-danger-500/15 dark:text-danger-300',
+  done: 'bg-done-100 text-done-700 dark:bg-done-500/15 dark:text-done-300',
+} as const;
+
+type Tone = keyof typeof TILE;
+
 interface KpiCardProps {
   label: string;
   value: ReactNode;
   /** Qiymatdan keyingi kichik birlik — «so‘m», «%». */
   unit?: string;
   caption?: ReactNode;
-  /** Chap chekkadagi ingichka rangli chiziq — holat belgisi. */
-  accent?: string;
+  icon: LucideIcon;
+  tone: Tone;
   visual?: ReactNode;
 }
 
 /**
- * Ko‘rsatkich kartasi.
+ * Ko‘rsatkich kartasi: rangli ikonka plitkasi + yorliq + raqam + izoh,
+ * o‘ng chekkada kichik grafika (halqa yoki ustunchalar).
  *
- * ⚠️ IKONKA YO‘Q. Oltita rangli ikonka plitkasi qatori e’tiborni RAQAMDAN
- * tortib oladi, holbuki karta bor-yo‘g‘i raqam ko‘rsatish uchun. Uning
- * o‘rniga chap chekkada ingichka rangli chiziq — u joy egallamaydi,
- * lekin kartani holat bilan bog‘laydi.
+ * ⚠️ Plitka rangi — KARTANING MA’NOSI, bezak emas: yashil «reja
+ * asosida», qahrabo «kechikayotgan», qizil «xavfli». Shuning uchun u
+ * `HEALTH_META` bilan bitta oiladan olinadi; yangi karta qo‘shilsa,
+ * rangni ixtiyoriy tanlamang — ma’nosiga qarab tanlang.
  *
- * Raqam — SERIF (`.num`): matn oqimidan darhol ajralib turadi va
- * ustunlar bir chiziqda qoladi.
+ * ⚠️ Raqam yonidagi izoh MAJBURIY emas, lekin foiz ko‘rsatilganda u
+ * «nimaning foizi» ekanini aytishi shart: 72.8% o‘zicha hech nima
+ * demaydi.
  */
-function KpiCard({ label, value, unit, caption, accent, visual }: KpiCardProps) {
+function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual }: KpiCardProps) {
   return (
-    <div className="card card-hover relative overflow-hidden px-3.5 py-3">
-      {accent ? (
-        <span aria-hidden className={cn('absolute inset-y-0 left-0 w-[3px]', accent)} />
-      ) : null}
+    <div className="card card-hover flex items-center gap-3 px-3.5 py-3">
+      <span className={cn('tile', TILE[tone])} aria-hidden>
+        <Icon className="size-[19px]" strokeWidth={2} />
+      </span>
 
-      <p className="t-label truncate">{label}</p>
-
-      <div className="mt-1.5 flex items-end justify-between gap-2">
-        <p className="num flex min-w-0 items-baseline gap-1 text-[26px] leading-none whitespace-nowrap text-strong">
+      <div className="min-w-0 flex-1">
+        <p className="t-label truncate">{label}</p>
+        <p className="num mt-0.5 flex min-w-0 items-baseline gap-1 text-[24px] leading-none whitespace-nowrap text-strong">
           {value}
           {unit ? <span className="text-meta font-normal text-muted">{unit}</span> : null}
         </p>
-        {visual ? <span className="shrink-0 pb-0.5">{visual}</span> : null}
+        {caption ? <p className="text-faint mt-1 truncate text-micro">{caption}</p> : null}
       </div>
 
-      {caption ? <p className="text-faint mt-1.5 truncate text-micro">{caption}</p> : null}
+      {visual ? <span className="shrink-0">{visual}</span> : null}
     </div>
   );
 }
@@ -55,10 +82,13 @@ export function KpiCardsSkeleton() {
   return (
     <>
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="card px-3.5 py-3">
-          <Skeleton className="h-2.5 w-24" />
-          <Skeleton className="mt-2.5 h-6 w-16" />
-          <Skeleton className="mt-2.5 h-2 w-20" />
+        <div key={index} className="card flex items-center gap-3 px-3.5 py-3">
+          <Skeleton className="size-[38px] rounded-[10px]" />
+          <div className="min-w-0 flex-1">
+            <Skeleton className="h-2.5 w-20" />
+            <Skeleton className="mt-2 h-5 w-14" />
+            <Skeleton className="mt-2 h-2 w-16" />
+          </div>
         </div>
       ))}
     </>
@@ -90,17 +120,20 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         label="Jami obyektlar"
         value={formatCount(summary.total)}
         caption="Topshirilganlarsiz"
+        icon={Building2}
+        tone="brand"
       />
 
       <KpiCard
         label="Reja asosida"
         value={formatCount(cards.onPlan.count)}
         caption={`Jamining ${formatPercent(cards.onPlan.percent)} qismi`}
-        accent={HEALTH_META.on_schedule.bar}
+        icon={CircleCheckBig}
+        tone="ok"
         visual={
           <MiniDonut
-            size={34}
-            thickness={3.5}
+            size={38}
+            thickness={4}
             value={cards.onPlan.percent}
             color={statusHex(HEALTH_META.on_schedule)}
             label={`Reja asosida ${cards.onPlan.percent}%`}
@@ -112,11 +145,12 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         label="Kechikayotgan"
         value={formatCount(cards.delayed.count)}
         caption={`Jamining ${formatPercent(cards.delayed.percent)} qismi`}
-        accent={HEALTH_META.delayed.bar}
+        icon={Clock}
+        tone="warn"
         visual={
           <MiniDonut
-            size={34}
-            thickness={3.5}
+            size={38}
+            thickness={4}
             value={cards.delayed.percent}
             color={statusHex(HEALTH_META.delayed)}
             label={`Kechikayotgan ${cards.delayed.percent}%`}
@@ -128,11 +162,12 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         label="Xavfli holatda"
         value={formatCount(cards.atRisk.count)}
         caption={`Jamining ${formatPercent(cards.atRisk.percent)} qismi`}
-        accent={HEALTH_META.at_risk.bar}
+        icon={ShieldAlert}
+        tone="danger"
         visual={
           <MiniDonut
-            size={34}
-            thickness={3.5}
+            size={38}
+            thickness={4}
             value={cards.atRisk.percent}
             color={statusHex(HEALTH_META.at_risk)}
             label={`Xavfli ${cards.atRisk.percent}%`}
@@ -143,7 +178,9 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       <KpiCard
         label="Joriy yil yakunlanadi"
         value={formatCount(completingThisYear.count)}
-        caption={`${completingThisYear.year}-yil oxirigacha topshiriladi`}
+        caption={`${completingThisYear.year}-yil oxirigacha`}
+        icon={Construction}
+        tone="done"
         visual={
           <SparkBars
             className="w-14"
@@ -159,6 +196,8 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         value={formatCompact(finance.totalCost)}
         unit="so‘m"
         caption={`Ajratilgan: ${formatCompact(finance.fundedAmount)} so‘m`}
+        icon={Database}
+        tone="brand"
         visual={<SparkBars className="w-14" values={costByYear} labels={costYearLabels} />}
       />
     </>

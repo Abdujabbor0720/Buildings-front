@@ -48,7 +48,7 @@ export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
         src={src}
         alt={name}
         className={cn(
-          'shrink-0 rounded-full object-cover shadow-[0_0_0_1px_rgb(16_20_15/0.08)]',
+          'shrink-0 rounded-full object-cover shadow-[0_0_0_1px_rgb(16_42_76/0.08)]',
           SIZES[size],
           className,
         )}

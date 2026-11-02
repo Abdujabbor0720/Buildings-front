@@ -1,174 +1,180 @@
 @import 'tailwindcss';
 
-/* ───────────────────────── SHRIFTLAR ─────────────────────────
-   O‘z serverimizdan beriladi (CDN emas): davlat tarmog‘ida tashqi
-   so‘rov bloklansa sahifa shriftsiz qolmaydi va matn «sakramaydi».
+/* ───────────────────────── SHRIFT ─────────────────────────
+   BITTA oila — Inter. O'z serverimizdan beriladi (CDN emas): davlat
+   tarmog'ida tashqi so'rov bloklansa sahifa shriftsiz qolmaydi.
 
-   Har shrift AYNAN BITTA ish bajaradi — aralashtirilsa tizim
-   «har sahifada boshqa dizayner ishlagan» bo‘lib ko‘rinadi:
-     Outfit              → butun interfeys (menyu, jadval, tugma matni)
-     Bricolage Grotesque → sahifa sarlavhalari (faqat katta o‘lcham)
-     Source Serif 4      → RAQAMLAR va asosiy tugma (kursiv)
-     IBM Plex Mono       → kod, shartnoma raqami, identifikator
-   ──────────────────────────────────────────────────────────── */
-@import '@fontsource-variable/outfit';
-@import '@fontsource-variable/bricolage-grotesque';
-@import '@fontsource-variable/source-serif-4/wght.css';
-@import '@fontsource-variable/source-serif-4/wght-italic.css';
+   ⚠️ Raqamlar uchun ALOHIDA shrift YO'Q. Ilgari sarlavhalar Bricolage,
+   raqamlar esa Source Serif bilan yozilardi; bu ekranda raqam matndan
+   «boshqa saytdan kelgan» bo'lib ko'rinadi. Raqam matndan OG'IRLIK va
+   O'LCHAM bilan ajraladi, shrift almashtirish bilan emas.
+   ──────────────────────────────────────────────────────── */
+@import '@fontsource-variable/inter';
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
 
 /*
  * DIZAYN TOKENLARI — yagona manba.
  *
- * ⚠️ Ranglar komponentlarda qo‘lda yozilmaydi (`#ff7f00` kabi), faqat shu
- * yerdagi o‘zgaruvchilar orqali. Aks holda qorong‘i rejimga o‘tishda yoki
- * brend rangi o‘zgarganda har bir faylni qidirib chiqishga to‘g‘ri kelardi.
+ * ⚠️ Ranglar komponentlarda qo'lda yozilmaydi (`#0a6cf0` kabi), faqat shu
+ * yerdagi o'zgaruvchilar orqali. Aks holda qorong'i rejimga o'tishda yoki
+ * brend rangi o'zgarganda har bir faylni qidirib chiqishga to'g'ri kelardi.
  */
 @theme {
-  /* ───────── Brend: qurilish to‘q sarig‘i ─────────
-     Faqat INTERFEYS urg‘usi: faol menyu, havola, fokus halqasi, ajratilgan
-     qiymat. Ma’lumot (diagramma, xarita) ranglari pastda ALOHIDA — aks holda
-     «faol menyu» bilan «kechikayotgan obyekt» bir xil rangda bo‘lib qolardi. */
-  --color-brand-50: #fff5eb;
-  --color-brand-100: #ffe8d1;
-  --color-brand-200: #ffcfa3;
-  --color-brand-300: #ffb06b;
-  --color-brand-400: #ff9a3d;
-  --color-brand-500: #ff7f00;
-  --color-brand-600: #e87200;
-  --color-brand-700: #b35900;
-  --color-brand-800: #8c4600;
-  --color-brand-900: #6b3600;
-  --color-brand-950: #3d1e00;
+  /* ───────── Brend: davlat ko'ki ─────────
+     Faol menyu, havola, fokus halqasi, asosiy tugma. Ma'lumot
+     (diagramma, xarita) ranglari pastda ALOHIDA — aks holda «faol menyu»
+     bilan «reja asosidagi obyekt» bir xil rangda bo'lib qolardi. */
+  --color-brand-50: #eff9ff;
+  --color-brand-100: #d0e8ff;
+  --color-brand-200: #acd5ff;
+  --color-brand-300: #81bcff;
+  --color-brand-400: #438eff;
+  --color-brand-500: #0a6cf0;
+  --color-brand-600: #005bde;
+  --color-brand-700: #004ac6;
+  --color-brand-800: #003bad;
+  --color-brand-900: #002d95;
+  --color-brand-950: #002180;
+
+  /* ───────── Panel (sidebar) ─────────
+     To'q dengiz ko'ki. Oddiy «qora panel» emas: ko'k ton brend bilan
+     bitta oilada qoladi va faol element (yorqin ko'k) fonda ADASHMAYDI —
+     qora fonda u «yopishtirilgan» bo'lib ko'rinardi. */
+  --color-rail-700: #0a2d5c;
+  --color-rail-800: #06224a;
+  --color-rail-900: #02183a;
+  --color-rail-950: #01102a;
 
   /* ───────── Holat ranglari ─────────
-     `shared/constants/health.ts` bilan MOS bo‘lishi shart.
-     500-pog‘ona — diagramma/xarita to‘ldirishi (dataviz validatoridan
-     o‘tgan), 600/700 — matn uchun (kontrast yetarli bo‘lsin). */
-  --color-ok-50: #e8f6f0;
-  --color-ok-100: #c9ebdd;
-  --color-ok-200: #94d7bc;
-  --color-ok-300: #57bd99;
-  --color-ok-400: #2a9e78;
-  --color-ok-500: #12805c;
-  --color-ok-600: #0f6d4e;
-  --color-ok-700: #0c5740;
-  --color-ok-800: #0a4433;
-  --color-ok-900: #073228;
+     `shared/constants/health.ts` bilan MOS bo'lishi shart.
+     500 — diagramma/xarita to'ldirishi, 600/700 — matn uchun. */
+  --color-ok-50: #f0fbf2;
+  --color-ok-100: #d4efda;
+  --color-ok-200: #b2e1bd;
+  --color-ok-300: #88ce9b;
+  --color-ok-400: #4cab6c;
+  --color-ok-500: #0a924b;
+  --color-ok-600: #00813b;
+  --color-ok-700: #006f2d;
+  --color-ok-800: #005d21;
+  --color-ok-900: #004d15;
 
-  --color-warn-50: #fdf6e3;
-  --color-warn-100: #faebc2;
-  --color-warn-200: #f3d487;
-  --color-warn-300: #e8b949;
-  --color-warn-400: #d79b1b;
-  --color-warn-500: #be7a00;
-  --color-warn-600: #a16700;
-  --color-warn-700: #815200;
-  --color-warn-800: #663f00;
-  --color-warn-900: #4a2d00;
+  --color-warn-50: #fef7ed;
+  --color-warn-100: #f6e4cb;
+  --color-warn-200: #edcea4;
+  --color-warn-300: #e0b274;
+  --color-warn-400: #e0a54f;
+  --color-warn-500: #de9c31;
+  --color-warn-600: #c48300;
+  --color-warn-700: #a66a00;
+  --color-warn-800: #895300;
+  --color-warn-900: #6e3d00;
 
-  --color-danger-50: #fdf0ee;
-  --color-danger-100: #fbdcd8;
-  --color-danger-200: #f5b8b0;
-  --color-danger-300: #ed8d82;
-  --color-danger-400: #de5d50;
-  --color-danger-500: #b42318;
-  --color-danger-600: #9a1d14;
-  --color-danger-700: #7d1710;
-  --color-danger-800: #62120d;
-  --color-danger-900: #470d0a;
+  --color-danger-50: #fff3f2;
+  --color-danger-100: #ffdad9;
+  --color-danger-200: #ffbebd;
+  --color-danger-300: #ff9a9b;
+  --color-danger-400: #d1545b;
+  --color-danger-500: #ac1730;
+  --color-danger-600: #9f0025;
+  --color-danger-700: #8e001d;
+  --color-danger-800: #7d0015;
+  --color-danger-900: #6c000e;
 
   /* «Topshirilgan» — tugagan, ijobiy, lekin «reja asosida» EMAS.
-     Brend sarig‘i bo‘lsa «kechikayotgan» bilan, yashil bo‘lsa «reja
-     asosida» bilan chalkashardi; shuning uchun alohida binafsha. */
-  --color-done-50: #f1effd;
-  --color-done-100: #e2ddfa;
-  --color-done-200: #c6bcf5;
-  --color-done-300: #a494ec;
-  --color-done-400: #8070dc;
-  --color-done-500: #5b4bc4;
-  --color-done-600: #4a3ba8;
-  --color-done-700: #3b2f87;
-  --color-done-800: #2e2469;
-  --color-done-900: #221a4e;
+     Ko'k bo'lsa brend bilan, yashil bo'lsa «reja asosida» bilan
+     chalkashardi; shuning uchun alohida binafsha. */
+  --color-done-50: #faf5ff;
+  --color-done-100: #ebe0ff;
+  --color-done-200: #dbc7ff;
+  --color-done-300: #c7a9fe;
+  --color-done-400: #9a70db;
+  --color-done-500: #7b47bf;
+  --color-done-600: #6e39b0;
+  --color-done-700: #602c9d;
+  --color-done-800: #522089;
+  --color-done-900: #451677;
 
-  /* Neytral — iliq zinc oilasi (sovuq slate EMAS): sarg‘ish brend yonida
-     ko‘kish kulrang «kir» bo‘lib ko‘rinadi. */
-  --color-neutral-50: #fafafa;
-  --color-neutral-100: #f4f4f5;
-  --color-neutral-200: #e4e4e7;
-  --color-neutral-300: #d4d4d8;
-  --color-neutral-400: #a1a1aa;
-  --color-neutral-500: #71717a;
-  --color-neutral-600: #52525b;
-  --color-neutral-700: #3f3f46;
-  --color-neutral-800: #27272a;
-  --color-neutral-900: #18181b;
-  --color-neutral-950: #0a0a0a;
+  /* Neytral — SOVUQ ko'kish kulrang (iliq zinc EMAS): ko'k brend va
+     ko'kish fon yonida iliq kulrang sarg'ish «kir» bo'lib ko'rinadi. */
+  --color-neutral-50: #f7fAfc;
+  --color-neutral-100: #eff4f9;
+  --color-neutral-200: #e2eaf2;
+  --color-neutral-300: #cbd7e4;
+  --color-neutral-400: #94a6bd;
+  --color-neutral-500: #64788f;
+  --color-neutral-600: #4a5d73;
+  --color-neutral-700: #35465a;
+  --color-neutral-800: #243344;
+  --color-neutral-900: #16222f;
+  --color-neutral-950: #0d1721;
 
   /* ───────── Shriftlar ───────── */
-  --font-sans: 'Outfit Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Bricolage Grotesque Variable', 'Archivo', 'Helvetica Neue', system-ui, sans-serif;
-  --font-figure: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: var(--font-sans);
+  --font-figure: var(--font-sans);
+  --font-numeric: var(--font-sans);
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
-  --font-numeric: var(--font-figure);
 
-  /* ───────── O‘lcham shkalasi ─────────
-     Nomlar VAZIFA bo‘yicha (`text-xs/sm` emas): «meta» har joyda bir xil
-     o‘lchamda bo‘lsin, dasturchi har safar qaytadan tanlamasin. */
+  /* ───────── O'lcham shkalasi ─────────
+     Nomlar VAZIFA bo'yicha (`text-xs/sm` emas): «meta» har joyda bir xil
+     o'lchamda bo'lsin, dasturchi har safar qaytadan tanlamasin. */
   --text-nano: 10px;
   --text-nano--line-height: 1.4;
   --text-micro: 11px;
   --text-micro--line-height: 1.45;
-  --text-meta: 12.5px;
+  --text-meta: 12px;
   --text-meta--line-height: 1.5;
-  --text-ui: 13.5px;
+  --text-ui: 13px;
   --text-ui--line-height: 1.55;
-  --text-body: 15px;
+  --text-body: 14px;
   --text-body--line-height: 1.6;
-  --text-lede: 17px;
+  --text-lede: 16px;
   --text-lede--line-height: 1.55;
-  --text-head: 20px;
+  --text-head: 18px;
   --text-head--line-height: 1.3;
-  --text-sub: 24px;
-  --text-sub--line-height: 1.3;
-  --text-display: 30px;
-  --text-display--line-height: 1.1;
-  --text-major: 38px;
-  --text-major--line-height: 1.06;
-  --text-figure: 46px;
+  --text-sub: 22px;
+  --text-sub--line-height: 1.25;
+  --text-display: 28px;
+  --text-display--line-height: 1.12;
+  --text-major: 32px;
+  --text-major--line-height: 1.08;
+  --text-figure: 40px;
   --text-figure--line-height: 1;
 
   /* ───────── Burchak radiusi ─────────
-     ATAYLAB KICHIK. Katta radius (16px+) ma’lumotga boy ekranni
-     «o‘yinchoq» qilib ko‘rsatadi — aynan shu narsa shablon taassurotini
-     beradi. Karta 10px, boshqaruv 6–8px, chip 999px. */
-  --radius-xs: 3px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
-  --radius-2xl: 12px;
-  --radius-card: 10px;
+     Yumshoq, zamonaviy panel ko'rinishi: karta 14px, boshqaruv 8–10px,
+     chip 999px. Ikonka plitkasi kartadan kichikroq (10px) — ichma-ich
+     joylashgan ikki burchak bir xil radiusda bo'lsa, ichkisi «shishgan»
+     bo'lib ko'rinadi. */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 14px;
+  --radius-3xl: 18px;
+  --radius-card: 14px;
+  --radius-tile: 10px;
 
   /* ───────── Soyalar ─────────
-     Chegara (`border`) emas, SOYA asosiy: 1px to‘q chiziq ma’lumot
-     zichligi yuqori ekranda to‘r bo‘lib ko‘rinadi. */
-  --shadow-hair: 0 0 0 1px rgb(16 20 15 / 0.07);
-  --shadow-card: 0 0 0 1px rgb(16 20 15 / 0.06), 0 1px 2px rgb(16 24 40 / 0.04);
-  --shadow-raise: 0 0 0 1px rgb(16 20 15 / 0.06), 0 2px 4px rgb(16 24 40 / 0.05), 0 12px 28px -18px rgb(16 24 40 / 0.3);
-  --shadow-pop: 0 0 0 1px rgb(22 20 15 / 0.07), 0 1px 2px rgb(22 20 15 / 0.04), 0 18px 40px -18px rgb(22 20 15 / 0.3);
-  --shadow-ink: 0 1px 2px rgb(10 10 10 / 0.18), 0 6px 16px -8px rgb(10 10 10 / 0.35);
+     Yengil va ko'kish: sof qora soya oq karta ostida «kir» bo'lib
+     ko'rinadi, ko'kish soya esa fon bilan bitta oilada qoladi. */
+  --shadow-hair: 0 0 0 1px rgb(16 42 76 / 0.06);
+  --shadow-card: 0 1px 2px rgb(16 42 76 / 0.05), 0 0 0 1px rgb(16 42 76 / 0.05);
+  --shadow-raise: 0 2px 6px rgb(16 42 76 / 0.07), 0 10px 24px -14px rgb(16 42 76 / 0.28), 0 0 0 1px rgb(16 42 76 / 0.05);
+  --shadow-pop: 0 1px 2px rgb(16 42 76 / 0.06), 0 16px 36px -14px rgb(16 42 76 / 0.3), 0 0 0 1px rgb(16 42 76 / 0.07);
+  --shadow-rail: 0 10px 30px -12px rgb(2 24 58 / 0.45);
 
-  /* ───────── Tartib o‘lchamlari ───────── */
-  --spacing-rail: 244px;
-  --spacing-rail-tight: 68px;
-  --spacing-topbar: 56px;
+  /* ───────── Tartib o'lchamlari ───────── */
+  --spacing-rail: 228px;
+  --spacing-rail-tight: 72px;
+  --spacing-topbar: 60px;
 }
 
-/* Qorong‘i rejim `class` strategiyasi bilan — foydalanuvchi tanlovi
-   tizim sozlamasidan ustun bo‘lishi kerak. */
+/* Qorong'i rejim `class` strategiyasi bilan — foydalanuvchi tanlovi
+   tizim sozlamasidan ustun bo'lishi kerak. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
@@ -176,41 +182,50 @@
     color-scheme: light;
 
     --surface: #ffffff;
-    --surface-muted: #fafafa;
-    --surface-sunken: #f6f6f4;
-    --surface-inset: #f4f4f5;
+    --surface-muted: #f7fafd;
+    --surface-sunken: #f1f6fb;
+    --surface-inset: #eff4f9;
 
-    --border-subtle: #e8e8ea;
-    --border-strong: #d8d8dc;
+    --border-subtle: #e6edf5;
+    --border-strong: #d4e0ec;
 
-    --ink-strong: #0a0a0a;
-    --ink-body: #27272a;
-    --ink-muted: #52525b;
-    --ink-faint: #8a8a93;
+    --ink-strong: #16222f;
+    --ink-body: #35465a;
+    --ink-muted: #64788f;
+    --ink-faint: #94a6bd;
 
-    /* Ekranning iliq «qog‘oz» fonidagi nozik yorug‘ligi. */
-    --wash-a: rgb(255 127 0 / 0.055);
-    --wash-b: rgb(91 75 196 / 0.035);
+    /* Panel (sidebar) ichidagi ranglar — ALOHIDA to'plam. Panel to'q,
+       sahifa yorug': bitta `--ink-*` to'plami ikkalasiga yaramaydi. */
+    --rail-bg: var(--color-rail-900);
+    --rail-ink: #dbe6f4;
+    --rail-ink-muted: #8aa2c2;
+    --rail-hover: rgb(255 255 255 / 0.07);
+    --rail-active: var(--color-brand-500);
+    --rail-line: rgb(255 255 255 / 0.09);
   }
 
   .dark {
     color-scheme: dark;
 
-    --surface: #171717;
-    --surface-muted: #1d1d1d;
-    --surface-sunken: #111111;
-    --surface-inset: #232323;
+    --surface: #16222f;
+    --surface-muted: #1b2937;
+    --surface-sunken: #0d1721;
+    --surface-inset: #22313f;
 
-    --border-subtle: #2a2a2c;
-    --border-strong: #3a3a3e;
+    --border-subtle: #243444;
+    --border-strong: #324455;
 
-    --ink-strong: #f5f5f4;
-    --ink-body: #d8d8d6;
-    --ink-muted: #a1a1aa;
-    --ink-faint: #7a7a82;
+    --ink-strong: #eef3f8;
+    --ink-body: #ccd8e4;
+    --ink-muted: #94a6bd;
+    --ink-faint: #6f8299;
 
-    --wash-a: rgb(255 127 0 / 0.07);
-    --wash-b: rgb(91 75 196 / 0.05);
+    --rail-bg: #01102a;
+    --rail-ink: #dbe6f4;
+    --rail-ink-muted: #8aa2c2;
+    --rail-hover: rgb(255 255 255 / 0.06);
+    --rail-active: var(--color-brand-500);
+    --rail-line: rgb(255 255 255 / 0.08);
   }
 
   * {
@@ -233,25 +248,24 @@
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
   }
 
-  /* Sarlavhalar o‘z rangini o‘zi belgilaydi — Tailwind preflight ularni
+  /* Sarlavhalar o'z rangini o'zi belgilaydi — Tailwind preflight ularni
      `inherit` ga tushiradi va har joyda qayta yozishga majbur qilardi. */
   h1,
   h2,
   h3,
   h4 {
     color: var(--ink-strong);
-    letter-spacing: -0.011em;
+    letter-spacing: -0.014em;
   }
 
   ::selection {
-    background: rgb(255 127 0 / 0.22);
+    background: rgb(10 108 240 / 0.18);
   }
 
-  /* Klaviatura bilan yurganda fokus KO‘RINISHI shart — sichqoncha bilan
-     bosilganda esa ko‘rinmaydi (`:focus-visible`). */
+  /* Klaviatura bilan yurganda fokus KO'RINISHI shart — sichqoncha bilan
+     bosilganda esa ko'rinmaydi (`:focus-visible`). */
   :focus-visible {
     outline: 2px solid var(--color-brand-500);
     outline-offset: 2px;
@@ -259,8 +273,8 @@
   }
 
   ::-webkit-scrollbar {
-    width: 11px;
-    height: 11px;
+    width: 10px;
+    height: 10px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -276,7 +290,7 @@
     background-clip: content-box;
   }
   .dark ::-webkit-scrollbar-thumb {
-    background: #35353a;
+    background: #2e4054;
     background-clip: content-box;
   }
 }
@@ -285,7 +299,7 @@
   /* ───────── Yuza ─────────
      ⚠️ `background-color`, QISQARTMA `background` EMAS. Qisqartma
      `background-repeat` va `background-image` ni ham tiklab yuboradi:
-     `select` elementining strelkasi (data-URI SVG) butun maydon bo‘ylab
+     `select` elementining strelkasi (data-URI SVG) butun maydon bo'ylab
      takrorlanib, maydonni «chizilgan» holga keltirgan edi. */
   .surface {
     background-color: var(--surface);
@@ -312,47 +326,79 @@
     border-color: var(--border-subtle);
   }
 
-  /* ───────── Tipografik rollar ─────────
-     Sahifa bo‘ylab bir xil bo‘lishi kerak bo‘lgan matn turlari. */
-
-  /* Sahifa sarlavhasi — faqat shu yerda Bricolage ishlatiladi. */
-  .t-page {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(26px, 2.4vw, 34px);
-    line-height: 1.04;
-    letter-spacing: -0.028em;
-    color: var(--ink-strong);
-    font-optical-sizing: auto;
+  /* ───────── Panel (sidebar) ───────── */
+  .rail {
+    background-color: var(--rail-bg);
+    color: var(--rail-ink);
+  }
+  .rail-ink {
+    color: var(--rail-ink);
+  }
+  .rail-ink-muted {
+    color: var(--rail-ink-muted);
+  }
+  .rail-line {
+    border-color: var(--rail-line);
+  }
+  /* Menyu elementi — bitta joyda, chunki u sakkizta holatga ega
+     (faol/oddiy × hover/fokus × ochiq/yig'ilgan). */
+  .rail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    font-size: var(--text-ui);
+    font-weight: 500;
+    color: var(--rail-ink-muted);
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+  .rail-item:hover {
+    background-color: var(--rail-hover);
+    color: var(--rail-ink);
+  }
+  .rail-item-active,
+  .rail-item-active:hover {
+    background-color: var(--rail-active);
+    color: #ffffff;
   }
 
-  /* Karta/bo‘lim sarlavhasi. */
+  /* ───────── Tipografik rollar ─────────
+     Sahifa bo'ylab bir xil bo'lishi kerak bo'lgan matn turlari. */
+  .t-page {
+    font-weight: 700;
+    font-size: clamp(20px, 1.9vw, 26px);
+    line-height: 1.15;
+    letter-spacing: -0.021em;
+    color: var(--ink-strong);
+  }
+
+  /* Karta/bo'lim sarlavhasi. */
   .t-section {
-    font-family: var(--font-sans);
     font-weight: 600;
-    font-size: var(--text-body);
+    font-size: var(--text-lede);
     line-height: 1.3;
-    letter-spacing: -0.012em;
+    letter-spacing: -0.014em;
     color: var(--ink-strong);
   }
 
   /* Sarlavha ostidagi izoh. */
   .t-lede {
-    font-family: var(--font-sans);
-    font-weight: 300;
-    font-size: var(--text-lede);
+    font-weight: 400;
+    font-size: var(--text-body);
     line-height: 1.55;
     color: var(--ink-muted);
   }
 
-  /* Jadval sarlavhasi, yorliq — kichik, katta harf, keng oraliq. */
+  /* Jadval sarlavhasi, yorliq. ⚠️ KATTA HARFGA aylantirilmaydi:
+     o'zbekcha uzun so'zlar (`MOLIYALASHTIRISH MANBASI`) katta harfda
+     ustunni ikki qatorga bo'lib yuboradi. */
   .t-label {
-    font-family: var(--font-sans);
     font-weight: 500;
-    font-size: var(--text-micro);
+    font-size: var(--text-meta);
     line-height: 1.4;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
     color: var(--ink-faint);
   }
 
@@ -363,32 +409,27 @@
   }
 
   /* ───────── RAQAMLAR ─────────
-     Butun tizimdagi son — serif, tabular. Bu dizaynning imzosi: raqam
-     matndan ko‘zga darhol ajralib turadi va ustunlar bir chiziqda qoladi
-     (proporsional raqam jadval qatorlarini «sakratib» yuboradi). */
+     ⚠️ `.num` SHRIFT OILASINI ALMASHTIRMAYDI — butun tizim Inter'da.
+     U faqat `tabular-nums` beradi: proporsional raqam jadval ustunlarini
+     qatordan qatorga «sakratib» yuboradi.
+     ⚠️ RANG ham belgilamaydi: rang qo'shilsa, yonma-yon yozilgan
+     `text-white` / `text-muted` ni bosib ketardi (ikkalasi ham
+     `utilities` qatlamida) — qora fondagi oq raqam qora bo'lib qolardi. */
   .num,
   .tabular {
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
-  /* ⚠️ `.num` RANG BELGILAMAYDI — faqat shrift, og‘irlik va oraliq.
-     Rang qo‘shilsa, u yonma-yon yozilgan `text-white` / `text-muted` ni
-     bosib ketadi (ikkalasi ham `utilities` qatlamida, `.num` esa keyin
-     keladi) — natijada qora fondagi oq raqam qora bo‘lib qolardi.
-     Raqam atrofdagi matn rangini meros oladi; kerak bo‘lsa yoniga
-     `text-strong` yoziladi. */
   .num {
-    font-family: var(--font-figure);
     font-weight: 600;
     letter-spacing: -0.015em;
   }
   .num-xl {
-    font-family: var(--font-figure);
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
-    font-weight: 600;
+    font-weight: 700;
     font-size: var(--text-major);
-    line-height: 1;
+    line-height: 1.05;
     letter-spacing: -0.028em;
   }
 
@@ -400,8 +441,9 @@
   }
 
   /* ───────── Karta ─────────
-     Chegara o‘rniga 1px soya halqasi: zich ekranda to‘q chiziqlar to‘r
-     bo‘lib ko‘rinadi, soya esa kartani fondan «ko‘taradi». */
+     1px halqa + juda yengil soya. Halqa `box-shadow` orqali: haqiqiy
+     `border` qatorlar zich bo'lgan ekranda to'r bo'lib ko'rinadi va
+     ichki o'lchamni 2px ga kichraytirib, gridni siljitadi. */
   .card {
     background-color: var(--surface);
     border-radius: var(--radius-card);
@@ -416,44 +458,45 @@
   }
   .dark .card {
     box-shadow:
-      0 0 0 1px rgb(255 255 255 / 0.07),
-      0 1px 2px rgb(0 0 0 / 0.4);
+      0 0 0 1px rgb(255 255 255 / 0.06),
+      0 1px 2px rgb(0 0 0 / 0.35);
   }
   .dark .card-hover:hover {
     box-shadow:
-      0 0 0 1px rgb(255 255 255 / 0.12),
-      0 10px 26px -16px rgb(0 0 0 / 0.8);
+      0 0 0 1px rgb(255 255 255 / 0.1),
+      0 10px 26px -16px rgb(0 0 0 / 0.75);
   }
 
-  /* Ekran orqa fonidagi iliq yorug‘lik — tekis kulrang fon
-     «tayyor shablon» taassurotini beradi. */
-  .app-wash {
-    background-image:
-      radial-gradient(60rem 32rem at 12% -8%, var(--wash-a), transparent 62%),
-      radial-gradient(52rem 28rem at 92% -4%, var(--wash-b), transparent 60%);
+  /* ───────── Ikonka plitkasi ─────────
+     Stat kartasidagi rangli kvadrat. Rang `bg-*-100` bilan yoniga
+     yoziladi — plitka faqat SHAKLNI beradi. */
+  .tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-tile);
+    flex-shrink: 0;
   }
 
-  /* Suzuvchi panel (popover, dropdown, ko‘rsatma) — bitta ko‘rinish.
-     Har joyda qayta yozilsa, bitta ekranda ikki xil soya paydo bo‘lardi. */
+  /* Suzuvchi panel (popover, dropdown) — bitta ko'rinish. */
   .pop {
     background-color: var(--surface);
-    border-radius: var(--radius-2xl);
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-pop);
   }
 
   /* Yopishqoq sarlavha foni — yarim shaffof + blur. */
   .surface-blur {
-    background-color: color-mix(in oklab, var(--surface) 86%, transparent);
-    -webkit-backdrop-filter: blur(20px) saturate(1.5);
-    backdrop-filter: blur(20px) saturate(1.5);
+    background-color: color-mix(in oklab, var(--surface) 88%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    backdrop-filter: blur(20px) saturate(1.4);
   }
 
-  /* Ajratuvchi chiziq rangi (fon sifatida). */
   .bg-line {
     background-color: var(--border-subtle);
   }
-
-  /* Ustunli ajratgich — `border-t` dan nozikroq. */
   .hairline {
     border-top: 1px solid var(--border-subtle);
   }
@@ -473,11 +516,11 @@
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.5), transparent);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
     animation: shimmer 1.5s infinite;
   }
   .dark .skeleton::after {
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.06), transparent);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.05), transparent);
   }
 
   @keyframes rise-in {
@@ -494,7 +537,7 @@
     animation: rise-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   }
 
-  /* Harakatni kamaytirishni so‘ragan foydalanuvchi uchun hammasi
+  /* Harakatni kamaytirishni so'ragan foydalanuvchi uchun hammasi
      darhol joyiga tushadi. */
   @media (prefers-reduced-motion: reduce) {
     .rise-in,
@@ -510,7 +553,7 @@
 /* ───────── Leaflet ─────────
    Kutubxona CSS'i import qilinadi, lekin boshqaruv tugmalari va popup
    tizim dizayniga moslanadi — aks holda xarita «boshqa saytdan
-   ko‘chirib qo‘yilgan» bo‘lib ko‘rinadi. */
+   ko'chirib qo'yilgan» bo'lib ko'rinadi. */
 .leaflet-container {
   font-family: var(--font-sans);
   background: transparent;
@@ -522,14 +565,14 @@
   color: var(--ink-faint);
 }
 .dark .leaflet-control-attribution {
-  background: rgb(23 23 23 / 0.8) !important;
+  background: rgb(22 34 47 / 0.8) !important;
 }
 .leaflet-bar,
 .leaflet-bar a {
   border: 0 !important;
   background: var(--surface);
   color: var(--ink-strong);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
 .leaflet-bar a:hover {

@@ -178,7 +178,7 @@ function YearRangePicker({ from, to, onApply }: { from: number; to: number; onAp
           <select
             defaultValue={from}
             id="year-from"
-            className="num h-8 w-full rounded-lg surface px-2 text-ui shadow-[0_0_0_1px_rgb(16_20_15/0.1)] focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]"
+            className="num h-8 w-full rounded-lg surface px-2 text-ui shadow-[0_0_0_1px_rgb(16_42_76/0.1)] focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]"
           >
             {YEARS.map((year) => <option key={year} value={year}>{year}</option>)}
           </select>
@@ -188,7 +188,7 @@ function YearRangePicker({ from, to, onApply }: { from: number; to: number; onAp
           <select
             defaultValue={to}
             id="year-to"
-            className="num h-8 w-full rounded-lg surface px-2 text-ui shadow-[0_0_0_1px_rgb(16_20_15/0.1)] focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]"
+            className="num h-8 w-full rounded-lg surface px-2 text-ui shadow-[0_0_0_1px_rgb(16_42_76/0.1)] focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]"
           >
             {YEARS.map((year) => <option key={year} value={year}>{year}</option>)}
           </select>

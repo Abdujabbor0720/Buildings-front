@@ -42,7 +42,7 @@ export function StatPills({ items }: StatPillsProps) {
       {items.map((item) => (
         <span
           key={item.label}
-          className="inline-flex items-baseline gap-2 rounded-full surface px-3 py-1.5 shadow-[0_0_0_1px_rgb(16_20_15/0.07)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.1)]"
+          className="inline-flex items-baseline gap-2 rounded-lg surface px-3 py-1.5 shadow-[0_0_0_1px_rgb(16_42_76/0.08)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.1)]"
         >
           <span className="t-label">{item.label}</span>
           <span className={cn('num text-body', item.tone)}>{item.value}</span>

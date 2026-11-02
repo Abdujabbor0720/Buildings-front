@@ -50,10 +50,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
         {/* ⚠️ Skroll AYNAN shu elementda: `body` da bo‘lsa, yopishqoq
-            sarlavha va yon menyu birga siljib ketardi.
-            `app-wash` — fonning iliq yorug‘ligi; u skroll bilan birga
-            emas, konteyner bilan turadi. */}
-        <main className="app-wash surface-sunken min-h-0 flex-1 overflow-y-auto">
+            sarlavha va yon menyu birga siljib ketardi. */}
+        <main className="surface-sunken min-h-0 flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-7">{children}</div>
         </main>
       </div>

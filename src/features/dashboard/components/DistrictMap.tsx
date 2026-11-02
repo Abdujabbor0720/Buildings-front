@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import { Maximize2, Minimize2, Minus, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { GeoJSON as GeoJsonLayer, MapContainer, Marker, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { GeoJSON as GeoJsonLayer, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import type { DistrictGeoJson, DistrictStats, ObjectHealth } from '@/shared/api/types';
 import { BASEMAP_ATTRIBUTION, BASEMAP_URL, HAS_BASEMAP } from '@/shared/constants/basemap';
@@ -78,7 +78,7 @@ export function DistrictMap({
   return (
     <div
       className={cn(
-        'surface-muted relative overflow-hidden rounded-xl shadow-[inset_0_0_0_1px_rgb(16_20_15/0.06)]',
+        'surface-muted relative overflow-hidden rounded-xl shadow-[inset_0_0_0_1px_rgb(16_42_76/0.06)]',
         fullscreen ? 'fixed inset-3 z-50 h-auto shadow-[0_24px_64px_-18px_rgb(10_10_10/0.45)]' : heightClass,
         className,
       )}
@@ -127,7 +127,7 @@ export function DistrictMap({
       </MapContainer>
 
       {/* ───── Afsona ───── */}
-      <div className="surface-blur pointer-events-none absolute top-3 right-3 z-[400] flex flex-wrap justify-end gap-x-3 gap-y-1 rounded-lg px-2.5 py-1.5 shadow-[0_0_0_1px_rgb(16_20_15/0.06)]">
+      <div className="surface-blur pointer-events-none absolute top-3 right-3 z-[400] flex flex-wrap justify-end gap-x-3 gap-y-1 rounded-lg px-2.5 py-1.5 shadow-[0_0_0_1px_rgb(16_42_76/0.06)]">
         {HEALTH_LEGEND.map((health) => (
           <span key={health} className="flex items-center gap-1.5 text-micro text-muted">
             {/* Holat belgisi — DOIRA (turkum belgisi kvadrat). */}
@@ -183,16 +183,11 @@ function DistrictLayer({
         data={geojson as unknown as GeoJSON.FeatureCollection}
         style={(feature) => {
           const props = feature?.properties as DistrictStats | undefined;
-          const hex = props ? palette.statusHex(HEALTH_META[props.dominantHealth]) : palette.axis;
-          // Obyekt zichligi — to‘yinganlik orqali: ko‘proq obyekt = to‘qroq.
-          // ⚠️ Eng past shaffoflik 0.18 edi — chuqur qizil ochiq pushtiga
-          // aylanib, «xavfli» tuman «reja asosida» dan farqlanmay qolardi.
-          const density = Math.min(1, (props?.total ?? 0) / 24);
           return {
-            color: palette.dark ? '#171717' : '#ffffff',
+            color: palette.dark ? '#0d1721' : '#ffffff',
             weight: 1.5,
-            fillColor: hex,
-            fillOpacity: 0.34 + density * 0.4,
+            fillColor: palette.densityHex(props?.total ?? 0),
+            fillOpacity: 1,
           };
         }}
         onEachFeature={(feature, layer) => {
@@ -200,11 +195,10 @@ function DistrictLayer({
           layer.on({
             click: () => onSelect(props),
             mouseover: (event) => {
-              (event.target as L.Path).setStyle({ weight: 2.5, fillOpacity: 0.9 });
+              (event.target as L.Path).setStyle({ weight: 2.5, fillOpacity: 0.78 });
             },
             mouseout: (event) => {
-              const density = Math.min(1, props.total / 24);
-              (event.target as L.Path).setStyle({ weight: 1.5, fillOpacity: 0.34 + density * 0.4 });
+              (event.target as L.Path).setStyle({ weight: 1.5, fillOpacity: 1 });
             },
           });
           layer.bindTooltip(tooltipHtml(props, palette), { sticky: true, direction: 'top', opacity: 1, className: '!border-0 !bg-transparent !p-0 !shadow-none' });
@@ -223,25 +217,33 @@ function DistrictLayer({
             eventHandlers={{ click: () => onSelect(props) }}
             icon={L.divIcon({
               className: '',
-              iconSize: [size, size],
-              iconAnchor: [size / 2, size / 2],
+              // ⚠️ `iconSize` BELGI kengligi emas, butun blok kengligi:
+              // nom doiradan kengroq bo‘ladi va markazlash shunga qarab
+              // hisoblanadi. Tor qilib qo‘yilsa, uzun nomli tuman
+              // («Qo‘rg‘ontepa») chapga siljib qolardi.
+              iconSize: [96, size + 16],
+              iconAnchor: [48, (size + 16) / 2],
               html: `<span style="
-                display:grid;place-items:center;
-                width:${size}px;height:${size}px;border-radius:999px;
-                background:${hex};color:#fff;
-                font:600 ${props.total >= 100 ? 10 : 11.5}px/1 var(--font-sans);
-                font-variant-numeric:tabular-nums;
-                box-shadow:0 1px 4px rgba(10,10,10,.28);
-                border:2px solid var(--surface);cursor:pointer;
-              ">${props.total}</span>`,
+                display:flex;flex-direction:column;align-items:center;gap:2px;
+                width:96px;cursor:pointer;
+              ">
+                <span style="
+                  display:grid;place-items:center;
+                  width:${size}px;height:${size}px;border-radius:999px;
+                  background:${hex};color:#fff;
+                  font:600 ${props.total >= 100 ? 10 : 11.5}px/1 var(--font-sans);
+                  font-variant-numeric:tabular-nums;
+                  box-shadow:0 1px 4px rgba(2,24,58,.3);
+                  border:2px solid var(--surface);
+                ">${props.total}</span>
+                <span style="
+                  font:600 10px/1.2 var(--font-sans);
+                  color:var(--ink-body);text-align:center;white-space:nowrap;
+                  text-shadow:0 1px 2px var(--surface),0 0 3px var(--surface);
+                ">${props.shortName}</span>
+              </span>`,
             })}
-          >
-            <Tooltip direction="bottom" offset={[0, 10]} opacity={1} className="!border-0 !bg-transparent !p-0 !shadow-none">
-              <span className="block rounded-md bg-neutral-950 px-2 py-1 text-micro font-medium whitespace-nowrap text-white dark:bg-neutral-100 dark:text-neutral-950">
-                {props.shortName}
-              </span>
-            </Tooltip>
-          </Marker>
+          />
         );
       })}
     </>
@@ -303,7 +305,7 @@ function MapControls({ fullscreen, onToggleFullscreen }: { fullscreen: boolean; 
       onDoubleClick={(event) => event.stopPropagation()}
       onMouseDown={(event) => event.stopPropagation()}
     >
-      <div className="overflow-hidden rounded-lg surface shadow-[0_0_0_1px_rgb(16_20_15/0.08),0_1px_2px_rgb(16_24_40/0.06)]">
+      <div className="overflow-hidden rounded-lg surface shadow-[0_0_0_1px_rgb(16_42_76/0.08),0_1px_2px_rgb(16_42_76/0.06)]">
         <ZoomButton direction="in" />
         <span className="block h-px bg-line" />
         <ZoomButton direction="out" />
@@ -312,7 +314,7 @@ function MapControls({ fullscreen, onToggleFullscreen }: { fullscreen: boolean; 
         type="button"
         onClick={onToggleFullscreen}
         aria-label={fullscreen ? 'Oddiy ko‘rinish' : 'To‘liq ekran'}
-        className="grid size-7 place-items-center rounded-lg surface text-muted shadow-[0_0_0_1px_rgb(16_20_15/0.08),0_1px_2px_rgb(16_24_40/0.06)] transition-colors hover:text-strong"
+        className="grid size-7 place-items-center rounded-lg surface text-muted shadow-[0_0_0_1px_rgb(16_42_76/0.08),0_1px_2px_rgb(16_42_76/0.06)] transition-colors hover:text-strong"
       >
         {fullscreen ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
       </button>

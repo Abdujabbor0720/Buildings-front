@@ -25,65 +25,33 @@ export interface NavItem {
   end?: boolean;
 }
 
-export interface NavGroup {
-  /** `null` — birinchi guruh, sarlavhasiz (Bosh sahifa). */
-  title: string | null;
-  items: NavItem[];
-}
-
 /**
- * Yon menyu — GURUHLARGA bo‘lingan.
+ * Yon menyu — TEKIS RO‘YXAT.
  *
- * ⚠️ 14 ta band tekis ro‘yxatda bo‘lsa, foydalanuvchi har safar yuqoridan
- * pastgacha o‘qib chiqadi. Guruh sarlavhasi qidiruvni «qaysi bo‘limda
- * bo‘lishi mumkin» degan savolga qisqartiradi.
+ * ⚠️ Guruh sarlavhalari (`Obyektlar`, `Nazorat`, …) ATAYLAB olib
+ * tashlangan. To‘q panelda sarlavha ikki yomon variantdan birini
+ * tanlashga majbur qiladi: yorqin bo‘lsa, menyu bandlaridan ko‘ra
+ * ko‘proq ko‘zga tashlanadi; xira bo‘lsa, to‘q fonda o‘qilmaydi.
+ * 14 ta band bitta ro‘yxatda bemalol sig‘adi va tartib ish oqimiga
+ * mos: avval ko‘rish (obyekt, xarita, tuman, kalendar), keyin nazorat,
+ * keyin tahlil, oxirida ishtirokchilar va sozlama.
  *
- * ⚠️ Ruxsati yo‘q bo‘lim ko‘rsatilmaydi: foydalanuvchiga bosib bo‘lmaydigan
- * tugmani ko‘rsatish «tizim buzuq» taassurotini beradi. Guruhning HAMMA
- * bandi yashirilsa, guruh sarlavhasi ham chiqmaydi.
+ * ⚠️ Ruxsati yo‘q bo‘lim ko‘rsatilmaydi: foydalanuvchiga bosib
+ * bo‘lmaydigan tugmani ko‘rsatish «tizim buzuq» taassurotini beradi.
  */
-export const NAV_GROUPS: NavGroup[] = [
-  {
-    title: null,
-    items: [{ to: '/', label: 'Bosh sahifa', icon: LayoutDashboard, end: true }],
-  },
-  {
-    title: 'Obyektlar',
-    items: [
-      { to: '/objects', label: 'Obyektlar ro‘yxati', icon: Building2, permission: 'objects.view' },
-      { to: '/map', label: 'Interaktiv xarita', icon: Map, permission: 'objects.view' },
-      { to: '/districts', label: 'Tumanlar kesimida', icon: Table2, permission: 'objects.view' },
-      { to: '/calendar', label: 'Kalendar (ish rejasi)', icon: CalendarDays, permission: 'objects.view' },
-    ],
-  },
-  {
-    title: 'Nazorat',
-    items: [
-      { to: '/delays', label: 'Kechikishlar va risklar', icon: TriangleAlert, permission: 'delays.view' },
-      { to: '/photos', label: 'Fotoarxiv', icon: Camera, permission: 'photos.view' },
-      { to: '/documents', label: 'Hujjatlar', icon: FileText, permission: 'documents.view' },
-    ],
-  },
-  {
-    title: 'Tahlil va moliya',
-    items: [
-      { to: '/reports', label: 'Hisobotlar', icon: BarChart3, permission: 'reports.view' },
-      { to: '/funding', label: 'Moliyalashtirish', icon: Banknote, permission: 'funding.view' },
-      { to: '/ai', label: 'AI tahlil', icon: Sparkles, permission: 'reports.view' },
-    ],
-  },
-  {
-    title: 'Ishtirokchilar',
-    items: [
-      { to: '/responsibles', label: 'Mas’ullar', icon: UserCog, permission: 'objects.view' },
-      { to: '/contractors', label: 'Pudratchilar', icon: Users, permission: 'contractors.view' },
-    ],
-  },
-  {
-    title: 'Tizim',
-    items: [{ to: '/settings', label: 'Sozlamalar', icon: Settings, permission: 'settings.view' }],
-  },
+export const NAV_ITEMS: NavItem[] = [
+  { to: '/', label: 'Bosh sahifa', icon: LayoutDashboard, end: true },
+  { to: '/objects', label: 'Obyektlar ro‘yxati', icon: Building2, permission: 'objects.view' },
+  { to: '/map', label: 'Interaktiv xarita', icon: Map, permission: 'objects.view' },
+  { to: '/districts', label: 'Tumanlar kesimida', icon: Table2, permission: 'objects.view' },
+  { to: '/calendar', label: 'Kalendar (ish rejasi)', icon: CalendarDays, permission: 'objects.view' },
+  { to: '/delays', label: 'Kechikishlar va risklar', icon: TriangleAlert, permission: 'delays.view' },
+  { to: '/reports', label: 'Hisobotlar', icon: BarChart3, permission: 'reports.view' },
+  { to: '/photos', label: 'Fotoarxiv', icon: Camera, permission: 'photos.view' },
+  { to: '/documents', label: 'Hujjatlar', icon: FileText, permission: 'documents.view' },
+  { to: '/responsibles', label: 'Mas’ullar', icon: UserCog, permission: 'objects.view' },
+  { to: '/contractors', label: 'Pudratchilar', icon: Users, permission: 'contractors.view' },
+  { to: '/funding', label: 'Moliyalashtirish', icon: Banknote, permission: 'funding.view' },
+  { to: '/ai', label: 'AI tahlil', icon: Sparkles, permission: 'reports.view' },
+  { to: '/settings', label: 'Sozlamalar', icon: Settings, permission: 'settings.view' },
 ];
-
-/** Tekis ro‘yxat — qidiruv va sarlavha aniqlash uchun. */
-export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);

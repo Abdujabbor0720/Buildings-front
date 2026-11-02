@@ -91,7 +91,7 @@ export default function MapPage() {
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-[7px] px-3 py-1.5 text-meta font-medium transition-all',
                     view === item
-                      ? 'surface text-strong shadow-[0_0_0_1px_rgb(16_20_15/0.07),0_1px_2px_rgb(16_24_40/0.06)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]'
+                      ? 'surface text-strong shadow-[0_0_0_1px_rgb(16_42_76/0.07),0_1px_2px_rgb(16_42_76/0.06)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]'
                       : 'text-muted hover:text-strong',
                   )}
                 >
@@ -233,7 +233,7 @@ function ObjectsMap({
                   </div>
                   <Link
                     to={`/objects/${point.id}`}
-                    className="mt-2.5 block rounded-full bg-neutral-950 py-1.5 text-center text-meta font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-white dark:text-neutral-950"
+                    className="mt-2.5 block rounded-lg bg-brand-500 py-1.5 text-center text-meta font-semibold text-white transition-colors hover:bg-brand-600"
                   >
                     Batafsil ko‘rish
                   </Link>
@@ -250,7 +250,7 @@ function ObjectsMap({
           ro‘yxatda u yo‘q edi — xaritada binafsha belgi turib, afsonada
           u umuman tushuntirilmagan edi. */}
       {legend.length > 0 ? (
-        <div className="surface-blur pointer-events-none absolute top-3 right-3 z-[400] flex flex-wrap justify-end gap-x-3 gap-y-1 rounded-lg px-2.5 py-1.5 shadow-[0_0_0_1px_rgb(16_20_15/0.06)]">
+        <div className="surface-blur pointer-events-none absolute top-3 right-3 z-[400] flex flex-wrap justify-end gap-x-3 gap-y-1 rounded-lg px-2.5 py-1.5 shadow-[0_0_0_1px_rgb(16_42_76/0.06)]">
           {legend.map((health) => (
             <span key={health} className="flex items-center gap-1.5 text-micro text-muted">
               <span className="size-2 rounded-full" style={{ backgroundColor: statusHex(HEALTH_META[health]) }} />

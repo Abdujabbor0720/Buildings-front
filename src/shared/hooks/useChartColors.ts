@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 import { useUiStore } from '@/store/ui.store';
 import {
   categoricalHex,
+  DENSITY_RAMP,
+  DENSITY_RAMP_DARK,
   DEADLINE_OVERDUE_HEX,
   DEADLINE_OVERDUE_HEX_DARK,
   DEADLINE_RAMP,
@@ -41,17 +43,37 @@ export function useChartColors() {
     [dark],
   );
 
+  /**
+   * Xarita poligoni — OBYEKT SONI bo‘yicha ketma-ket (sequential) shkala.
+   *
+   * ⚠️ Poligon HOLAT rangida bo‘yalmaydi: tuman ustidagi belgi allaqachon
+   * holatni ko‘rsatadi. Ikkalasi ham holatni kodlasa, xarita bitta
+   * o‘zgaruvchini ikki marta aytib, ikkinchisini (nechta obyekt borligini)
+   * umuman aytmay qolardi.
+   */
+  const densityHex = useCallback(
+    (total: number) => {
+      const ramp = dark ? DENSITY_RAMP_DARK : DENSITY_RAMP;
+      if (total <= 0) return ramp[0];
+      // Chegaralar: 1–4, 5–9, 10–14, 15–19, 20–24, 25+
+      const step = Math.min(ramp.length - 1, 1 + Math.floor(total / 5));
+      return ramp[step];
+    },
+    [dark],
+  );
+
   return {
     dark,
     statusHex,
     seriesHex,
     deadlineHex,
+    densityHex,
     /** Diagramma to‘ri va o‘qi — matndan ancha ochroq. */
-    grid: dark ? 'rgba(255,255,255,0.08)' : 'rgba(16,20,15,0.07)',
-    axis: dark ? '#7a7a82' : '#8a8a93',
+    grid: dark ? 'rgba(255,255,255,0.08)' : 'rgba(16,42,76,0.08)',
+    axis: dark ? '#6f8299' : '#94a6bd',
     /** Ko‘rsatma (tooltip) yuzasi. */
-    tooltipBg: dark ? '#1d1d1d' : '#ffffff',
-    tooltipText: dark ? '#f5f5f4' : '#0a0a0a',
+    tooltipBg: dark ? '#1b2937' : '#ffffff',
+    tooltipText: dark ? '#eef3f8' : '#16222f',
   };
 }
 
@@ -73,4 +95,4 @@ export const CHART_TOOLTIP_STYLE = {
 } as const;
 
 /** Ustun ustiga kelganda fon — brend emas, neytral. */
-export const CHART_CURSOR_FILL = 'rgb(16 20 15 / 0.05)';
+export const CHART_CURSOR_FILL = 'rgb(16 42 76 / 0.05)';

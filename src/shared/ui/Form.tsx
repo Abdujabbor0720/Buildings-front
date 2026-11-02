@@ -18,7 +18,7 @@ import { cn } from '@/shared/utils/cn';
  */
 const FIELD_BASE =
   'w-full rounded-lg surface px-3 text-ui text-strong transition-shadow ' +
-  'shadow-[0_0_0_1px_rgb(16_20_15/0.1)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)] ' +
+  'shadow-[0_0_0_1px_rgb(16_42_76/0.1)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)] ' +
   'placeholder:text-faint placeholder:font-light ' +
   'focus:shadow-[0_0_0_1px_var(--color-brand-500),0_0_0_3px_rgb(255_127_0/0.22)] focus:outline-none ' +
   'disabled:cursor-not-allowed disabled:opacity-60';
