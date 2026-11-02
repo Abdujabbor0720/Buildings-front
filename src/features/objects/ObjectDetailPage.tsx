@@ -1,12 +1,13 @@
-import { ArrowLeft, Building2, CalendarDays, MapPin, Users } from 'lucide-react';
+import { ArrowLeft, Building2, CalendarDays, MapPin, Pencil, Users } from 'lucide-react';
 import { useState } from 'react';
+import { useAuthStore } from '@/store/auth.store';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage } from '@/shared/api/client';
 import {
   useObject, useObjectAi, useObjectFunding, useObjectMilestones, useObjectProgress,
 } from '@/shared/api/queries';
 import { HEALTH_META, RISK_META, STATUS_META } from '@/shared/constants/health';
-import { Badge, Card, ErrorState, LoadingBlock, ProgressBar, Tabs, type TabOption } from '@/shared/ui';
+import { Badge, Button, Card, ErrorState, LoadingBlock, ProgressBar, Tabs, type TabOption } from '@/shared/ui';
 import { formatDateUz, formatRelativeUz } from '@/shared/utils/date.utils';
 import { formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';
 import { ObjectOverviewTab } from './components/ObjectOverviewTab';
@@ -17,6 +18,7 @@ import { ObjectAiTab } from './components/ObjectAiTab';
 import { ObjectPhotosTab } from './components/ObjectPhotosTab';
 import { ObjectDocumentsTab } from './components/ObjectDocumentsTab';
 import { ObjectDelaysTab } from './components/ObjectDelaysTab';
+import { ObjectFormModal } from './components/ObjectFormModal';
 
 type Tab = 'overview' | 'progress' | 'milestones' | 'photos' | 'documents' | 'funding' | 'delays' | 'ai';
 
@@ -41,6 +43,8 @@ export default function ObjectDetailPage() {
   const milestones = useObjectMilestones(tab === 'milestones' ? id : undefined);
   const funding = useObjectFunding(tab === 'funding' ? id : undefined);
   const ai = useObjectAi(tab === 'ai' || tab === 'overview' ? id : undefined);
+  const [editOpen, setEditOpen] = useState(false);
+  const can = useAuthStore((state) => state.can);
 
   if (isLoading) return <LoadingBlock className="min-h-[50vh]" />;
   if (isError || !object) {
@@ -59,14 +63,31 @@ export default function ObjectDetailPage() {
     <>
       {/* ───── Sarlavha ───── */}
       <div className="mb-4">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="mb-3 inline-flex items-center gap-1.5 text-meta text-muted transition-colors hover:text-strong"
-        >
-          <ArrowLeft className="size-3.5" />
-          Orqaga
-        </button>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 text-meta text-muted transition-colors hover:text-strong"
+          >
+            <ArrowLeft className="size-3.5" />
+            Orqaga
+          </button>
+
+          {/* ⚠️ Mas'ul shaxs, pudratchi va qolgan maydonlar AYNAN shu
+              yerdan o'zgartiriladi. Excel orqali yuklanganda mas'ul
+              bo'sh qolishi mumkin (ogohlantirish bilan) — uni keyin
+              biriktirish joyi shu. */}
+          {can('objects.update') ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setEditOpen(true)}
+              leftIcon={<Pencil className="size-3.5" />}
+            >
+              Tahrirlash
+            </Button>
+          ) : null}
+        </div>
 
         <Card>
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -175,6 +196,7 @@ export default function ObjectDetailPage() {
       ) : null}
       {tab === 'delays' ? <ObjectDelaysTab objectId={object.id} /> : null}
       {tab === 'ai' ? <ObjectAiTab analyses={ai.data ?? []} isLoading={ai.isLoading} /> : null}
+      <ObjectFormModal open={editOpen} onClose={() => setEditOpen(false)} object={object} />
     </>
   );
 }

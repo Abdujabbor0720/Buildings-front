@@ -282,6 +282,26 @@ export function useCreateObject() {
   });
 }
 
+/**
+ * ⚠️ Bajarilish foizi BU YERDAN o‘zgarmaydi — server uni rad etadi.
+ * U tarix yozadigan alohida amal (`useAddProgress`), aks holda
+ * grafikda sababsiz sakrash paydo bo‘lardi.
+ */
+export function useUpdateObject(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<CreateObjectBody>) =>
+      apiPatch<ConstructionObject>(`/objects/${id}`, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.object(id) });
+      void queryClient.invalidateQueries({ queryKey: ['objects'] });
+      // Mas'ul yoki pudratchi almashsa, ular bo‘yicha kesimlar ham eskiradi.
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      void queryClient.invalidateQueries({ queryKey: ['responsibles'] });
+    },
+  });
+}
+
 export interface ImportRowIssue {
   rowNumber: number;
   column: string | null;

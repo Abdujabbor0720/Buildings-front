@@ -16,7 +16,7 @@ import { formatCompact, formatCount } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
 import { useFiltersStore } from '@/store/filters.store';
 import { ImportObjectsModal } from './components/ImportObjectsModal';
-import { NewObjectModal } from './components/NewObjectModal';
+import { ObjectFormModal } from './components/ObjectFormModal';
 
 const HEALTH_OPTIONS: Array<{ value: ObjectHealth | ''; label: string }> = [
   { value: '', label: 'Barcha holatlar' },
@@ -292,7 +292,7 @@ export default function ObjectsPage() {
           )}
         </div>
       </Card>
-      <NewObjectModal open={createOpen} onClose={() => setCreateOpen(false)} />
+      <ObjectFormModal open={createOpen} onClose={() => setCreateOpen(false)} />
       <ImportObjectsModal open={importOpen} onClose={() => setImportOpen(false)} />
     </>
   );

@@ -8,14 +8,24 @@ import {
   useCustomers,
   useDistricts,
   useResponsibles,
+  useUpdateObject,
   type CreateObjectBody,
 } from '@/shared/api/queries';
+import type { ConstructionObject } from '@/shared/api/types';
 import { Button, Field, Input, Modal, Select, Textarea } from '@/shared/ui';
 import { useFilterParams } from '@/store/filters.store';
 
 interface Props {
   open: boolean;
   onClose: () => void;
+  /**
+   * Berilsa — TAHRIRLASH rejimi.
+   *
+   * ⚠️ Yaratish va tahrirlash BITTA forma: ikki nusxa bo‘lsa, yangi
+   * maydon qo‘shilganda u bittasiga qo‘shilib, ikkinchisida esdan
+   * chiqardi — eng ko‘p uchraydigan forma xatosi aynan shu.
+   */
+  object?: ConstructionObject;
 }
 
 /** Forma holati — HAMMASI matn. Son va sanaga aylantirish yuborishdan oldin. */
@@ -72,9 +82,28 @@ const EMPTY: FormState = {
  * mas’ul keyin biriktiriladi — majburiy qilinsa, ma’lumot umuman
  * kiritilmay qolardi. Buning o‘rniga forma ogohlantiradi.
  */
-export function NewObjectModal({ open, onClose }: Props) {
+export function ObjectFormModal({ open, onClose, object }: Props) {
+  const editing = Boolean(object);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [touched, setTouched] = useState(false);
+
+  /**
+   * ⚠️ Forma RENDER PAYTIDA moslanadi, `useEffect` bilan EMAS.
+   *
+   * Bitta oyna ketma-ket ikki obyekt uchun ochilishi mumkin; `useState`
+   * boshlang‘ich qiymati faqat birinchisida ishlardi va ikkinchisida
+   * eski ma'lumot turib qolardi. Effekt esa ortiqcha render boshlaydi
+   * va bir lahzaga ESKI ma'lumotni ko‘rsatib yuboradi — React hujjati
+   * aynan shu holat uchun «props o‘zgarganda holatni moslash»
+   * naqshini tavsiya qiladi.
+   */
+  const sessionKey = open ? (object?.id ?? 'new') : null;
+  const [lastKey, setLastKey] = useState<string | null>(null);
+  if (sessionKey !== lastKey) {
+    setLastKey(sessionKey);
+    setForm(object && sessionKey ? toFormState(object) : EMPTY);
+    setTouched(false);
+  }
 
   const params = useFilterParams();
   const catalogs = useCatalogs();
@@ -83,6 +112,8 @@ export function NewObjectModal({ open, onClose }: Props) {
   const contractors = useContractors({ limit: 200, status: 'active' });
   const responsibles = useResponsibles(params.regionId);
   const create = useCreateObject();
+  const update = useUpdateObject(object?.id ?? '');
+  const pending = create.isPending || update.isPending;
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -111,23 +142,52 @@ export function NewObjectModal({ open, onClose }: Props) {
       plannedStartDate: form.plannedStartDate,
       plannedEndDate: form.plannedEndDate,
     };
-    if (form.description.trim()) body.description = form.description.trim();
-    if (form.address.trim()) body.address = form.address.trim();
-    if (form.lat && form.lng) {
-      body.lat = Number(form.lat);
-      body.lng = Number(form.lng);
-    }
-    if (form.customerId) body.customerId = form.customerId;
-    if (form.contractorId) body.contractorId = form.contractorId;
-    if (form.responsibleId) body.responsibleId = form.responsibleId;
-    if (form.fundingSourceId) body.fundingSourceId = form.fundingSourceId;
-    if (form.capacity) body.capacity = Number(form.capacity);
-    if (form.capacityUnit.trim()) body.capacityUnit = form.capacityUnit.trim();
-    if (form.floors) body.floors = Number(form.floors);
+    /**
+     * ⚠️ IXTIYORIY maydon bo‘sh qolganda:
+     *   yaratishda  — UMUMAN yuborilmaydi (server sukut qiymatini oladi);
+     *   tahrirlashda — `null` yuboriladi.
+     *
+     * Farq muhim: tahrirlashda ham «yubormaslik» qilinса, mas’ulni
+     * tanlovdan olib tashlash HECH NARSA qilmasdi — maydon so‘rovga
+     * tushmay, eski qiymat joyida qolardi. Ya’ni biriktirib bo‘lardi,
+     * lekin BEKOR QILIB bo‘lmasdi.
+     */
+    const optional = <T,>(value: T | null, filled: boolean) => {
+      if (filled) return value;
+      return editing ? null : undefined;
+    };
+
+    const assign = <K extends keyof CreateObjectBody>(
+      key: K,
+      value: CreateObjectBody[K] | null | undefined,
+    ) => {
+      if (value !== undefined) (body as unknown as Record<string, unknown>)[key] = value;
+    };
+
+    assign('description', optional(form.description.trim(), form.description.trim() !== ''));
+    assign('address', optional(form.address.trim(), form.address.trim() !== ''));
+
+    const hasCoords = form.lat.trim() !== '' && form.lng.trim() !== '';
+    assign('lat', optional(hasCoords ? Number(form.lat) : null, hasCoords));
+    assign('lng', optional(hasCoords ? Number(form.lng) : null, hasCoords));
+
+    assign('customerId', optional(form.customerId, form.customerId !== ''));
+    assign('contractorId', optional(form.contractorId, form.contractorId !== ''));
+    assign('responsibleId', optional(form.responsibleId, form.responsibleId !== ''));
+    assign('fundingSourceId', optional(form.fundingSourceId, form.fundingSourceId !== ''));
+
+    assign('capacity', optional(form.capacity ? Number(form.capacity) : null, form.capacity !== ''));
+    assign('capacityUnit', optional(form.capacityUnit.trim(), form.capacityUnit.trim() !== ''));
+    assign('floors', optional(form.floors ? Number(form.floors) : null, form.floors !== ''));
 
     try {
-      const created = await create.mutateAsync(body);
-      toast.success(`${created.code} — obyekt qo‘shildi`);
+      if (object) {
+        await update.mutateAsync(body);
+        toast.success(`${object.code} — o‘zgarishlar saqlandi`);
+      } else {
+        const created = await create.mutateAsync(body);
+        toast.success(`${created.code} — obyekt qo‘shildi`);
+      }
       close();
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -141,20 +201,24 @@ export function NewObjectModal({ open, onClose }: Props) {
       open={open}
       onClose={close}
       size="xl"
-      title="Yangi obyekt"
-      description="Yulduzcha bilan belgilangan maydonlar majburiy. Qolganlarini keyin ham to‘ldirish mumkin."
+      title={editing ? `${object?.code} — tahrirlash` : 'Yangi obyekt'}
+      description={
+        editing
+          ? 'Mas’ul shaxs, pudratchi va boshqa ma’lumotlarni shu yerdan o‘zgartirasiz. Bajarilish foizi alohida amal bilan yangilanadi.'
+          : 'Yulduzcha bilan belgilangan maydonlar majburiy. Qolganlarini keyin ham to‘ldirish mumkin.'
+      }
       footer={
         <>
-          <Button variant="secondary" onClick={close} disabled={create.isPending}>
+          <Button variant="secondary" onClick={close} disabled={pending}>
             Bekor qilish
           </Button>
-          <Button type="submit" form="new-object-form" loading={create.isPending}>
-            Qo‘shish
+          <Button type="submit" form="object-form" loading={pending}>
+            {editing ? 'Saqlash' : 'Qo‘shish'}
           </Button>
         </>
       }
     >
-      <form id="new-object-form" onSubmit={submit} className="space-y-4" noValidate>
+      <form id="object-form" onSubmit={submit} className="space-y-4" noValidate>
         {/* ───── Asosiy ───── */}
         <Field label="Obyekt nomi" required error={show('name')}>
           <Input
@@ -337,6 +401,31 @@ export function NewObjectModal({ open, onClose }: Props) {
       </form>
     </Modal>
   );
+}
+
+/** Mavjud obyektni forma holatiga aylantiradi. */
+function toFormState(object: ConstructionObject): FormState {
+  return {
+    name: object.name,
+    districtId: object.districtId,
+    typeId: object.typeId,
+    totalCost: object.totalCost,
+    // ⚠️ `<input type="date">` FAQAT `YYYY-MM-DD` ni tushunadi;
+    // serverdan ISO instant kelsa, maydon bo‘sh ko‘rinardi.
+    plannedStartDate: object.plannedStartDate.slice(0, 10),
+    plannedEndDate: object.plannedEndDate.slice(0, 10),
+    address: object.address ?? '',
+    customerId: object.customerId ?? '',
+    contractorId: object.contractorId ?? '',
+    responsibleId: object.responsibleId ?? '',
+    fundingSourceId: object.fundingSourceId ?? '',
+    lat: object.lat === null || object.lat === undefined ? '' : String(object.lat),
+    lng: object.lng === null || object.lng === undefined ? '' : String(object.lng),
+    capacity: object.capacity === null || object.capacity === undefined ? '' : String(object.capacity),
+    capacityUnit: object.capacityUnit ?? '',
+    floors: object.floors === null || object.floors === undefined ? '' : String(object.floors),
+    description: object.description ?? '',
+  };
 }
 
 /**
