@@ -240,6 +240,29 @@ export const CATEGORICAL_HEX_DARK = [
 export const CATEGORICAL_REST_HEX = '#8A9CB0';
 export const CATEGORICAL_REST_HEX_DARK = '#6F8299';
 
+/**
+ * KECHIKISH SABABLARI — turkum palitrasining BOSHQA TARTIBI.
+ *
+ * ⚠️ Nega alohida tartib kerak: bosh sahifada «Qurilish turlari» va
+ * «Kechikish sabablari» ro‘yxatlari BIR EKRANDA turadi. Ikkalasi bir xil
+ * tartibda bo‘lsa, birinchi qatordagi ko‘k «Ta’lim muassasalari» bilan
+ * birinchi qatordagi ko‘k «Moliyalashtirish kechikishi» o‘zaro bog‘liq
+ * bo‘lib ko‘rinadi — holbuki ular butunlay boshqa o‘lchovlar. Rang
+ * MA’NOGA biriktiriladi, o‘ringa emas.
+ *
+ * Tartib tasodifiy emas, validatordan tanlangan: qo‘shni juftliklarning
+ * eng yomoni ΔE 20.8 (yorug‘) / 20.0 (qorong‘i). Masalan ko‘k va
+ * binafshani yonma-yon qo‘yish qorong‘i rejimda ΔE 4.2 berardi.
+ */
+const REASON_ORDER = [2, 3, 1, 0, 4] as const;
+
+export function reasonHex(index: number, dark = false): string {
+  if (index < 0 || index >= REASON_ORDER.length) {
+    return dark ? CATEGORICAL_REST_HEX_DARK : CATEGORICAL_REST_HEX;
+  }
+  return categoricalHex(REASON_ORDER[index], dark);
+}
+
 /** Indeks bo‘yicha rang — ro‘yxat uzunroq bo‘lsa oxirgisi neytral qoladi. */
 export function categoricalHex(index: number, dark = false): string {
   const list = dark ? CATEGORICAL_HEX_DARK : CATEGORICAL_HEX;

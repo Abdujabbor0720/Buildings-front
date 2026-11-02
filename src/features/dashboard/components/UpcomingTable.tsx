@@ -50,7 +50,7 @@ export function UpcomingTable({ items }: { items: UpcomingItem[] }) {
                     <ProgressBar
                       value={item.progressPercent}
                       showValue
-                      size="xs"
+                      size="sm"
                       tone={HEALTH_META[item.healthStatus].bar}
                     />
                   </Td>

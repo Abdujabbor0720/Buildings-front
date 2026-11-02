@@ -10,9 +10,16 @@ export function TableWrap({ children, className }: { children: ReactNode; classN
   );
 }
 
+/**
+ * ⚠️ Jadval matni 12px (`text-meta`), sahifaning 13px idan KICHIKROQ.
+ * Jadval — zich ma'lumot: bosh sahifada to'rtta jadval bor va ular
+ * matn o'lchamida oqim matni bilan teng bo'lsa, ekran «devor» bo'lib
+ * qoladi. Kichikroq o'lcham qatorlarni ham zichlashtiradi: 11 ta tuman
+ * skrollsiz sig'adi.
+ */
 export function Table({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <table className={cn('min-w-full border-separate border-spacing-0 text-ui', className)}>{children}</table>
+    <table className={cn('min-w-full border-separate border-spacing-0 text-meta', className)}>{children}</table>
   );
 }
 
@@ -42,7 +49,7 @@ export function Th({ children, sortKey, activeSort, onSort, align = 'left', clas
     <th
       scope="col"
       className={cn(
-        't-label surface sticky top-0 z-10 border-b border-subtle px-3 pt-1 pb-2.5 whitespace-nowrap',
+        't-label surface sticky top-0 z-10 border-b border-subtle px-3 pt-0.5 pb-1.5 whitespace-nowrap',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
         align === 'left' && 'text-left',
@@ -122,7 +129,10 @@ export function Td({ children, align = 'left', muted, className, ...rest }: TdPr
   return (
     <td
       className={cn(
-        'border-b border-subtle px-3 py-2.5 align-middle',
+        // ⚠️ `py-1.5` — qator balandligi ~31px. Ilgari `py-2.5` edi va
+        // qator 41px chiqardi: 11 ta tuman kartaga sig'may, ro'yxat
+        // skroll ortida qolardi.
+        'border-b border-subtle px-3 py-1.5 align-middle',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
         muted && 'text-muted',

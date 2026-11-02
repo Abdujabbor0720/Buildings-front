@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DistrictStats } from '@/shared/api/types';
+import { HEALTH_META } from '@/shared/constants/health';
 import { ProgressBar, Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr, Tabs, type TabOption } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 
@@ -35,7 +36,7 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
     <div className="flex min-h-0 flex-1 flex-col">
       <Tabs options={TABS} value={filter} onChange={setFilter} className="mb-3 shrink-0" />
 
-      <TableWrap className="max-h-[330px] min-h-0 flex-1 overflow-y-auto">
+      <TableWrap className="min-h-0 flex-1 overflow-y-auto">
         <Table>
           <THead>
             <Tr>
@@ -67,7 +68,17 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
                     {district.atRisk}
                   </Td>
                   <Td className="px-1.5 py-2">
-                    <ProgressBar value={district.avgProgress} showValue size="xs" />
+                    {/* ⚠️ Rang BAJARILISH FOIZIDAN emas, HOLATDAN olinadi.
+                        Foiz allaqachon chiziq uzunligi va yonidagi raqam
+                        bilan aytilgan — rang ham shuni aytsa, u hech qanday
+                        yangi ma'lumot bermaydi. Holat rangi esa «66% — bu
+                        yaxshimi yoki yomonmi» degan savolga javob beradi. */}
+                    <ProgressBar
+                      value={district.avgProgress}
+                      tone={HEALTH_META[district.dominantHealth].bar}
+                      showValue
+                      size="sm"
+                    />
                   </Td>
                 </Tr>
               ))

@@ -8,6 +8,7 @@ import {
   DEADLINE_OVERDUE_HEX_DARK,
   DEADLINE_RAMP,
   DEADLINE_RAMP_DARK,
+  reasonHex as reasonHexFn,
   type StatusMeta,
 } from '@/shared/constants/health';
 
@@ -24,6 +25,14 @@ export function useChartColors() {
 
   const statusHex = useCallback((meta: StatusMeta) => (dark ? meta.hexDark : meta.hex), [dark]);
   const seriesHex = useCallback((index: number) => categoricalHex(index, dark), [dark]);
+
+  /**
+   * Kechikish sabablari — turkum palitrasining boshqa tartibi.
+   * ⚠️ `seriesHex` bilan almashtirib yubormang: ikkala ro‘yxat bir
+   * ekranda turadi va bir xil tartibda bo‘lsa, ular o‘zaro bog‘liqdek
+   * ko‘rinadi (batafsil `health.ts` dagi `REASON_ORDER`).
+   */
+  const reasonHex = useCallback((index: number) => reasonHexFn(index, dark), [dark]);
 
   /**
    * Muddat guruhi — tartibli ramp; «muddati o‘tgan» undan tashqarida.
@@ -66,6 +75,7 @@ export function useChartColors() {
     dark,
     statusHex,
     seriesHex,
+    reasonHex,
     deadlineHex,
     densityHex,
     /** Diagramma to‘ri va o‘qi — matndan ancha ochroq. */

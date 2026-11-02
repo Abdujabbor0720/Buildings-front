@@ -24,7 +24,7 @@ import { formatPercent } from '@/shared/utils/money.utils';
  */
 export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
   const navigate = useNavigate();
-  const { seriesHex } = useChartColors();
+  const { reasonHex } = useChartColors();
   const max = Math.max(1, ...items.map((item) => item.count));
 
   if (items.length === 0) {
@@ -34,7 +34,7 @@ export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
   return (
     <ul className="@container space-y-0.5">
       {items.map((item, index) => {
-        const hex = seriesHex(index);
+        const hex = reasonHex(index);
         const Icon = catalogIcon(item.icon);
         return (
           <li key={item.reasonId}>
