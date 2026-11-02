@@ -24,11 +24,38 @@ import { formatCompact, formatCount, formatPercent } from '@/shared/utils/money.
  * shaffof bo‘lib qolardi.
  */
 const TILE = {
-  brand: 'bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
-  ok: 'bg-ok-100 text-ok-700 dark:bg-ok-500/15 dark:text-ok-300',
-  warn: 'bg-warn-100 text-warn-700 dark:bg-warn-500/15 dark:text-warn-300',
-  danger: 'bg-danger-100 text-danger-700 dark:bg-danger-500/15 dark:text-danger-300',
-  done: 'bg-done-100 text-done-700 dark:bg-done-500/15 dark:text-done-300',
+  brand: 'bg-brand-100 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300',
+  ok: 'bg-ok-100 text-ok-600 dark:bg-ok-500/15 dark:text-ok-300',
+  warn: 'bg-warn-100 text-warn-600 dark:bg-warn-500/15 dark:text-warn-300',
+  danger: 'bg-danger-100 text-danger-500 dark:bg-danger-500/15 dark:text-danger-300',
+  done: 'bg-done-100 text-done-600 dark:bg-done-500/15 dark:text-done-300',
+} as const;
+
+/**
+ * Yorliq va izoh rangi — plitka bilan BITTA oiladan.
+ *
+ * ⚠️ Kulrang yorliq (`t-label`) ishlatilmaydi: oltita karta yonma-yon
+ * turganda faqat plitka rangli bo‘lsa, ko‘z ularni «bir xil oltita
+ * karta» deb o‘qiydi. Yorliq ham bo‘yalganda har kartaning MA’NOSI
+ * (yaxshi / ogohlantirish / xavf) bir qarashda ko‘rinadi.
+ *
+ * ⚠️ `neutral` — «Jami obyektlar» uchun: u holat EMAS, shuning uchun
+ * holat rangini olmaydi.
+ */
+const LABEL = {
+  brand: 'text-brand-700 dark:text-brand-300',
+  ok: 'text-ok-700 dark:text-ok-300',
+  warn: 'text-warn-700 dark:text-warn-300',
+  danger: 'text-danger-600 dark:text-danger-300',
+  done: 'text-done-700 dark:text-done-300',
+} as const;
+
+const CAPTION = {
+  brand: 'text-brand-600/80 dark:text-brand-300/70',
+  ok: 'text-ok-600/85 dark:text-ok-300/70',
+  warn: 'text-warn-600/85 dark:text-warn-300/70',
+  danger: 'text-danger-500/85 dark:text-danger-300/70',
+  done: 'text-done-600/80 dark:text-done-300/70',
 } as const;
 
 type Tone = keyof typeof TILE;
@@ -59,18 +86,20 @@ interface KpiCardProps {
  */
 function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual }: KpiCardProps) {
   return (
-    <div className="card card-hover flex items-center gap-3 px-3.5 py-3">
+    <div className="card card-hover flex items-center gap-2.5 px-3 py-3">
       <span className={cn('tile', TILE[tone])} aria-hidden>
         <Icon className="size-[19px]" strokeWidth={2} />
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className="t-label truncate">{label}</p>
-        <p className="num mt-0.5 flex min-w-0 items-baseline gap-1 text-[24px] leading-none whitespace-nowrap text-strong">
+        <p className={cn('truncate text-meta font-medium', LABEL[tone])}>{label}</p>
+        <p className="num mt-0.5 flex min-w-0 items-baseline gap-1 text-[25px] leading-none whitespace-nowrap text-strong">
           {value}
           {unit ? <span className="text-meta font-normal text-muted">{unit}</span> : null}
         </p>
-        {caption ? <p className="text-faint mt-1 truncate text-micro">{caption}</p> : null}
+        {caption ? (
+          <p className={cn('mt-0.5 truncate text-micro font-medium', CAPTION[tone])}>{caption}</p>
+        ) : null}
       </div>
 
       {visual ? <span className="shrink-0">{visual}</span> : null}
@@ -127,7 +156,7 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       <KpiCard
         label="Reja asosida"
         value={formatCount(cards.onPlan.count)}
-        caption={`Jamining ${formatPercent(cards.onPlan.percent)} qismi`}
+        caption={formatPercent(cards.onPlan.percent)}
         icon={CircleCheckBig}
         tone="ok"
         visual={
@@ -144,7 +173,7 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       <KpiCard
         label="Kechikayotgan"
         value={formatCount(cards.delayed.count)}
-        caption={`Jamining ${formatPercent(cards.delayed.percent)} qismi`}
+        caption={formatPercent(cards.delayed.percent)}
         icon={Clock}
         tone="warn"
         visual={
@@ -161,7 +190,7 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       <KpiCard
         label="Xavfli holatda"
         value={formatCount(cards.atRisk.count)}
-        caption={`Jamining ${formatPercent(cards.atRisk.percent)} qismi`}
+        caption={formatPercent(cards.atRisk.percent)}
         icon={ShieldAlert}
         tone="danger"
         visual={

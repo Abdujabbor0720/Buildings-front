@@ -38,7 +38,7 @@ export function Sidebar({ mobile = false }: SidebarProps) {
     <aside
       className={cn(
         'rail flex h-full flex-col transition-[width] duration-200',
-        collapsed ? 'w-[72px]' : 'w-[228px]',
+        collapsed ? 'w-[72px]' : 'w-[196px]',
       )}
     >
       {/* ───── Logotip ───── */}
@@ -92,7 +92,7 @@ export function Sidebar({ mobile = false }: SidebarProps) {
               >
                 {({ isActive }) => (
                   <>
-                    <item.icon className="size-[18px] shrink-0" strokeWidth={isActive ? 2.1 : 1.7} />
+                    <item.icon className="size-[17px] shrink-0" strokeWidth={isActive ? 2.1 : 1.7} />
                     {!collapsed ? <span className="truncate">{item.label}</span> : null}
                   </>
                 )}

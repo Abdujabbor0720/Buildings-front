@@ -6,7 +6,7 @@ import { formatDateTimeUz } from '@/shared/utils/date.utils';
 import { useFilterParams } from '@/store/filters.store';
 import { DeadlineDonut } from './components/DeadlineDonut';
 import { DelayReasons } from './components/DelayReasons';
-import { DistrictMap } from './components/DistrictMap';
+import { DistrictMap, DistrictMapLegend } from './components/DistrictMap';
 import { DistrictTable } from './components/DistrictTable';
 import { KpiCards, KpiCardsSkeleton } from './components/KpiCards';
 import { RecentPhotos } from './components/RecentPhotos';
@@ -58,7 +58,9 @@ export default function DashboardPage() {
             ikki kartaning umumiy balandligiga TO‘LADI. Busiz ularning
             ostida katta bo‘sh joy qolardi. */}
         <Card className="flex flex-col xl:col-span-5">
-          <CardHeader title="Andijon viloyati xaritasi" moreTo="/map" moreLabel="Kattalashtirish" />
+          {/* ⚠️ Afsona SARLAVHA qatorida (`action`), xarita ustida emas:
+              suzuvchi afsona o‘ng yuqoridagi tumanlarni yopib qo‘yardi. */}
+          <CardHeader title="Andijon viloyati xaritasi" action={<DistrictMapLegend />} />
           <CardBody className="flex min-h-0 flex-1">
             <DistrictMap geojson={geojson.data} className="flex-1" heightClass="h-full min-h-[300px]" />
           </CardBody>

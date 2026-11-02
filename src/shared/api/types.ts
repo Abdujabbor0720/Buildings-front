@@ -520,7 +520,14 @@ export interface DistrictStats {
 
 export interface DeadlineBucket {
   label: string;
+  /**
+   * ⚠️ `null` IKKI XIL guruhda uchraydi: «Muddati o‘tgan» va «2028+»
+   * (ochiq guruh). Shuning uchun u HOLAT BELGISI sifatida
+   * ishlatilmaydi — buning uchun `overdue` bor.
+   */
   year: number | null;
+  /** Muddati ALLAQACHON o‘tgan guruh — tartibli rampadan tashqarida. */
+  overdue: boolean;
   count: number;
   percent: number;
   color: string;

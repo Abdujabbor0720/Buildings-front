@@ -126,19 +126,32 @@ export function DistrictMap({
         <MapControls fullscreen={fullscreen} onToggleFullscreen={() => setFullscreen((value) => !value)} />
       </MapContainer>
 
-      {/* ───── Afsona ───── */}
-      <div className="surface-blur pointer-events-none absolute top-3 right-3 z-[400] flex flex-wrap justify-end gap-x-3 gap-y-1 rounded-lg px-2.5 py-1.5 shadow-[0_0_0_1px_rgb(16_42_76/0.06)]">
-        {HEALTH_LEGEND.map((health) => (
-          <span key={health} className="flex items-center gap-1.5 text-micro text-muted">
-            {/* Holat belgisi — DOIRA (turkum belgisi kvadrat). */}
-            <span
-              className="size-2 rounded-full"
-              style={{ backgroundColor: palette.statusHex(HEALTH_META[health]) }}
-            />
-            {LEGEND_LABELS[health]}
-          </span>
-        ))}
-      </div>
+    </div>
+  );
+}
+
+/**
+ * XARITA AFSONASI — kartaning SARLAVHA qatorida, xarita USTIDA emas.
+ *
+ * ⚠️ Ilgari u xaritaning o‘ng yuqori burchagida suzib turardi va aynan
+ * o‘sha joydagi tumanlarni (Namangan tomondagilar) yopib qo‘yardi.
+ * Sarlavha qatorida esa u hech narsani to‘smaydi va karta ochilishi
+ * bilan ko‘zga tashlanadi — xarita qanday o‘qilishini AVVAL aytadi.
+ */
+export function DistrictMapLegend() {
+  const palette = useChartColors();
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      {HEALTH_LEGEND.map((health) => (
+        <span key={health} className="flex items-center gap-1.5 text-micro text-muted">
+          {/* Holat belgisi — DOIRA (turkum belgisi kvadrat). */}
+          <span
+            className="size-2 shrink-0 rounded-full"
+            style={{ backgroundColor: palette.statusHex(HEALTH_META[health]) }}
+          />
+          {LEGEND_LABELS[health]}
+        </span>
+      ))}
     </div>
   );
 }
@@ -215,17 +228,22 @@ function DistrictLayer({
             key={props.districtId}
             position={[props.centerLat, props.centerLng]}
             eventHandlers={{ click: () => onSelect(props) }}
+            // ⚠️ Kattaroq tuman USTDA chiziladi. Markaziy tumanlar
+            // yonma-yon va ularning yorliqlari kesishadi; tartibsiz
+            // bo‘lsa, kichik tumanning nomi kattasining ustini yopib,
+            // ikkalasi ham o‘qilmay qolardi.
+            zIndexOffset={props.total}
             icon={L.divIcon({
               className: '',
               // ⚠️ `iconSize` BELGI kengligi emas, butun blok kengligi:
               // nom doiradan kengroq bo‘ladi va markazlash shunga qarab
               // hisoblanadi. Tor qilib qo‘yilsa, uzun nomli tuman
               // («Qo‘rg‘ontepa») chapga siljib qolardi.
-              iconSize: [96, size + 16],
-              iconAnchor: [48, (size + 16) / 2],
+              iconSize: [110, size + 18],
+              iconAnchor: [55, (size + 18) / 2],
               html: `<span style="
-                display:flex;flex-direction:column;align-items:center;gap:2px;
-                width:96px;cursor:pointer;
+                display:flex;flex-direction:column;align-items:center;gap:3px;
+                width:110px;cursor:pointer;
               ">
                 <span style="
                   display:grid;place-items:center;
@@ -237,9 +255,11 @@ function DistrictLayer({
                   border:2px solid var(--surface);
                 ">${props.total}</span>
                 <span style="
-                  font:600 10px/1.2 var(--font-sans);
-                  color:var(--ink-body);text-align:center;white-space:nowrap;
-                  text-shadow:0 1px 2px var(--surface),0 0 3px var(--surface);
+                  display:inline-block;padding:1px 5px;border-radius:5px;
+                  background:var(--surface);
+                  box-shadow:0 0 0 1px rgb(16 42 76 / .1);
+                  font:600 9.5px/1.35 var(--font-sans);
+                  color:var(--ink-body);white-space:nowrap;
                 ">${props.shortName}</span>
               </span>`,
             })}

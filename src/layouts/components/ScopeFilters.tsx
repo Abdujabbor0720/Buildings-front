@@ -30,17 +30,18 @@ export function ScopeFilters() {
   }, [districtIds, districts]);
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-2">
       {/* ───── Viloyat ───── */}
       <Popover className="relative">
-        {/* ⚠️ Yorqin to‘ldirilgan tugma EMAS. Sarlavhadagi filtr — kontekst
-            ko‘rsatkichi, chaqiruv (call-to-action) emas; to‘ldirilgan sariq
-            tugma butun ekrandagi eng «baland» element bo‘lib, ma’lumotni
-            bosib ketardi. */}
-        <PopoverButton className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-meta font-medium text-strong transition-colors hover:bg-neutral-100 focus:outline-none dark:hover:bg-white/8">
-          <MapPin className="size-3.5 text-brand-600 dark:text-brand-400" />
+        {/* ⚠️ Faqat BIRINCHI filtr to‘ldirilgan — u butun ekrandagi
+            ma’lumot qaysi hududga tegishli ekanini aytadi va qolgan
+            boshqaruvlar unga bo‘ysunadi. Ikkinchi, uchinchisi ham
+            to‘ldirilsa, sarlavha uchta bir xil «tugma» qatoriga aylanib,
+            qaysi biri asosiy ekani yo‘qolardi. */}
+        <PopoverButton className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand-500 px-2.5 text-meta font-semibold text-white transition-colors hover:bg-brand-600 focus:outline-none">
+          <MapPin className="size-3.5" />
           <span className="hidden sm:inline">Viloyat</span>
-          <ChevronDown className="text-faint size-3.5" />
+          <ChevronDown className="size-3.5 opacity-80" />
         </PopoverButton>
         <DropdownPanel>
           {({ close }) => (
@@ -72,7 +73,7 @@ export function ScopeFilters() {
 
       {/* ───── Tuman ───── */}
       <Popover className="relative hidden md:block">
-        <PopoverButton className="inline-flex h-8 max-w-[280px] items-center gap-1.5 rounded-full px-2.5 text-meta text-strong transition-colors hover:bg-neutral-100 focus:outline-none dark:hover:bg-white/8">
+        <PopoverButton className="inline-flex h-8 max-w-[280px] items-center gap-1.5 rounded-lg surface px-2.5 text-meta text-strong shadow-[0_0_0_1px_rgb(16_42_76/0.1)] transition-colors hover:bg-neutral-100 focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)] dark:hover:bg-white/8">
           <span className="truncate">{activeRegion?.name ?? 'Viloyat'}</span>
           <span className="text-faint shrink-0">·</span>
           <span className="shrink-0 truncate text-muted">{districtLabel}</span>
@@ -114,11 +115,9 @@ export function ScopeFilters() {
         </DropdownPanel>
       </Popover>
 
-      <span className="bg-line mx-1 h-4 w-px" aria-hidden />
-
       {/* ───── Yil oralig‘i ───── */}
       <Popover className="relative">
-        <PopoverButton className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-meta text-strong transition-colors hover:bg-neutral-100 focus:outline-none dark:hover:bg-white/8">
+        <PopoverButton className="inline-flex h-8 items-center gap-1.5 rounded-lg surface px-2.5 text-meta text-strong shadow-[0_0_0_1px_rgb(16_42_76/0.1)] transition-colors hover:bg-neutral-100 focus:outline-none dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)] dark:hover:bg-white/8">
           <CalendarRange className="text-faint size-3.5" />
           <span className="num text-meta">
             {yearFrom} – {yearTo}

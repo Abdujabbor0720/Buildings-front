@@ -259,21 +259,6 @@ export function progressTone(percent: number): string {
 }
 
 /**
- * MUDDAT RAMPASI — tartibli (ordinal) qator, turkum EMAS.
- *
- * «Muddati o‘tgan → joriy yil → keyingi → undan keyin» tabiiy tartibga ega,
- * shuning uchun bitta rang oilasining yorug‘lik pog‘onalari ishlatiladi:
- * yaqin muddat KO‘ZGA KO‘PROQ tashlanadi.
- *
- * ⚠️ Qorong‘i rejimda tartib TESKARI: oq fonda to‘q rang, qora fonda esa
- * yorug‘ rang ajralib turadi. Avtomatik «aylantirish» ishlamaydi —
- * shuning uchun ikkala qator alohida yozilgan va validatordan o‘tgan
- * (monoton yorug‘lik, qadam ΔL ≥ 0.06, yorug‘ uchi fon bilan ≥ 2:1).
- */
-export const DEADLINE_RAMP = ['#0038B2', '#005FDB', '#598CDC', '#7DB2FF'] as const;
-export const DEADLINE_RAMP_DARK = ['#8FBFFF', '#4794FF', '#206EE3', '#0047BA'] as const;
-
-/**
  * XARITA ZICHLIGI — obyekt SONI bo‘yicha ketma-ket (sequential) shkala.
  *
  * Bitta rang oilasi (ko‘k), yorqinlik monoton pasayadi: ko‘proq obyekt =
@@ -292,6 +277,28 @@ export const DEADLINE_RAMP_DARK = ['#8FBFFF', '#4794FF', '#206EE3', '#0047BA'] a
 export const DENSITY_RAMP = ['#eff4fc', '#d5e2f7', '#bbd1f3', '#a0bff0', '#86aeec', '#6b9ce8'] as const;
 export const DENSITY_RAMP_DARK = ['#11151c', '#172438', '#1e3457', '#244477', '#2a5598', '#3066bb'] as const;
 
-/** «Muddati o‘tgan» — bu TARTIB emas, HOLAT: rampadan tashqarida. */
+/**
+ * MUDDAT SHKALASI — «qachon topshiriladi» bo‘yicha E’TIBOR darajasi.
+ *
+ * Uchta qadam, uch xil ma’no:
+ *   ko‘k    — JORIY yil: hozir nazoratda bo‘lishi kerak
+ *   yashil  — KEYINGI yil: rejada, muammo yo‘q
+ *   kulrang — UNDAN KEYIN: bugun e’tibor talab qilmaydi
+ *
+ * ⚠️ Kulrangning to‘yinganligi ataylab PAST (validator uni «kulrang
+ * bo‘lib o‘qiladi» deb belgilaydi) — aynan shu kerak: uzoq kelajakdagi
+ * obyektlar diagrammada orqa planga chiqishi lozim. U turkum rangi
+ * emas, SUSTLASHTIRISH.
+ *
+ * ⚠️ Qorong‘i rejim avtomatik «aylantirish» EMAS. Kulrangni shunchaki
+ * yoritib qo‘yilsa, u ko‘k bilan qo‘shilib ketardi (normal ko‘rishda
+ * ΔE 13.7, chegara 15); shuning uchun qora fonda u aksincha TO‘QROQ
+ * olinadi va shkala ΔE 18.2 ga chiqadi.
+ *
+ * ⚠️ «Muddati o‘tgan» bu shkalaga KIRMAYDI — u holat, tartib emas.
+ */
+export const DEADLINE_RAMP = ['#0A6CF0', '#2FA86B', '#A3AFBC'] as const;
+export const DEADLINE_RAMP_DARK = ['#4D93F6', '#34A971', '#636F7D'] as const;
+
 export const DEADLINE_OVERDUE_HEX = '#AC1730';
 export const DEADLINE_OVERDUE_HEX_DARK = '#B63039';

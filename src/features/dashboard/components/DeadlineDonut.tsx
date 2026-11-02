@@ -22,14 +22,19 @@ export function DeadlineDonut({ buckets }: { buckets: DeadlineBucket[] }) {
 
   /** «Muddati o‘tgan» rampadan tashqarida — qolganlari 0,1,2… bo‘yicha. */
   const colored = useMemo(() => {
-    // «Muddati o‘tgan» rampadan tashqarida, shuning uchun pog‘ona raqami
-    // faqat YILLI guruhlar orasida sanaladi.
-    const yearly = buckets.filter((bucket) => bucket.year !== null);
-    return buckets.map((bucket) => {
-      const overdue = bucket.year === null;
-      const rank = overdue ? 0 : yearly.indexOf(bucket);
-      return { ...bucket, hex: deadlineHex(rank, yearly.length, overdue) };
-    });
+    // ⚠️ Guruh `bucket.overdue` BO‘YICHA ajratiladi, `year === null`
+    // bo‘yicha EMAS: `year` «2028+» da ham `null` bo‘ladi (u ochiq
+    // guruh, bitta yil emas) va u qizil «muddati o‘tgan» rangida
+    // chizilib, kelajakdagi obyektlar kechikkanday ko‘rinardi.
+    const ranked = buckets.filter((bucket) => !bucket.overdue);
+    return buckets.map((bucket) => ({
+      ...bucket,
+      hex: deadlineHex(
+        bucket.overdue ? 0 : ranked.indexOf(bucket),
+        ranked.length,
+        bucket.overdue,
+      ),
+    }));
   }, [buckets, deadlineHex]);
 
   const tabs = useMemo<ReadonlyArray<TabOption<string>>>(
