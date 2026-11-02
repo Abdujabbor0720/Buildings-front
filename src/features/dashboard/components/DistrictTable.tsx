@@ -36,7 +36,16 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
     <div className="flex min-h-0 flex-1 flex-col">
       <Tabs options={TABS} value={filter} onChange={setFilter} className="mb-3 shrink-0" />
 
-      <TableWrap className="min-h-0 flex-1 overflow-y-auto">
+      {/* ⚠️ BALANDLIK CHEGARALANADI — 12 qator ko‘rinadi, qolgani skroll.
+          Chegarasiz 16 ta tuman kartani ~500px ga cho‘zadi; karta esa
+          gridning o‘sha QATORIDAGI eng balandi bo‘lgani uchun xarita ham
+          cho‘ziladi, o‘ng ustundagi «Muddatlar» va «Qurilish turlari»
+          esa tepada qolib, ostida katta bo‘sh joy paydo bo‘ladi.
+
+          Hisob: sarlavha 28px + 12 × 31px qator = 400px. Qator
+          balandligi `Table.tsx` dagi `py-1.5` bilan bog‘liq — u
+          o‘zgarsa, bu son ham qayta hisoblanishi kerak. */}
+      <TableWrap className="max-h-[400px] min-h-0 flex-1 overflow-y-auto">
         <Table>
           <THead>
             <Tr>

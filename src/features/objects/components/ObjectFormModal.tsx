@@ -7,8 +7,8 @@ import {
   useCreateObject,
   useCustomers,
   useDistricts,
-  useResponsibles,
   useUpdateObject,
+  useUsers,
   type CreateObjectBody,
 } from '@/shared/api/queries';
 import type { ConstructionObject } from '@/shared/api/types';
@@ -110,7 +110,21 @@ export function ObjectFormModal({ open, onClose, object }: Props) {
   const districts = useDistricts(params.regionId);
   const customers = useCustomers({ limit: 200 });
   const contractors = useContractors({ limit: 200, status: 'active' });
-  const responsibles = useResponsibles(params.regionId);
+  /**
+   * ⚠️ `useResponsibles` ISHLATILMAYDI. U mas'ullar HISOBOTI uchun:
+   * so‘rovida `HAVING COUNT(objects) > 0` bor, ya'ni allaqachon obyekti
+   * bor odamlarnigina qaytaradi. Tanlov ro‘yxati sifatida ishlatilsa,
+   * yangi kuratorga BIRINCHI obyektni hech qachon biriktirib
+   * bo‘lmasdi — ro‘yxatda u umuman ko‘rinmasdi.
+   *
+   * Rollar: kurator, tuman va viloyat admini. Pudratchi vakili
+   * (tashqi odam) va ko‘ruvchi mas'ul bo‘la olmaydi.
+   */
+  const responsibles = useUsers({
+    role: 'supervisor,district_admin,region_admin',
+    isActive: true,
+    limit: 200,
+  });
   const create = useCreateObject();
   const update = useUpdateObject(object?.id ?? '');
   const pending = create.isPending || update.isPending;
@@ -320,7 +334,7 @@ export function ObjectFormModal({ open, onClose, object }: Props) {
             placeholder="— tanlanmagan —"
             value={form.responsibleId}
             onChange={(e) => set('responsibleId', e.target.value)}
-            options={(responsibles.data ?? []).map(({ user }) => {
+            options={(responsibles.data?.items ?? []).map((user) => {
               const name = `${user.lastName} ${user.firstName}`.trim();
               return {
                 value: user.id,
