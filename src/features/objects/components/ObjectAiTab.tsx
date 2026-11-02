@@ -62,12 +62,21 @@ export function ObjectAiTab({ analyses, isLoading }: { analyses: AiAnalysis[]; i
                     Hisob-kitob ma’lumotlari
                   </summary>
                   <dl className="mt-2 space-y-1">
-                    {Object.entries(analysis.details).map(([key, value]) => (
-                      <div key={key} className="flex justify-between gap-3 text-micro">
-                        <dt className="text-muted">{DETAIL_LABELS[key] ?? key}</dt>
-                        <dd className="num font-medium text-strong">{renderValue(value)}</dd>
-                      </div>
-                    ))}
+                    {Object.entries(analysis.details).map(([key, value]) =>
+                      // ⚠️ Ichma-ich obyekt (`factors`) ALOHIDA chiziladi.
+                      // Ilgari u `JSON.stringify` bilan xom holda
+                      // chiqardi: ekranda
+                      // `{"gap":8.544000000000006,"delay":12,…}` turardi —
+                      // hokim uchun bu o‘qib bo‘lmaydigan matn.
+                      isRecord(value) ? (
+                        <FactorBreakdown key={key} factors={value} />
+                      ) : (
+                        <div key={key} className="flex justify-between gap-3 text-micro">
+                          <dt className="text-muted">{DETAIL_LABELS[key] ?? key}</dt>
+                          <dd className="num font-medium text-strong">{renderValue(value)}</dd>
+                        </div>
+                      ),
+                    )}
                   </dl>
                 </details>
               ) : null}
@@ -94,9 +103,88 @@ const DETAIL_LABELS: Record<string, string> = {
   deviation: 'Og‘ish, %',
 };
 
+/**
+ * RISK BALLARI — har omilning ulushi va SHIFTI.
+ *
+ * Shiftlar `ai-engine.helpers.ts` dagi `scoreRisk()` bilan AYNI
+ * bo‘lishi shart: ular shu yerda qayta yozilgan, chunki server
+ * faqat hisoblangan ballni yuboradi, shiftni emas.
+ *
+ * ⚠️ Shift KO‘RSATILISHI shart. «Kechikish 12» o‘zicha hech nima
+ * demaydi; «12 / 30» esa bu omil o‘z chegarasining qanchasini
+ * egallaganini darhol aytadi — risk bahosi aynan shundan yig‘iladi.
+ */
+const FACTOR_META: Record<string, { label: string; max: number }> = {
+  delay: { label: 'Kechikish', max: 30 },
+  gap: { label: 'Rejadan ortda', max: 25 },
+  openIssues: { label: 'Ochiq muammolar', max: 20 },
+  reporting: { label: 'Hisobot berilmagani', max: 15 },
+  funding: { label: 'Moliyalashtirilmagani', max: 10 },
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function FactorBreakdown({ factors }: { factors: Record<string, unknown> }) {
+  const rows = Object.entries(factors)
+    .filter(([, value]) => typeof value === 'number')
+    .map(([key, value]) => ({
+      key,
+      value: value as number,
+      meta: FACTOR_META[key],
+    }))
+    // Eng katta hissa yuqorida — «nega risk yuqori» degan savolga
+    // birinchi qator javob beradi.
+    .sort((a, b) => b.value - a.value);
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="pt-1">
+      <dt className="text-micro text-muted">Risk ballari (qaysi omil qancha qo‘shdi)</dt>
+      <dd className="mt-1 space-y-1">
+        {rows.map(({ key, value, meta }) => {
+          const max = meta?.max ?? 100;
+          return (
+            <div key={key} className="flex items-center gap-2 text-micro">
+              <span className="w-[108px] shrink-0 truncate text-muted">
+                {meta?.label ?? key}
+              </span>
+              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+                <span
+                  className="block h-full rounded-full bg-danger-400"
+                  style={{ width: `${Math.min(100, (value / max) * 100)}%` }}
+                />
+              </span>
+              <span className="num w-12 shrink-0 text-right font-medium text-strong">
+                {round2(value)}
+                <span className="text-faint font-normal"> / {max}</span>
+              </span>
+            </div>
+          );
+        })}
+      </dd>
+    </div>
+  );
+}
+
+/**
+ * ⚠️ Suzuvchi nuqtali son YAXLITLANADI. `8.544000000000006` —
+ * ikkilik kasr xatosi; ekranda u «tizim buzuq» taassurotini beradi.
+ */
+function round2(value: number): number {
+  return Number(value.toFixed(2));
+}
+
 function renderValue(value: unknown): string {
   if (value === null || value === undefined) return '—';
-  if (typeof value === 'number') return String(Number(value.toFixed(2)));
-  if (typeof value === 'object') return JSON.stringify(value);
+  if (typeof value === 'number') return String(round2(value));
+  if (Array.isArray(value)) return value.length ? value.map(renderValue).join(', ') : '—';
+  // ⚠️ Bu yerga ichma-ich obyekt TUSHMASLIGI kerak — u `FactorBreakdown`
+  // bilan chiziladi. Yangi tur paydo bo‘lsa, xom JSON o‘rniga tushunarli
+  // belgi qaytariladi.
+  if (typeof value === 'object') return '—';
+  if (typeof value === 'boolean') return value ? 'ha' : 'yo‘q';
   return String(value);
 }
