@@ -1,4 +1,4 @@
-import { Download, Filter, Plus, X } from 'lucide-react';
+import { Download, Filter, Plus, Upload, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -15,6 +15,8 @@ import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatCount } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
 import { useFiltersStore } from '@/store/filters.store';
+import { ImportObjectsModal } from './components/ImportObjectsModal';
+import { NewObjectModal } from './components/NewObjectModal';
 
 const HEALTH_OPTIONS: Array<{ value: ObjectHealth | ''; label: string }> = [
   { value: '', label: 'Barcha holatlar' },
@@ -51,6 +53,8 @@ export default function ObjectsPage() {
   const [sortBy, setSortBy] = useState('updatedAt');
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
   const [exporting, setExporting] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const { data: catalogs } = useCatalogs();
   const { data: districts } = useDistricts(regionId ?? undefined);
@@ -126,10 +130,23 @@ export default function ObjectsPage() {
                 Excel
               </Button>
             ) : null}
+            {/* ⚠️ Ikkala tugma ham AYNI ruxsatga bog‘langan
+                (`objects.create`): ommaviy yuklash — bu baribir obyekt
+                yaratish, faqat ko‘pi birdan. Yumshoqroq shart qo‘yilsa,
+                Excel orqali huquq oshirib olinardi. */}
             {can('objects.create') ? (
-              <Button onClick={() => toast('Obyekt qo‘shish formasi — keyingi bosqichda', { icon: 'ℹ️' })} leftIcon={<Plus className="size-4" />}>
-                Yangi obyekt
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => setImportOpen(true)}
+                  leftIcon={<Upload className="size-4" />}
+                >
+                  Excel’dan yuklash
+                </Button>
+                <Button onClick={() => setCreateOpen(true)} leftIcon={<Plus className="size-4" />}>
+                  Yangi obyekt
+                </Button>
+              </>
             ) : null}
           </>
         }
@@ -275,6 +292,8 @@ export default function ObjectsPage() {
           )}
         </div>
       </Card>
+      <NewObjectModal open={createOpen} onClose={() => setCreateOpen(false)} />
+      <ImportObjectsModal open={importOpen} onClose={() => setImportOpen(false)} />
     </>
   );
 }

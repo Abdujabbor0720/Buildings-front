@@ -152,7 +152,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       className={cn(FIELD_BASE, 'h-9 appearance-none bg-no-repeat pr-8', error && FIELD_ERROR, className)}
       style={{
         backgroundImage:
-          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238a8a93' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E\")",
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2394a6bd' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E\")",
         backgroundPosition: 'right 0.65rem center',
       }}
       {...rest}

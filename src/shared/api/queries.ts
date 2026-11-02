@@ -5,7 +5,16 @@ import {
   useQueryClient,
   type UseQueryOptions,
 } from '@tanstack/react-query';
-import { apiDelete, apiGet, apiGetPaginated, apiPatch, apiPost, apiPut, apiUpload } from './client';
+import {
+  apiDelete,
+  apiDownload,
+  apiGet,
+  apiGetPaginated,
+  apiPatch,
+  apiPost,
+  apiPut,
+  apiUpload,
+} from './client';
 import type {
   AiAnalysis,
   AiOverview,
@@ -236,6 +245,99 @@ export function useAddProgress(objectId: string) {
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });
+}
+
+/* ───────────────── Obyekt yaratish va Excel import ───────────────── */
+
+export interface CreateObjectBody {
+  name: string;
+  districtId: string;
+  typeId: string;
+  totalCost: string;
+  plannedStartDate: string;
+  plannedEndDate: string;
+  description?: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+  customerId?: string;
+  contractorId?: string;
+  responsibleId?: string;
+  fundingSourceId?: string;
+  capacity?: number;
+  capacityUnit?: string;
+  floors?: number;
+}
+
+export function useCreateObject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateObjectBody) => apiPost<ConstructionObject>('/objects', body),
+    onSuccess: () => {
+      // ⚠️ Yangi obyekt ro‘yxatni ham, DASHBOARDNI ham eskirtiradi:
+      // kartalardagi sonlar va tumanlar kesimi darhol o‘zgaradi.
+      void queryClient.invalidateQueries({ queryKey: ['objects'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
+export interface ImportRowIssue {
+  rowNumber: number;
+  column: string | null;
+  message: string;
+}
+
+export interface ImportRowPreview {
+  rowNumber: number;
+  name: string;
+  districtName: string;
+  typeName: string;
+  ok: boolean;
+}
+
+export interface ImportReport {
+  totalRows: number;
+  validRows: number;
+  dryRun: boolean;
+  created: number;
+  errors: ImportRowIssue[];
+  warnings: ImportRowIssue[];
+  rows: ImportRowPreview[];
+}
+
+/**
+ * ⚠️ `dryRun` MAJBURIY parametr, sukut qiymati yo‘q. Chaqiruvchi har
+ * safar «tekshiryapmanmi yoki yozyapmanmi» degan savolga ongli javob
+ * berishi kerak — sukut bo‘lsa, kimdir uni tushirib qoldirib, 500 ta
+ * obyektni bexosdan yozib yuborardi.
+ */
+export function useImportObjects() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ file, dryRun }: { file: File; dryRun: boolean }) =>
+      apiUpload<ImportReport>('/objects/import', [file], {
+        field: 'file',
+        fields: { dryRun: dryRun ? 'true' : 'false' },
+      }),
+    onSuccess: (report) => {
+      if (report.created > 0) {
+        void queryClient.invalidateQueries({ queryKey: ['objects'] });
+        void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      }
+    },
+  });
+}
+
+/**
+ * Shablonni yuklab olish.
+ *
+ * ⚠️ Oddiy `<a href>` ISHLAMAYDI: yo‘l `Authorization` sarlavhasini
+ * talab qiladi, brauzer esa havolaga uni qo‘shmaydi — javob 401 bo‘lib,
+ * foydalanuvchi buzuq fayl olardi.
+ */
+export function downloadImportTemplate(): Promise<void> {
+  return apiDownload('/objects/import/template', 'obyektlar-shablon.xlsx');
 }
 
 /* ───────────────────────── Kalendar ───────────────────────── */

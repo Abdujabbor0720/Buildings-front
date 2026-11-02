@@ -199,11 +199,20 @@ export async function apiDelete<T>(url: string): Promise<T> {
 export async function apiUpload<T>(
   url: string,
   files: File[],
-  options: { field?: string; subdir?: string; onProgress?: (percent: number) => void } = {},
+  options: {
+    field?: string;
+    subdir?: string;
+    /** Fayl bilan BIRGA ketadigan matnli maydonlar (`dryRun` kabi). */
+    fields?: Record<string, string>;
+    onProgress?: (percent: number) => void;
+  } = {},
 ): Promise<T> {
   const form = new FormData();
   const field = options.field ?? (files.length > 1 ? 'files' : 'file');
   for (const file of files) form.append(field, file);
+  // ⚠️ Maydonlar FAYLDAN KEYIN qo‘shiladi — multer ularni oqim tartibida
+  // o‘qiydi va fayldan oldin kelgan maydon ba’zi serverlarda yo‘qolardi.
+  for (const [key, value] of Object.entries(options.fields ?? {})) form.append(key, value);
 
   const { data } = await http.post<ApiEnvelope<T>>(url, form, {
     params: options.subdir ? { subdir: options.subdir } : undefined,
