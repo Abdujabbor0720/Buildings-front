@@ -9,6 +9,7 @@ export { Field, Input, SearchInput, Select, Textarea } from './Form';
 export { Modal } from './Modal';
 export { Pagination } from './Pagination';
 export { Avatar } from './Avatar';
+export { BrandMark } from './BrandMark';
 export { SparkBars } from './SparkBars';
 export { MiniDonut } from './MiniDonut';
 export { PageHeader, StatPills } from './PageHeader';

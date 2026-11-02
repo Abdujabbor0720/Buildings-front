@@ -2,7 +2,7 @@ import { Eye, EyeOff, Headset, Lock, Mail } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/api/client';
-import { Button, Input } from '@/shared/ui';
+import { BrandMark, Button, Input } from '@/shared/ui';
 import { useAuthStore } from '@/store/auth.store';
 
 /** Modul yuklanganda BIR MARTA hisoblanadi — har renderda emas. */
@@ -43,13 +43,14 @@ export function LoginPage() {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
       {/* ───── Chap taraf: brend ─────
-          ⚠️ To‘q ko‘k gradient panel ATAYLAB tashlandi. Uning o‘rnida
-          «qog‘oz» fon va yirik tipografika: ekran reklama bannerga emas,
-          rasmiy hujjat muqovasiga o‘xshashi kerak. */}
+          ⚠️ GRADIENT panel ATAYLAB tashlandi. Uning o‘rnida tekis
+          yorug‘ fon va yirik tipografika: ekran reklama bannerga emas,
+          rasmiy hujjat muqovasiga o‘xshashi kerak. To‘q ko‘k bu tizimda
+          yon menyuga tegishli — kirish ekranida u takrorlanmaydi. */}
       <aside className="surface-sunken relative hidden overflow-hidden border-r border-subtle p-12 lg:flex lg:flex-col lg:justify-between xl:p-16">
         <div className="relative">
           <div className="flex items-center gap-3">
-            <BrandMark />
+            <BrandMark size={40} />
             <div>
               <p className="text-ui leading-tight font-semibold text-strong">Andijon viloyati hokimligi</p>
               <p className="text-faint text-micro leading-tight">Qurilish obyektlari nazorati tizimi</p>
@@ -67,7 +68,7 @@ export function LoginPage() {
           </p>
         </div>
 
-        {/* Raqamlar — serif, yirik: sahifaning ikkinchi urg‘u nuqtasi. */}
+        {/* Raqamlar — yirik va qalin: sahifaning ikkinchi urg‘u nuqtasi. */}
         <div className="relative mt-12 grid grid-cols-3 gap-6 border-t border-subtle pt-7">
           {FACTS.map((fact) => (
             <div key={fact.label}>
@@ -89,7 +90,7 @@ export function LoginPage() {
       <main className="surface flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-sm">
           <div className="lg:hidden">
-            <BrandMark />
+            <BrandMark size={40} />
           </div>
 
           <h2 className="t-page mt-6 text-[26px] lg:mt-0">Tizimga kirish</h2>
@@ -164,19 +165,3 @@ export function LoginPage() {
 }
 
 /** Brend belgisi — yon menyudagi bilan AYNI (ikki joyda ikki xil bo‘lmasin). */
-function BrandMark() {
-  return (
-    <span className="grid size-10 shrink-0 place-items-center rounded-[9px] bg-brand-500 shadow-[0_1px_3px_rgb(179_89_0/0.35)]">
-      <svg viewBox="0 0 24 24" className="size-[22px]" fill="none" aria-hidden>
-        <path d="M3.5 21V8.6l6.2-3.6 6.2 3.6V21H3.5Z" fill="#fff" fillOpacity="0.95" />
-        <path d="M16.2 21v-8.1l4.3-2.5v10.6h-4.3Z" fill="#fff" fillOpacity="0.62" />
-        <g fill="#E87200">
-          <rect x="5.9" y="10.6" width="2.1" height="2.1" rx="0.4" />
-          <rect x="11.1" y="10.6" width="2.1" height="2.1" rx="0.4" />
-          <rect x="5.9" y="14.6" width="2.1" height="2.1" rx="0.4" />
-          <rect x="11.1" y="14.6" width="2.1" height="2.1" rx="0.4" />
-        </g>
-      </svg>
-    </span>
-  );
-}

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Headset, PanelLeftClose, PanelLeftOpen, Send, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '@/shared/constants/nav';
+import { BrandMark } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { useAuthStore } from '@/store/auth.store';
 import { useUiStore } from '@/store/ui.store';
@@ -47,7 +48,7 @@ export function Sidebar({ mobile = false }: SidebarProps) {
           collapsed && 'justify-center px-2',
         )}
       >
-        <BuildingMark />
+        <BrandMark size={36} />
         {!collapsed ? (
           <div className="min-w-0 flex-1">
             <p className="rail-ink truncate text-ui leading-[1.2] font-semibold tracking-[-0.015em]">
@@ -173,26 +174,6 @@ function StoreLink({ href, label, children }: { href: string; label: string; chi
     >
       {children}
     </a>
-  );
-}
-
-/** Brend belgisi — to‘q sariq kvadrat + oq bino silueti.
- *  ⚠️ To‘q sariq — panelda YAGONA iliq rang. U logotipni ko‘k menyudan
- *  ajratib turadi; boshqa joyda ishlatilsa, bu vazifani yo‘qotadi. */
-function BuildingMark() {
-  return (
-    <span className="grid size-9 shrink-0 place-items-center rounded-[9px] bg-warn-500 shadow-[0_2px_6px_rgb(226_112_28/0.4)]">
-      <svg viewBox="0 0 24 24" className="size-[20px]" fill="none" aria-hidden>
-        <path d="M3.5 21V8.6l6.2-3.6 6.2 3.6V21H3.5Z" fill="#fff" fillOpacity="0.95" />
-        <path d="M16.2 21v-8.1l4.3-2.5v10.6h-4.3Z" fill="#fff" fillOpacity="0.6" />
-        <g fill="#C25A13">
-          <rect x="5.9" y="10.6" width="2.1" height="2.1" rx="0.4" />
-          <rect x="11.1" y="10.6" width="2.1" height="2.1" rx="0.4" />
-          <rect x="5.9" y="14.6" width="2.1" height="2.1" rx="0.4" />
-          <rect x="11.1" y="14.6" width="2.1" height="2.1" rx="0.4" />
-        </g>
-      </svg>
-    </span>
   );
 }
 
