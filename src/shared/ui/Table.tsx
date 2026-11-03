@@ -2,9 +2,18 @@ import type { ReactNode, ThHTMLAttributes, TdHTMLAttributes } from 'react';
 import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
+/**
+ * Jadval o‘ralmasi — kartaning chekkasigacha cho‘ziladi.
+ *
+ * ⚠️ `-mx-3.5` KARTA TO‘LDIRISHI bilan AYNI bo‘lishi shart
+ * (`Card` dagi `p-3.5`). Ular ajralib ketsa, jadval kartadan
+ * tashqariga chiqib (yoki ichkarida qolib) gorizontal skroll
+ * hosil qiladi — bosh sahifadagi jadvallar aynan shu sababdan
+ * qirqilib turgan edi.
+ */
 export function TableWrap({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('-mx-4 overflow-x-auto sm:-mx-5', className)}>
+    <div className={cn('-mx-3.5 overflow-x-auto', className)}>
       <div className="inline-block min-w-full align-middle">{children}</div>
     </div>
   );
@@ -24,10 +33,12 @@ export function Table({ children, className }: { children: ReactNode; className?
 }
 
 /**
- * Jadval sarlavhasi — fonsiz.
- * ⚠️ Kulrang «lenta» ATAYLAB yo‘q: ma’lumot zich bo‘lgan ekranda u yana
- * bitta qator bo‘lib ko‘rinadi. Sarlavhani mayda katta harf va ingichka
- * ajratuvchi chiziq farqlaydi.
+ * Jadval sarlavhasi — YENGIL LENTA bilan.
+ *
+ * ⚠️ Lenta rangi `--surface-muted`, kulrang EMAS: u sahifa foniga
+ * yaqin va qatorlar ustiga «ikkinchi jadval» bo‘lib chiqmaydi.
+ * Lenta sticky sarlavhaning ishlashi uchun ham kerak — fonsiz
+ * sarlavha skroll paytida qatorlar ustiga shaffof bo‘lib tushardi.
  */
 export function THead({ children }: { children: ReactNode }) {
   return <thead>{children}</thead>;
@@ -52,7 +63,7 @@ export function Th({ children, sortKey, activeSort, onSort, align = 'left', clas
         // ⚠️ `border-r` OXIRGI ustunda yo‘q (`last:border-r-0`): aks
         // holda jadvalning o‘ng chekkasida kartaning chegarasi ustiga
         // tushadigan ikkinchi chiziq paydo bo‘lardi.
-        't-label surface sticky top-0 z-10 border-b border-subtle px-3 pt-0.5 pb-1.5 whitespace-nowrap',
+        't-label surface-muted sticky top-0 z-10 border-b border-subtle px-3 py-1.5 whitespace-nowrap',
         'border-r border-cell last:border-r-0',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',

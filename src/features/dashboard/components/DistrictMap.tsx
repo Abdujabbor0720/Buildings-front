@@ -37,7 +37,7 @@ export function DistrictMap({
   onDistrictClick,
   showTiles = false,
   className,
-  heightClass = 'h-[360px]',
+  heightClass = 'h-[300px]',
 }: DistrictMapProps) {
   const [fullscreen, setFullscreen] = useState(false);
   const navigate = useNavigate();
@@ -141,12 +141,15 @@ export function DistrictMap({
 export function DistrictMapLegend() {
   const palette = useChartColors();
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+    /* ⚠️ Afsona ixcham (10px, 1.5px oraliq): u karta sarlavhasi
+       qatorida turadi va kengroq bo‘lsa sarlavhani «Andij…» ga
+       qisqartirib yuborardi. */
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
       {HEALTH_LEGEND.map((health) => (
-        <span key={health} className="flex items-center gap-1.5 text-micro text-muted">
+        <span key={health} className="flex items-center gap-1 text-nano text-muted">
           {/* Holat belgisi — DOIRA (turkum belgisi kvadrat). */}
           <span
-            className="size-2 shrink-0 rounded-full"
+            className="size-1.5 shrink-0 rounded-full"
             style={{ backgroundColor: palette.statusHex(HEALTH_META[health]) }}
           />
           {LEGEND_LABELS[health]}
@@ -190,6 +193,55 @@ const LEGEND_LABELS: Record<ObjectHealth, string> = {
  * `data` o‘zgarganda O‘ZINI YANGILAMAYDI, shuning uchun React uni qayta
  * yaratishi kerak. Busiz filtr o‘zgarganda ranglar eski holida qolardi.
  */
+/**
+ * NOMI KO‘RSATILMAYDIGAN TUMANLAR.
+ *
+ * ⚠️ Andijon shahri, Asaka, Xonobod kabi KICHIK tumanlar viloyat
+ * markazida zich joylashgan va ularning nom yorliqlari bir-birining
+ * ustiga tushib, «Itinko‘l idj» kabi o‘qib bo‘lmas aralashma hosil
+ * qilardi. Eng kichik choraki uchun faqat SANOQ doirasi qoldiriladi —
+ * nom ko‘rsatma (tooltip) da va yonidagi jadvalda baribir bor.
+ *
+ * ⚠️ Chegara MAYDON bo‘yicha, obyektlar soni bo‘yicha EMAS: masala
+ * joyning yetishmasligida, muhimlikda emas.
+ */
+function crowdedDistricts(features: DistrictGeoJson['features']): Set<string> {
+  const spans = features
+    .map((feature) => ({
+      id: feature.properties.districtId,
+      span: bboxSpan(feature.geometry),
+    }))
+    .sort((a, b) => a.span - b.span);
+
+  const hidden = Math.floor(spans.length / 4);
+  return new Set(spans.slice(0, hidden).map((item) => item.id));
+}
+
+/** Geometriya chegaralovchi to‘rtburchagining yuzasi (daraja²). */
+function bboxSpan(geometry: GeoJSON.Geometry | null): number {
+  if (!geometry) return 0;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  const visit = (coords: unknown): void => {
+    if (Array.isArray(coords) && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+      const [x, y] = coords as [number, number];
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+      return;
+    }
+    if (Array.isArray(coords)) coords.forEach(visit);
+  };
+
+  visit((geometry as { coordinates?: unknown }).coordinates);
+  if (minX === Infinity) return 0;
+  return (maxX - minX) * (maxY - minY);
+}
+
 function DistrictLayer({
   geojson,
   onSelect,
@@ -206,6 +258,8 @@ function DistrictLayer({
         .join('|') + (palette.dark ? '|dark' : '|light'),
     [geojson, palette.dark],
   );
+
+  const crowded = useMemo(() => crowdedDistricts(geojson.features), [geojson]);
 
   return (
     <>
@@ -240,6 +294,7 @@ function DistrictLayer({
         const props = feature.properties;
         const hex = palette.statusHex(HEALTH_META[props.dominantHealth]);
         const size = props.total >= 20 ? 30 : props.total >= 10 ? 27 : 24;
+        const showName = !crowded.has(props.districtId);
 
         return (
           <Marker
@@ -272,13 +327,17 @@ function DistrictLayer({
                   box-shadow:0 1px 4px rgba(2,24,58,.3);
                   border:2px solid var(--surface);
                 ">${esc(props.total)}</span>
-                <span style="
+                ${
+                  showName
+                    ? `<span style="
                   display:inline-block;padding:1px 5px;border-radius:5px;
                   background:var(--surface);
                   box-shadow:0 0 0 1px rgb(16 42 76 / .1);
                   font:600 9.5px/1.35 var(--font-sans);
                   color:var(--ink-body);white-space:nowrap;
-                ">${esc(props.shortName)}</span>
+                ">${esc(props.shortName)}</span>`
+                    : ''
+                }
               </span>`,
             })}
           />
@@ -330,15 +389,51 @@ function tooltipHtml(props: DistrictStats, palette: ReturnType<typeof useChartCo
 /** Xarita o‘lchami o‘zgarganda (to‘liq ekran) qayta moslashtiriladi. */
 function BoundsKeeper({ bounds, fullscreen }: { bounds?: L.LatLngBoundsExpression; fullscreen: boolean }) {
   const map = useMap();
+
   useEffect(() => {
     // ⚠️ `invalidateSize` MAJBURIY: konteyner o‘lchami CSS orqali
     // o‘zgarganini Leaflet o‘zi sezmaydi va xarita yarim bo‘sh qoladi.
     const timer = setTimeout(() => {
       map.invalidateSize();
-      if (bounds) map.fitBounds(bounds, { padding: [14, 14] });
+      if (bounds) map.fitBounds(bounds, { padding: [10, 10] });
     }, 220);
     return () => clearTimeout(timer);
   }, [map, bounds, fullscreen]);
+
+  /*
+   * ⚠️ `ResizeObserver` — TAYMERDAN TASHQARI va undan muhimroq.
+   *
+   * Xarita kartasining balandligi gridning o‘sha qatoridagi ENG BALAND
+   * ustundan kelib chiqadi; u esa ma’lumot yuklangach o‘zgaradi.
+   * Qat’iy 220 ms taymer bu lahzani o‘tkazib yuborishi mumkin va
+   * Leaflet eski o‘lchamni keshlab qoladi: chegaralar konteynerning
+   * o‘rtasida kichkina bo‘lib chizilib, atrofida katta bo‘sh joy
+   * qoladi — xarita «buzuq» bo‘lib ko‘rinadi.
+   *
+   * Kuzatuvchi har o‘lcham o‘zgarishida qayta moslaydi, shuning uchun
+   * oyna kattalashganda ham, to‘liq ekranga o‘tganda ham bir xil
+   * ishlaydi.
+   */
+  useEffect(() => {
+    const container = map.getContainer();
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      // Bir kadrga kechiktirish: kuzatuvchi o‘lcham o‘zgarishi
+      // DAVOMIDA bir necha marta ishga tushadi va har safar
+      // `fitBounds` chaqirilsa xarita «titraydi».
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+        if (bounds) map.fitBounds(bounds, { padding: [10, 10], animate: false });
+      });
+    });
+    observer.observe(container);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [map, bounds]);
+
   return null;
 }
 

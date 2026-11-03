@@ -24,21 +24,29 @@ export function TypeBreakdown({ items }: { items: TypeBreakdownItem[] }) {
           <button
             type="button"
             onClick={() => navigate(`/objects?typeIds=${item.typeId}`)}
-            className="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-neutral-100/70 dark:hover:bg-white/6"
+            className="flex w-full items-center gap-1.5 rounded-md px-1 py-[1px] text-left transition-colors hover:bg-neutral-100/70 dark:hover:bg-white/6"
           >
             <span
-              className="size-2.5 shrink-0 rounded-full"
+              className="size-2 shrink-0 rounded-full"
               style={{ backgroundColor: seriesHex(index) }}
             />
-            <span className="min-w-0 flex-1 truncate text-meta">{item.name}</span>
-            <span className="num w-6 shrink-0 text-right text-meta text-strong">{item.count}</span>
-            <span className="h-1.5 w-12 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+            {/* ⚠️ Nom uchun joy BIRINCHI navbatda: «Ta'li…» bo‘lib
+                qirqilgan yorliq hech narsa tushuntirmaydi. Shuning
+                uchun sanoq, chiziq va foiz ustunlari eng kichik
+                o‘lchamda — chiziq 32px, foiz 34px. */}
+            <span className="min-w-0 flex-1 truncate text-micro text-strong" title={item.name}>
+              {item.name}
+            </span>
+            <span className="num w-5 shrink-0 text-right text-micro font-semibold text-strong">
+              {item.count}
+            </span>
+            <span className="h-1.5 w-8 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
               <span
                 className="block h-full rounded-full transition-[width] duration-500"
                 style={{ width: `${(item.count / max) * 100}%`, backgroundColor: seriesHex(index) }}
               />
             </span>
-            <span className="num text-faint w-10 shrink-0 text-right text-meta">
+            <span className="num text-faint w-[34px] shrink-0 text-right text-micro">
               {formatPercent(item.percent)}
             </span>
           </button>

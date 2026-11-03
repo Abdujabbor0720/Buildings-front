@@ -13,6 +13,14 @@ interface TabsProps<T extends string> {
   size?: 'sm' | 'md';
   /** `pill` — karta ichidagi filtr; `underline` — sahifa darajasidagi bo‘lim. */
   variant?: 'pill' | 'underline';
+  /**
+   * Butun kenglikka cho‘ziladi, segmentlar TENG bo‘linadi.
+   *
+   * ⚠️ Tor kartada MAJBURIY: `inline-flex` da segmentlar o‘z matniga
+   * qarab kengayadi va «Barchasi / Reja asosida / Kechikayotgan /
+   * Xavfli» 330px li kartaga sig‘masdan, oxirgisi qirqilib qolardi.
+   */
+  fill?: boolean;
   className?: string;
 }
 
@@ -26,6 +34,7 @@ export function Tabs<T extends string>({
   onChange,
   size = 'sm',
   variant = 'pill',
+  fill,
   className,
 }: TabsProps<T>) {
   if (variant === 'underline') {
@@ -63,7 +72,11 @@ export function Tabs<T extends string>({
   return (
     <div
       role="tablist"
-      className={cn('inline-flex items-center gap-0.5 rounded-lg surface-inset p-0.5', className)}
+      className={cn(
+        'items-center gap-0.5 rounded-lg surface-inset p-0.5',
+        fill ? 'flex w-full' : 'inline-flex',
+        className,
+      )}
     >
       {options.map((option) => {
         const active = option.value === value;
@@ -77,6 +90,7 @@ export function Tabs<T extends string>({
             className={cn(
               'rounded-md font-medium whitespace-nowrap transition-all duration-150',
               size === 'sm' ? 'px-3 py-1 text-meta' : 'px-4 py-1.5 text-ui',
+              fill && 'min-w-0 flex-1 truncate px-0.5 text-nano',
               active
                 ? 'surface text-strong shadow-[0_0_0_1px_rgb(16_42_76/0.08),0_1px_2px_rgb(16_42_76/0.06)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]'
                 : 'text-muted hover:text-strong',

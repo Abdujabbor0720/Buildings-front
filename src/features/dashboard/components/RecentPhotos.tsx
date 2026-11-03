@@ -13,7 +13,7 @@ export function RecentPhotos({ items }: { items: RecentPhotoItem[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
       {items.slice(0, 3).map((item) => (
         <PhotoCard key={item.id} item={item} />
       ))}
@@ -30,7 +30,10 @@ function PhotoCard({ item }: { item: RecentPhotoItem }) {
       to={`/objects/${item.objectId}`}
       className="group overflow-hidden rounded-xl border border-subtle surface transition-shadow hover:shadow-[var(--shadow-raise)]"
     >
-      <div className="relative aspect-[16/10] overflow-hidden surface-muted">
+      {/* ⚠️ Balandlik QAT'IY (nisbat emas): bosh sahifada bu qatorga
+          ~180px ajratilgan va nisbat bilan rasm karta kengligiga
+          bog‘lanib, pastki matnni qirqib yuborardi. */}
+      <div className="relative h-[62px] overflow-hidden surface-muted">
         {src ? (
           <img
             src={src}
@@ -49,19 +52,21 @@ function PhotoCard({ item }: { item: RecentPhotoItem }) {
         </span>
       </div>
 
-      <div className="p-2.5">
-        <p className="truncate text-meta font-medium text-strong">{item.objectName}</p>
-        <p className="num mt-0.5 truncate text-micro text-muted">
-          {formatDateTimeUz(item.capturedAt)}
-        </p>
-
-        <span
-          className={cn('mt-2 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-nano font-medium', verdict.chip)}
-          title={`Ishonch darajasi: ${item.aiConfidence === null ? '—' : `${Math.round(item.aiConfidence * 100)}%`}`}
-        >
-          <Sparkles className="size-2.5" />
-          {verdict.label}
-        </span>
+      <div className="p-2">
+        <p className="truncate text-micro font-medium text-strong">{item.objectName}</p>
+        {/* Sana va AI xulosasi BITTA qatorda — alohida qatorda
+            turganda kartochka 20px baland bo‘lib, uchtasi qatorga
+            sig‘masdi. */}
+        <div className="mt-1 flex items-center justify-between gap-1.5">
+          <span className="num truncate text-nano text-muted">{formatDateTimeUz(item.capturedAt)}</span>
+          <span
+            className={cn('inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-nano font-medium', verdict.chip)}
+            title={`Ishonch darajasi: ${item.aiConfidence === null ? '—' : `${Math.round(item.aiConfidence * 100)}%`}`}
+          >
+            <Sparkles className="size-2.5" />
+            {verdict.label}
+          </span>
+        </div>
       </div>
     </Link>
   );

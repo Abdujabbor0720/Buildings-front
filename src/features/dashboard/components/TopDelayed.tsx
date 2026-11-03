@@ -9,17 +9,23 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
   const navigate = useNavigate();
 
   return (
+    /*
+     * ⚠️ `[&_td]:py-1` — qator 24px. Bosh sahifa bitta ekranga
+     * sig‘ishi kerak va bu jadval uchun ajratilgan joy ~130px:
+     * sukutdagi 31px lik qatorda beshta qator sig‘masdi.
+     * Ustun kengliklari maketdan olingan.
+     */
     <TableWrap>
-      <Table>
+      <Table className="text-micro [&_td]:py-px [&_th]:py-px">
         <THead>
           <Tr>
-            <Th className="w-8 px-2">#</Th>
+            <Th className="w-7 px-2">#</Th>
             <Th className="px-2">Obyekt nomi</Th>
-            <Th className="w-24 px-2">Tuman</Th>
-            <Th className="w-[118px] px-2">Reja muddati</Th>
-            <Th align="right" className="w-[82px] px-2">Kechikish</Th>
-            <Th className="w-[104px] px-2">Bajarilish</Th>
-            <Th className="w-[210px] px-2">Asosiy sabab</Th>
+            <Th className="w-[72px] px-2">Tuman</Th>
+            <Th className="w-[102px] px-2">Reja muddati</Th>
+            <Th align="right" className="w-[62px] px-2">Kechikish</Th>
+            <Th className="w-[92px] px-2">Bajarilish</Th>
+            <Th className="w-[150px] px-2">Asosiy sabab</Th>
           </Tr>
         </THead>
         <TBody>
@@ -29,15 +35,17 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
             items.map((item, index) => (
               <Tr key={item.id} onClick={() => navigate(`/objects/${item.id}`)}>
                 <Td muted className="num px-2 text-meta">{index + 1}</Td>
-                <Td className="max-w-[200px] px-2">
+                <Td className="max-w-[1px] px-2">
                   <span className="block truncate font-medium text-strong">{item.name}</span>
                 </Td>
                 <Td muted className="truncate px-2 whitespace-nowrap">{item.districtName}</Td>
                 <Td className="px-2 text-meta whitespace-nowrap">{formatDateUz(item.plannedEndDate)}</Td>
-                <Td align="right" className="px-2">
-                  <span className="num rounded-full bg-danger-50 px-2 py-0.5 text-meta whitespace-nowrap text-danger-700 ring-1 ring-inset ring-danger-500/15 dark:bg-danger-500/12 dark:text-danger-300 dark:ring-danger-500/25">
-                    {item.delayDays} kun
-                  </span>
+                {/* ⚠️ Maketdagi kabi SOF QIZIL MATN, «pill» emas:
+                    to‘ldirilgan fon qator balandligini 8px oshirardi va
+                    beshta qator ajratilgan joyga sig‘masdi. Rang
+                    o‘zi yetarli signal. */}
+                <Td align="right" className="num px-2 font-semibold whitespace-nowrap text-danger-600 dark:text-danger-400">
+                  {item.delayDays} kun
                 </Td>
                 <Td className="px-2">
                   {/* ⚠️ Rang BAJARILISH FOIZIDAN emas, HOLATDAN. Foiz
@@ -59,7 +67,7 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
                     yeb, «Qurilish materiallari ye…» bo‘lib qirqilishiga
                     sabab bo‘lardi. Sabab — MATN, rang bu yerda hech
                     narsa qo‘shmaydi (yonidagi ustunda allaqachon holat bor). */}
-                <Td className="max-w-[210px] px-2">
+                <Td className="max-w-[150px] px-2">
                   {item.primaryReason ? (
                     <span className="block truncate text-meta text-muted" title={item.primaryReason}>
                       {item.primaryReason}

@@ -113,10 +113,10 @@ export default function DistrictsPage() {
         </Card>
 
         <Card flush>
-          <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+          <div className="px-3.5 pt-3.5">
             <CardHeader title="Batafsil jadval" subtitle="Ustun sarlavhasini bosib saralang" />
           </div>
-          <CardBody className="px-4 pb-4 sm:px-5 sm:pb-5">
+          <CardBody className="px-3.5 pb-3.5">
             <TableWrap>
               <Table>
                 <THead>

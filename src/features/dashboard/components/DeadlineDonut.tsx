@@ -52,52 +52,74 @@ export function DeadlineDonut({ buckets }: { buckets: DeadlineBucket[] }) {
 
   return (
     <>
-      <Tabs options={tabs} value={active} onChange={setActive} className="mb-3 w-full overflow-x-auto" />
+      <Tabs options={tabs} value={active} onChange={setActive} fill className="mb-1.5 shrink-0" />
 
-      <div className="relative h-[112px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={visible.length ? visible : [{ label: '—', count: 1, hex: emptyHex }]}
-              dataKey="count"
-              nameKey="label"
-              innerRadius="70%"
-              outerRadius="100%"
-              // 2px'lik yuza oralig‘i: qo‘shni bo‘laklar bir-biriga
-              // quyilib ketmasligi uchun (rang o‘xshash bo‘lsa ham chegara ko‘rinadi).
-              paddingAngle={visible.length > 1 ? 2 : 0}
-              startAngle={90}
-              endAngle={-270}
-              stroke="none"
-              isAnimationActive={false}
-            >
-              {(visible.length ? visible : [{ hex: emptyHex }]).map((bucket, index) => (
-                <Cell key={index} fill={bucket.hex} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
+      {/*
+        ⚠️ Halqa CHAPDA, ro‘yxat O‘NGDA — ustma-ust emas.
+        Ustma-ust joylashuvda blok ~250px egallardi va o‘ng ustunga
+        ikkinchi karta («Qurilish turlari») sig‘masdi. Yonma-yon
+        shaklda ikkalasi ham bir ekranga tushadi, qiyoslash esa
+        osonlashadi: ulush va raqam bir ko‘z harakatida ko‘rinadi.
+      */}
+      {/*
+        ⚠️ `overflow-hidden` + `min-h-0` MAJBURIY. `items-center` bilan
+        birga, ichki qism konteynerdan baland bo‘lsa, u YUQORIGA ham
+        toshib, tablar ustiga chiqib ketardi — karta «buzuq» bo‘lib
+        ko‘rinardi. Endi halqa mavjud joyga moslashadi.
+      */}
+      <div className="flex min-h-0 flex-1 items-center gap-2.5 overflow-hidden">
+        <div className="relative aspect-square h-full max-h-[104px] shrink-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={visible.length ? visible : [{ label: '—', count: 1, hex: emptyHex }]}
+                dataKey="count"
+                nameKey="label"
+                innerRadius="64%"
+                outerRadius="100%"
+                // 2px'lik yuza oralig‘i: qo‘shni bo‘laklar bir-biriga
+                // quyilib ketmasligi uchun (rang o‘xshash bo‘lsa ham chegara ko‘rinadi).
+                paddingAngle={visible.length > 1 ? 2 : 0}
+                startAngle={90}
+                endAngle={-270}
+                stroke="none"
+                isAnimationActive={false}
+              >
+                {(visible.length ? visible : [{ hex: emptyHex }]).map((bucket, index) => (
+                  <Cell key={index} fill={bucket.hex} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
 
-        {/* Markazdagi yig‘indi — `pointer-events-none`, aks holda diagramma
-            hover hodisalarini to‘sib qo‘yardi. */}
-        <div className="pointer-events-none absolute inset-0 grid place-items-center">
-          <div className="text-center">
-            <p className="num text-sub leading-none text-strong">{total}</p>
-            <p className="t-label mt-1">obyekt</p>
+          {/* Markazdagi yig‘indi — `pointer-events-none`, aks holda diagramma
+              hover hodisalarini to‘sib qo‘yardi. */}
+          {/* ⚠️ Markazda FAQAT raqam. «obyekt» so‘zi halqa teshigiga
+              (≈44px) sig‘may, raqam ustiga chiqib ketardi — karta
+              sarlavhasi allaqachon nimani sanayotganini aytadi. */}
+          <div className="pointer-events-none absolute inset-0 grid place-items-center">
+            <p className="num text-lede leading-none font-bold text-strong">{total}</p>
           </div>
         </div>
-      </div>
 
-      <ul className="mt-3 space-y-1.5">
-        {colored.map((bucket) => (
-          <li key={bucket.label} className="flex items-center gap-2 text-meta">
-            <span className="size-2 shrink-0 rounded-[3px]" style={{ backgroundColor: bucket.hex }} />
-            <span className="flex-1 truncate text-muted">{bucket.label}</span>
-            <span className="num text-ui text-strong">{bucket.count}</span>
-            <span className="num text-faint w-11 text-right text-meta">{formatPercent(bucket.percent)}</span>
-          </li>
-        ))}
-      </ul>
+        {/* ⚠️ Har guruh BITTA satrda: ikki satrli ko‘rinishda uchta
+            guruh 84px egallab, halqa bilan yonma-yon sig‘masdi. */}
+        <ul className="min-w-0 flex-1 space-y-1.5">
+          {colored.map((bucket) => (
+            <li key={bucket.label} className="flex min-w-0 items-center gap-1.5">
+              <span
+                className="size-2 shrink-0 rounded-full"
+                style={{ backgroundColor: bucket.hex }}
+              />
+              <span className="min-w-0 flex-1 truncate text-micro text-muted">{bucket.label}</span>
+              <span className="num shrink-0 text-meta font-bold text-strong">{bucket.count}</span>
+              <span className="num text-faint w-10 shrink-0 text-right text-micro">
+                {formatPercent(bucket.percent)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </>
   );
 }

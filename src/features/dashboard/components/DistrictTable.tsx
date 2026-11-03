@@ -34,7 +34,7 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <Tabs options={TABS} value={filter} onChange={setFilter} className="mb-3 shrink-0" />
+      <Tabs options={TABS} value={filter} onChange={setFilter} fill className="mb-1.5 shrink-0" />
 
       {/* ⚠️ Chegara KARTADA (`DashboardPage` dagi `max-h`), bu yerda
           EMAS. Jadvalga `max-h` qo‘yilganda u kartadan past bo‘lib
@@ -45,7 +45,7 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
           Endi jadval `flex-1` bilan kartani TO‘LDIRADI va ortig‘i
           skroll bo‘ladi — qancha joy bo‘lsa, shuncha qator ko‘rinadi. */}
       <TableWrap className="min-h-0 flex-1 overflow-y-auto">
-        <Table>
+        <Table className="text-micro [&_td]:py-0.5 [&_th]:py-px">
           <THead>
             <Tr>
               <Th className="w-6 px-1.5">#</Th>
@@ -63,19 +63,19 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
             ) : (
               rows.map((district, index) => (
                 <Tr key={district.districtId} onClick={() => navigate(`/objects?districtIds=${district.districtId}`)}>
-                  <Td muted className="num px-1.5 py-2 text-meta">{index + 1}</Td>
-                  <Td className="px-1.5 py-2 text-meta font-medium whitespace-nowrap">{district.shortName}</Td>
-                  <Td align="right" className="num px-1 py-2 text-ui">{district.total}</Td>
-                  <Td align="right" className={cn('num px-1 py-2 text-meta', district.onSchedule > 0 && 'text-ok-600 dark:text-ok-500')}>
+                  <Td muted className="num px-1.5 text-meta">{index + 1}</Td>
+                  <Td className="px-1.5 text-meta font-medium whitespace-nowrap">{district.shortName}</Td>
+                  <Td align="right" className="num px-1 text-meta font-semibold text-strong">{district.total}</Td>
+                  <Td align="right" className={cn('num px-1 text-meta', district.onSchedule > 0 && 'text-ok-600 dark:text-ok-500')}>
                     {district.onSchedule}
                   </Td>
-                  <Td align="right" className={cn('num px-1 py-2 text-meta', district.delayed > 0 && 'text-warn-600 dark:text-warn-500')}>
+                  <Td align="right" className={cn('num px-1 text-meta', district.delayed > 0 && 'text-warn-600 dark:text-warn-500')}>
                     {district.delayed}
                   </Td>
-                  <Td align="right" className={cn('num px-1 py-2 text-meta', district.atRisk > 0 && 'text-danger-600 dark:text-danger-500')}>
+                  <Td align="right" className={cn('num px-1 text-meta', district.atRisk > 0 && 'text-danger-600 dark:text-danger-500')}>
                     {district.atRisk}
                   </Td>
-                  <Td className="px-1.5 py-2">
+                  <Td className="px-1.5">
                     {/* ⚠️ Rang BAJARILISH FOIZIDAN emas, HOLATDAN olinadi.
                         Foiz allaqachon chiziq uzunligi va yonidagi raqam
                         bilan aytilgan — rang ham shuni aytsa, u hech qanday

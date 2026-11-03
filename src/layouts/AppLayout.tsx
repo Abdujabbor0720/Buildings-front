@@ -52,7 +52,24 @@ export function AppLayout({ children }: { children: ReactNode }) {
         {/* ⚠️ Skroll AYNAN shu elementda: `body` da bo‘lsa, yopishqoq
             sarlavha va yon menyu birga siljib ketardi. */}
         <main className="surface-sunken min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1560px] px-4 py-5 sm:px-6 lg:px-7">{children}</div>
+          {/*
+            ⚠️ `flex min-h-full flex-col` — bosh sahifa shu tufayli
+            «bir ekranga» sig‘adi.
+
+            `min-h-full` konteynerga KAMIDA `main` balandligini beradi
+            (shuning uchun ichidagi `flex-1` bolasi qolgan joyni
+            egallaydi), lekin kontent balandroq bo‘lsa o‘sishga ham
+            ruxsat beradi va `main` odatdagidek skroll bo‘ladi.
+
+            ⚠️ `h-full` EMAS: u uzun sahifalarni (obyektlar ro‘yxati)
+            qirqib qo‘yardi. Balandlikni `100dvh` dan hisoblash ham
+            ishlamaydi — skrollbar va brauzer paneli hisobga
+            olinmagani uchun bosh sahifa ostida ~110px bo‘sh joy
+            qolib ketgan edi.
+          */}
+          <div className="mx-auto flex min-h-full w-full max-w-[1560px] flex-col px-3.5 py-3 sm:px-4 lg:px-5">
+            {children}
+          </div>
         </main>
       </div>
     </div>

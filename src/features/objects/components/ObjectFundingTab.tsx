@@ -54,10 +54,10 @@ export function ObjectFundingTab({
       </div>
 
       <Card flush>
-        <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+        <div className="px-3.5 pt-3.5">
           <CardHeader title="Yillik moliyalashtirish rejasi" />
         </div>
-        <CardBody className="px-4 pb-1 sm:px-5">
+        <CardBody className="px-3.5 pb-1">
           <TableWrap>
             <Table>
               <THead>
@@ -103,7 +103,7 @@ export function ObjectFundingTab({
       </Card>
 
       <Card flush>
-        <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+        <div className="px-3.5 pt-3.5">
           <CardHeader
             title="Moliyaviy harakatlar daftari"
             subtitle="Yozuvlar o‘chirilmaydi — tuzatish teskari qator bilan kiritiladi"
@@ -116,7 +116,7 @@ export function ObjectFundingTab({
             }
           />
         </div>
-        <CardBody className="px-4 pb-1 sm:px-5">
+        <CardBody className="px-3.5 pb-1">
           <TableWrap>
             <Table>
               <THead>

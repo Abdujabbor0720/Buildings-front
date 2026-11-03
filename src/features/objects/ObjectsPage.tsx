@@ -217,7 +217,10 @@ export default function ObjectsPage() {
                 <Table>
                   <THead>
                     <Tr>
-                      <Th sortKey="code" activeSort={{ by: sortBy, order: sortOrder }} onSort={toggleSort} className="w-32">Kod</Th>
+                      {/* ⚠️ `whitespace-nowrap`: kod («AND-2026-0060») defis
+                          bo‘yicha uch qatorga bo‘linib ketib, qatorni ikki
+                          baravar balandlashtirardi. */}
+                      <Th sortKey="code" activeSort={{ by: sortBy, order: sortOrder }} onSort={toggleSort} className="w-[116px]">Kod</Th>
                       <Th sortKey="name" activeSort={{ by: sortBy, order: sortOrder }} onSort={toggleSort}>Obyekt nomi</Th>
                       <Th className="w-28">Tuman</Th>
                       <Th className="w-40">Turi</Th>
@@ -243,7 +246,7 @@ export default function ObjectsPage() {
                         const meta = HEALTH_META[object.healthStatus];
                         return (
                           <Tr key={object.id} onClick={() => navigate(`/objects/${object.id}`)}>
-                            <Td className="mono text-meta text-muted">{object.code}</Td>
+                            <Td className="mono text-meta whitespace-nowrap text-muted">{object.code}</Td>
                             <Td className="max-w-[320px]">
                               <span className="block truncate font-medium text-strong">{object.name}</span>
                               {object.contractor ? (

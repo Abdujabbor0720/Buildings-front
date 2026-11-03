@@ -18,9 +18,14 @@ import { formatPercent } from '@/shared/utils/money.utils';
  * seed faylida yozilgan.
  *
  * ⚠️ TARTIB KONTEYNER KENGLIGIGA qarab o‘zgaradi (`@container`), oyna
- * kengligiga emas: bu ro‘yxat ham keng kartada (bosh sahifa), ham tor
- * ustunda (kechikishlar sahifasi) ishlatiladi. Media so‘rov bilan tor
- * ustunda sabab nomlari «Moliyalas…» bo‘lib qirqilib qolgan edi.
+ * kengligiga emas: bu ro‘yxat ham KENG kartada (bosh sahifa, ~400px),
+ * ham TOR ustunda (kechikishlar sahifasidagi yon panel, ~230px)
+ * ishlatiladi.
+ *   • keng  — hammasi bitta satrda: ikonka · nom · soni · chiziq · foiz;
+ *   • tor   — chiziq va foiz pastki satrga tushadi, nomga butun
+ *             kenglik qoladi.
+ * Media so‘rov bilan tor ustunda nomlar «Moliyalas…» bo‘lib qirqilgan
+ * edi — konteyner so‘rovi aynan shu holat uchun.
  */
 export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
   const navigate = useNavigate();
@@ -32,7 +37,13 @@ export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
   }
 
   return (
-    <ul className="@container space-y-0.5">
+    /*
+     * Qatorlar orasidagi ingichka chiziq — `--border-cell` (jadval
+     * kataklaridagi bilan AYNI token). Qator ajratgichidan ochroq:
+     * bu ro‘yxat, jadval emas, va quyuq chiziq uni «to‘r» qilib
+     * yuborardi.
+     */
+    <ul className="@container divide-y divide-[color:var(--border-cell)]">
       {items.map((item, index) => {
         const hex = reasonHex(index);
         const Icon = catalogIcon(item.icon);
@@ -42,33 +53,35 @@ export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
               type="button"
               onClick={() => navigate(`/delays?reasonId=${item.reasonId}`)}
               title={`${item.affectedObjects} ta obyekt · jami ${item.totalDelayDays} kun`}
-              className="flex w-full flex-wrap items-center gap-x-2.5 gap-y-1 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-neutral-100 dark:hover:bg-white/6"
+              className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 rounded-md px-1 py-px text-left transition-colors hover:bg-neutral-100 dark:hover:bg-white/6"
             >
               {/* Ikonka plitkasi — fon sabab rangining 12% i, belgi esa
                   to‘liq rangda: to‘ldirilgan kvadrat qatorni «menyu
                   bandi» ga o‘xshatib yuborardi. */}
               <span
                 aria-hidden
-                className="grid size-6 shrink-0 place-items-center rounded-md"
+                className="grid size-[18px] shrink-0 place-items-center rounded-md"
                 style={{ backgroundColor: `${hex}1f`, color: hex }}
               >
-                {Icon ? <Icon className="size-3.5" strokeWidth={2.1} /> : null}
+                {Icon ? <Icon className="size-3" strokeWidth={2.2} /> : null}
               </span>
 
-              <span className="min-w-0 flex-1 truncate text-meta">{item.name}</span>
+              <span className="min-w-0 flex-1 truncate text-micro text-strong">{item.name}</span>
 
-              <span className="num w-6 shrink-0 text-right text-ui text-strong">{item.count}</span>
+              <span className="num w-6 shrink-0 text-right text-meta font-semibold text-strong">
+                {item.count}
+              </span>
 
               {/* Tor konteynerda chiziq va foiz PASTKI qatorga tushadi —
                   shunda sabab nomiga butun kenglik qoladi. */}
-              <span className="flex w-full shrink-0 items-center gap-2 pl-8.5 @[20rem]:w-auto @[20rem]:pl-0">
-                <span className="h-1.5 w-full min-w-10 overflow-hidden rounded-full bg-neutral-200 @[20rem]:w-16 dark:bg-white/12">
+              <span className="flex w-full items-center gap-2 pl-6.5 @[19rem]:w-auto @[19rem]:shrink-0 @[19rem]:pl-0">
+                <span className="h-1.5 w-full min-w-10 overflow-hidden rounded-full bg-neutral-200 @[19rem]:w-[64px] dark:bg-white/12">
                   <span
                     className="block h-full rounded-full transition-[width] duration-500"
                     style={{ width: `${(item.count / max) * 100}%`, backgroundColor: hex }}
                   />
                 </span>
-                <span className="num text-faint w-9 shrink-0 text-right text-meta">
+                <span className="num w-9 shrink-0 text-right text-micro font-semibold text-muted">
                   {formatPercent(item.percent, 0)}
                 </span>
               </span>

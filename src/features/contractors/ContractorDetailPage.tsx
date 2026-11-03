@@ -120,13 +120,13 @@ export default function ContractorDetailPage() {
       ) : null}
 
       <Card flush>
-        <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+        <div className="px-3.5 pt-3.5">
           <CardHeader
             title="Pudratchi obyektlari"
             subtitle={stats ? `O‘rtacha bajarilish: ${formatPercent(stats.avgProgress)} · O‘rtacha kechikish: ${stats.avgDelayDays} kun` : undefined}
           />
         </div>
-        <CardBody className="px-4 pb-1 sm:px-5">
+        <CardBody className="px-3.5 pb-1">
           <TableWrap>
             <Table>
               <THead>

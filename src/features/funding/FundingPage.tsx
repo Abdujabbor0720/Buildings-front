@@ -163,14 +163,14 @@ export default function FundingPage() {
         </div>
 
         <Card flush>
-          <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+          <div className="px-3.5 pt-3.5">
             <CardHeader
               title="Batafsil"
               action={<Tabs options={VIEWS} value={view} onChange={(value) => { setView(value); setPage(1); }} />}
             />
           </div>
 
-          <CardBody className="px-4 pb-1 sm:px-5">
+          <CardBody className="px-3.5 pb-1">
             {view === 'allocations' ? (
               <>
                 <TableWrap>

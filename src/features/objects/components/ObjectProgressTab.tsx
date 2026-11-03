@@ -32,7 +32,7 @@ export function ObjectProgressTab({
 
   return (
     <Card flush>
-      <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+      <div className="px-3.5 pt-3.5">
         <CardHeader
           title="Bajarilish tarixi"
           subtitle="Yozuvlar o‘chirilmaydi va tahrirlanmaydi — har o‘zgarish alohida qator"
@@ -46,7 +46,7 @@ export function ObjectProgressTab({
         />
       </div>
 
-      <CardBody className="px-4 pb-1 sm:px-5">
+      <CardBody className="px-3.5 pb-1">
         {isLoading ? (
           <LoadingBlock />
         ) : (

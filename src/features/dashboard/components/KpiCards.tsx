@@ -23,6 +23,25 @@ import { formatCompact, formatCount, formatPercent } from '@/shared/utils/money.
  * MATNIDAN qidiradi va yig‘ilgan nomni topa olmaydi — plitka rangsiz,
  * shaffof bo‘lib qolardi.
  */
+/**
+ * KARTA FONI — maketdagi kabi toifaga mos ingichka tus.
+ *
+ * ⚠️ Tus juda och (50-pog‘ona): oltita karta yonma-yon turganda
+ * to‘qroq fon ularni «ogohlantirish bannerlari» ga aylantirib,
+ * ostidagi haqiqiy ogohlantirishlar e’tibordan chetda qolardi.
+ * Rang bu yerda faqat GURUHLASH vazifasini bajaradi.
+ *
+ * ⚠️ `brand` — «Jami obyektlar» va «Umumiy qiymat» uchun neytral:
+ * ular holat EMAS, shuning uchun yashil/qizil tus olmaydi.
+ */
+const SURFACE = {
+  brand: 'bg-brand-50/70 dark:bg-brand-500/[0.07]',
+  ok: 'bg-ok-50/70 dark:bg-ok-500/[0.07]',
+  warn: 'bg-warn-50/70 dark:bg-warn-500/[0.07]',
+  danger: 'bg-danger-50/60 dark:bg-danger-500/[0.07]',
+  done: 'bg-done-50/70 dark:bg-done-500/[0.07]',
+} as const;
+
 const TILE = {
   brand: 'bg-brand-100 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300',
   ok: 'bg-ok-100 text-ok-600 dark:bg-ok-500/15 dark:text-ok-300',
@@ -69,6 +88,16 @@ interface KpiCardProps {
   icon: LucideIcon;
   tone: Tone;
   visual?: ReactNode;
+  /**
+   * Grafikani pastki o‘ng burchakka SUZDIRADI (oqimdan chiqaradi).
+   *
+   * ⚠️ Uzun yorliqli kartalar uchun («Joriy yil yakunlanadi»,
+   * «Umumiy qiymat»): yonma-yon joylashganda grafika 44px joy yeb,
+   * yorliq «Joriy yil yakunla…» bo‘lib qirqilardi. Suzganda yorliqqa
+   * butun kenglik qoladi, grafika esa izoh satrining bo‘sh o‘ng
+   * tomonida turadi.
+   */
+  floatVisual?: boolean;
 }
 
 /**
@@ -84,25 +113,44 @@ interface KpiCardProps {
  * «nimaning foizi» ekanini aytishi shart: 72.8% o‘zicha hech nima
  * demaydi.
  */
-function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual }: KpiCardProps) {
+function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatVisual }: KpiCardProps) {
   return (
-    <div className="card card-hover flex items-center gap-2.5 px-3 py-3">
-      <span className={cn('tile', TILE[tone])} aria-hidden>
-        <Icon className="size-[19px]" strokeWidth={2} />
+    /*
+     * ⚠️ `min-w-0` MAJBURIY. Grid yacheykasi sukut bo‘yicha
+     * `min-width: auto` — ya’ni u ICHIDAGI eng keng elementdan
+     * kichrayolmaydi. «7.4 trln so‘m» kabi uzun qiymat tufayli
+     * oltinchi karta yacheykani kengaytirib, butun qatorni ekrandan
+     * chiqarib yuborardi (gorizontal skroll). `min-w-0` + `truncate`
+     * uni qisqartiradi.
+     */
+    <div className={cn('card card-hover relative flex min-w-0 items-center gap-2 px-2.5 py-2', SURFACE[tone])}>
+      <span className={cn('tile size-8 shrink-0 rounded-lg', TILE[tone])} aria-hidden>
+        <Icon className="size-[17px]" strokeWidth={2.1} />
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className={cn('truncate text-meta font-medium', LABEL[tone])}>{label}</p>
-        <p className="num mt-0.5 flex min-w-0 items-baseline gap-1 text-[25px] leading-none whitespace-nowrap text-strong">
+        {/*
+          ⚠️ Yorliq QIRQILMAYDI (`truncate` yo‘q) — kerak bo‘lsa ikkinchi
+          qatorga o‘tadi. «Joriy yil yakunla…» degan yorliq hech narsa
+          tushuntirmaydi, ikki qatorli yorliq esa tushuntiradi; grid
+          yacheykalari baribir bir xil balandlikka cho‘ziladi, shuning
+          uchun qator ko‘rinishi buzilmaydi.
+        */}
+        <p className={cn('text-nano leading-[1.25] font-semibold', LABEL[tone])}>{label}</p>
+        <p className="num mt-0.5 flex min-w-0 items-baseline gap-1 text-[21px] leading-none whitespace-nowrap text-strong">
           {value}
-          {unit ? <span className="text-meta font-normal text-muted">{unit}</span> : null}
+          {unit ? <span className="text-micro font-normal text-muted">{unit}</span> : null}
         </p>
         {caption ? (
-          <p className={cn('mt-0.5 truncate text-micro font-medium', CAPTION[tone])}>{caption}</p>
+          <p className={cn('mt-0.5 truncate text-nano font-medium', floatVisual && 'pr-11', CAPTION[tone])}>
+            {caption}
+          </p>
         ) : null}
       </div>
 
-      {visual ? <span className="shrink-0">{visual}</span> : null}
+      {visual ? (
+        <span className={cn('shrink-0', floatVisual && 'absolute right-2.5 bottom-2')}>{visual}</span>
+      ) : null}
     </div>
   );
 }
@@ -111,12 +159,12 @@ export function KpiCardsSkeleton() {
   return (
     <>
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="card flex items-center gap-3 px-3.5 py-3">
-          <Skeleton className="size-[38px] rounded-[10px]" />
+        <div key={index} className="card flex min-w-0 items-center gap-1.5 px-2 py-2">
+          <Skeleton className="size-7 rounded-lg" />
           <div className="min-w-0 flex-1">
-            <Skeleton className="h-2.5 w-20" />
-            <Skeleton className="mt-2 h-5 w-14" />
-            <Skeleton className="mt-2 h-2 w-16" />
+            <Skeleton className="h-2 w-16" />
+            <Skeleton className="mt-1.5 h-4 w-12" />
+            <Skeleton className="mt-1.5 h-1.5 w-14" />
           </div>
         </div>
       ))}
@@ -161,8 +209,8 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         tone="ok"
         visual={
           <MiniDonut
-            size={38}
-            thickness={4}
+            size={30}
+            thickness={3.5}
             value={cards.onPlan.percent}
             color={statusHex(HEALTH_META.on_schedule)}
             label={`Reja asosida ${cards.onPlan.percent}%`}
@@ -178,8 +226,8 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         tone="warn"
         visual={
           <MiniDonut
-            size={38}
-            thickness={4}
+            size={30}
+            thickness={3.5}
             value={cards.delayed.percent}
             color={statusHex(HEALTH_META.delayed)}
             label={`Kechikayotgan ${cards.delayed.percent}%`}
@@ -195,8 +243,8 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         tone="danger"
         visual={
           <MiniDonut
-            size={38}
-            thickness={4}
+            size={30}
+            thickness={3.5}
             value={cards.atRisk.percent}
             color={statusHex(HEALTH_META.at_risk)}
             label={`Xavfli ${cards.atRisk.percent}%`}
@@ -210,9 +258,10 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         caption={`${completingThisYear.year}-yil oxirigacha`}
         icon={Construction}
         tone="done"
+        floatVisual
         visual={
           <SparkBars
-            className="w-14"
+            className="w-9"
             values={completingThisYear.byMonth}
             labels={MONTHS_UZ_CAP.map((month) => month)}
             highlightLast
@@ -222,12 +271,12 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
 
       <KpiCard
         label="Umumiy qiymat"
-        value={formatCompact(finance.totalCost)}
-        unit="so‘m"
+        value={<span className="text-[17px]">{formatCompact(finance.totalCost)} so‘m</span>}
         caption={`Ajratilgan: ${formatCompact(finance.fundedAmount)} so‘m`}
         icon={Database}
         tone="brand"
-        visual={<SparkBars className="w-14" values={costByYear} labels={costYearLabels} />}
+        floatVisual
+        visual={<SparkBars className="w-9" values={costByYear} labels={costYearLabels} />}
       />
     </>
   );
