@@ -112,7 +112,7 @@ export function DistrictMap({
             interactive={false}
             icon={L.divIcon({
               className: '',
-              html: `<span style="white-space:nowrap;font:500 11px/1.4 var(--font-sans);color:var(--ink-faint)">${neighbour.label}</span>`,
+              html: `<span style="white-space:nowrap;font:500 11px/1.4 var(--font-sans);color:var(--ink-faint)">${esc(neighbour.label)}</span>`,
               iconSize: [0, 0],
             })}
           />
@@ -154,6 +154,24 @@ export function DistrictMapLegend() {
       ))}
     </div>
   );
+}
+
+/**
+ * HTML ga qo‘yiladigan matnni QOCHIRADI.
+ *
+ * ⚠️ Leaflet `divIcon` va `bindTooltip` HTML SATRINI talab qiladi —
+ * React bu yerda ishlamaydi va avtomatik qochirish YO‘Q. Tuman nomlari
+ * hozir faqat seed’dan keladi, lekin ular bir kun tahrirlanadigan
+ * bo‘lsa, `<img src=x onerror=…>` nomli tuman xaritada ishga tushardi.
+ * Qochirish arzon va butun xavf sinfini yopadi.
+ */
+function esc(value: string | number): string {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 /** Afsonada qisqaroq yorliq — «Kechikayotgan» juda uzun. */
@@ -253,14 +271,14 @@ function DistrictLayer({
                   font-variant-numeric:tabular-nums;
                   box-shadow:0 1px 4px rgba(2,24,58,.3);
                   border:2px solid var(--surface);
-                ">${props.total}</span>
+                ">${esc(props.total)}</span>
                 <span style="
                   display:inline-block;padding:1px 5px;border-radius:5px;
                   background:var(--surface);
                   box-shadow:0 0 0 1px rgb(16 42 76 / .1);
                   font:600 9.5px/1.35 var(--font-sans);
                   color:var(--ink-body);white-space:nowrap;
-                ">${props.shortName}</span>
+                ">${esc(props.shortName)}</span>
               </span>`,
             })}
           />
@@ -285,10 +303,13 @@ function tooltipHtml(props: DistrictStats, palette: ReturnType<typeof useChartCo
   const bg = palette.dark ? '#243344' : '#16222f';
   const faint = palette.dark ? '#94a6bd' : 'rgba(255,255,255,.64)';
 
+  // ⚠️ `label` va `value` ham qochiriladi: ular hozir doimiy matn va
+  // son, lekin funksiya umumiy — kelajakda unga nima berilishini
+  // chaqiruv joyi hal qiladi, bu yer esa HTML yig‘adi.
   const row = (label: string, value: string | number, color?: string) =>
     `<div style="display:flex;justify-content:space-between;gap:14px">
-       <span style="color:${faint}">${label}</span>
-       <strong style="font-weight:600;font-variant-numeric:tabular-nums;${color ? `color:${color}` : ''}">${value}</strong>
+       <span style="color:${faint}">${esc(label)}</span>
+       <strong style="font-weight:600;font-variant-numeric:tabular-nums;${color ? `color:${color}` : ''}">${esc(value)}</strong>
      </div>`;
 
   return `<div style="
@@ -296,7 +317,7 @@ function tooltipHtml(props: DistrictStats, palette: ReturnType<typeof useChartCo
       background:${bg};color:${ink};font:400 11.5px/1.65 var(--font-sans);
       box-shadow:0 10px 26px rgba(10,10,10,.34)
     ">
-    <div style="font-weight:600;font-size:12.5px;margin-bottom:6px">${props.name}</div>
+    <div style="font-weight:600;font-size:12.5px;margin-bottom:6px">${esc(props.name)}</div>
     ${row('Jami obyektlar', props.total)}
     ${row('Reja asosida', props.onSchedule, palette.statusHex(HEALTH_META.on_schedule))}
     ${row('Kechikayotgan', props.delayed, palette.statusHex(HEALTH_META.delayed))}
