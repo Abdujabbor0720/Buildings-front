@@ -32,6 +32,7 @@ import type {
   FundingSummary,
   FundingTransaction,
   Milestone,
+  MilestoneSubmission,
   ObjectDelay,
   ObjectDocument,
   ObjectMapPoint,
@@ -66,6 +67,7 @@ export const qk = {
   object: (id: string) => ['objects', 'detail', id] as const,
   objectProgress: (id: string) => ['objects', 'progress', id] as const,
   objectMilestones: (id: string) => ['objects', 'milestones', id] as const,
+  objectMilestonesAi: (id: string) => ['objects', 'milestones-ai', id] as const,
   objectFunding: (id: string) => ['objects', 'funding', id] as const,
   objectAi: (id: string) => ['objects', 'ai', id] as const,
   objectsMap: (params: unknown) => ['objects', 'map', params] as const,
@@ -166,7 +168,10 @@ export function useDashboard(params: QueryParams) {
 
 /* ───────────────────────── Obyektlar ───────────────────────── */
 
-export function useObjects(params: QueryParams) {
+export function useObjects(
+  params: QueryParams,
+  options?: Partial<UseQueryOptions<Paginated<ConstructionObject>>>,
+) {
   return useQuery({
     queryKey: qk.objects(params),
     queryFn: async (): Promise<Paginated<ConstructionObject>> => {
@@ -176,6 +181,7 @@ export function useObjects(params: QueryParams) {
     // Sahifa almashganda jadval «sakrab» bo‘shamaydi — eski ma’lumot
     // yangisi kelguncha ko‘rinib turadi.
     placeholderData: keepPreviousData,
+    ...options,
   });
 }
 
@@ -360,6 +366,167 @@ export function downloadImportTemplate(): Promise<void> {
   return apiDownload('/objects/import/template', 'obyektlar-shablon.xlsx');
 }
 
+/* ───────────── Ish rejasi (bosqichlar) ───────────── */
+
+export interface MilestoneBody {
+  name: string;
+  plannedStart: string;
+  plannedEnd: string;
+  weight: number;
+  description?: string;
+  progressPercent?: number;
+  workerCount?: number;
+  sortOrder?: number;
+}
+
+/**
+ * ⚠️ Bosqich o‘zgarishi OBYEKT BAJARILISHINI ham o‘zgartiradi: server uni
+ * ulushlar bo‘yicha qayta hisoblaydi. Shuning uchun har bir mutatsiya
+ * obyektni, bajarilish tarixini, ro‘yxatni va dashboard’ni ham eskirtiradi.
+ * Faqat bosqichlar keshini yangilash eng ko‘p uchraydigan xato bo‘lardi:
+ * ro‘yxatdagi foiz eski, bosqichdagisi yangi bo‘lib qolardi.
+ */
+function useMilestoneInvalidate(objectId: string) {
+  const queryClient = useQueryClient();
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: qk.objectMilestones(objectId) });
+    void queryClient.invalidateQueries({ queryKey: qk.objectMilestonesAi(objectId) });
+    void queryClient.invalidateQueries({ queryKey: qk.object(objectId) });
+    void queryClient.invalidateQueries({ queryKey: qk.objectProgress(objectId) });
+    void queryClient.invalidateQueries({ queryKey: qk.objectAi(objectId) });
+    void queryClient.invalidateQueries({ queryKey: ['objects', 'list'] });
+    void queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+  };
+}
+
+export function useCreateMilestone(objectId: string) {
+  const invalidate = useMilestoneInvalidate(objectId);
+  return useMutation({
+    mutationFn: (body: MilestoneBody) =>
+      apiPost<Milestone>(`/objects/${objectId}/milestones`, body),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateMilestone(objectId: string) {
+  const invalidate = useMilestoneInvalidate(objectId);
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Partial<MilestoneBody> }) =>
+      apiPatch<Milestone>(`/milestones/${id}`, body),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteMilestone(objectId: string) {
+  const invalidate = useMilestoneInvalidate(objectId);
+  return useMutation({
+    mutationFn: (id: string) => apiDelete<{ message: string }>(`/milestones/${id}`),
+    onSuccess: invalidate,
+  });
+}
+
+/**
+ * BUTUN REJANI ALMASHTIRISH — yamash emas, o‘rniga qo‘yish.
+ * ⚠️ Ulushlar yig‘indisi ANIQ 100 bo‘lishi kerakligini faqat to‘liq
+ * ro‘yxatni ko‘rib tekshirib bo‘ladi, shuning uchun alohida yo‘l.
+ */
+export function useReplaceMilestones(objectId: string) {
+  const invalidate = useMilestoneInvalidate(objectId);
+  return useMutation({
+    mutationFn: (milestones: MilestoneBody[]) =>
+      apiPut<Milestone[]>(`/objects/${objectId}/milestones`, { milestones }),
+    onSuccess: invalidate,
+  });
+}
+
+export interface SubmitMilestoneBody {
+  fileIds: string[];
+  progressPercent?: number;
+  note?: string;
+  workerCount?: number;
+  actualEnd?: string;
+  lat?: number;
+  lng?: number;
+}
+
+/** Bosqichni topshirish — surat MAJBURIY (serverda ham tekshiriladi). */
+export function useSubmitMilestone(objectId: string) {
+  const invalidate = useMilestoneInvalidate(objectId);
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: SubmitMilestoneBody }) =>
+      apiPost<MilestoneSubmission>(`/milestones/${id}/submit`, body),
+    onSuccess: () => {
+      invalidate();
+      void queryClient.invalidateQueries({ queryKey: ['photos'] });
+    },
+  });
+}
+
+/* ───────────── AI: bosqich va ommaviy tahlil ───────────── */
+
+export function useMilestoneAi(objectId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: qk.objectMilestonesAi(objectId ?? ''),
+    queryFn: () => apiGet<AiAnalysis[]>(`/ai/objects/${objectId}/milestones`),
+    enabled: Boolean(objectId) && enabled,
+  });
+}
+
+/** Bitta obyektni (ixtiyoriy ravishda bosqichlari bilan) tahlil qilish. */
+export function useAnalyzeObject(objectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (withMilestones: boolean) => {
+      const analyses = await apiPost<AiAnalysis[]>(`/ai/objects/${objectId}/analyze`, {});
+      if (!withMilestones) return analyses;
+      const milestones = await apiPost<AiAnalysis[]>(
+        `/ai/objects/${objectId}/milestones/analyze`,
+        {},
+      );
+      return [...analyses, ...milestones];
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.objectAi(objectId) });
+      void queryClient.invalidateQueries({ queryKey: qk.objectMilestonesAi(objectId) });
+      void queryClient.invalidateQueries({ queryKey: ['ai'] });
+    },
+  });
+}
+
+/** Bitta bosqichni tahlil qilish — «Ish rejasi» qatoridagi tugma. */
+export function useAnalyzeMilestone(objectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (milestoneId: string) =>
+      apiPost<AiAnalysis>(`/ai/milestones/${milestoneId}/analyze`, {}),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: qk.objectMilestonesAi(objectId) });
+    },
+  });
+}
+
+export interface AnalyzeManyResult {
+  analyzed: number;
+  failed: number;
+  milestones: number;
+  results: Array<{ objectId: string; ok: boolean; message?: string }>;
+}
+
+/** Tanlangan obyektlarni tahlil qilish — «AI tahlil» sahifasi. */
+export function useAnalyzeMany() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { objectIds: string[]; withMilestones: boolean }) =>
+      apiPost<AnalyzeManyResult>('/ai/analyze', body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['ai'] });
+      void queryClient.invalidateQueries({ queryKey: ['objects'] });
+    },
+  });
+}
+
 /* ───────────────────────── Kalendar ───────────────────────── */
 
 export function useCalendar(params: QueryParams) {
@@ -493,6 +660,96 @@ export function useReanalyzePhoto() {
   });
 }
 
+export interface CreateDocumentBody {
+  objectId?: string;
+  type: string;
+  title: string;
+  number?: string;
+  issuedDate?: string;
+  expiryDate?: string;
+  fileId?: string;
+  note?: string;
+}
+
+/**
+ * ⚠️ Hujjat ikki bosqichda yoziladi: avval fayl (`/files/upload-many`),
+ * keyin hujjat yozuvi. Bir so‘rovga birlashtirilmagan — foto-hisobot
+ * bilan AYNI sabab: yuklov uzilsa yarim yozuv emas, faqat
+ * biriktirilmagan fayl qoladi.
+ */
+export function useCreateDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateDocumentBody) => apiPost<ObjectDocument>('/documents', body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+  });
+}
+
+export function useDeleteDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiDelete<{ message: string }>(`/documents/${id}`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+  });
+}
+
+export interface CreateDelayBody {
+  objectId: string;
+  reasonId: string;
+  delayDays: number;
+  description: string;
+  severity?: string;
+  mitigationPlan?: string;
+  detectedAt?: string;
+}
+
+/**
+ * ⚠️ Kechikish qayd etilsa OBYEKT HOLATI ham o‘zgaradi: ochiq
+ * muammolar soni risk formulasiga kiradi va dashboard kartalari
+ * siljiydi. Shuning uchun obyekt va dashboard keshi ham eskiradi.
+ */
+export function useCreateDelay() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateDelayBody) => apiPost<ObjectDelay>('/delays', body),
+    onSuccess: (delay) => {
+      void queryClient.invalidateQueries({ queryKey: ['delays'] });
+      void queryClient.invalidateQueries({ queryKey: qk.object(delay.objectId) });
+      void queryClient.invalidateQueries({ queryKey: ['objects', 'list'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
+export interface CreateTransactionBody {
+  objectId: string;
+  type: string;
+  amount: string;
+  occurredAt: string;
+  note: string;
+  allocationId?: string;
+  documentNumber?: string;
+}
+
+export function useCreateTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateTransactionBody) =>
+      apiPost<FundingTransaction>('/funding/transactions', body),
+    onSuccess: (tx) => {
+      void queryClient.invalidateQueries({ queryKey: ['funding'] });
+      void queryClient.invalidateQueries({ queryKey: qk.objectFunding(tx.objectId) });
+      void queryClient.invalidateQueries({ queryKey: qk.object(tx.objectId) });
+      void queryClient.invalidateQueries({ queryKey: ['objects', 'list'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
 export function useDocuments(params: QueryParams) {
   return useQuery({
     queryKey: qk.documents(params),
@@ -531,6 +788,73 @@ export function useCustomers(params: QueryParams) {
     queryFn: async (): Promise<Paginated<Customer>> => {
       const { items, meta } = await apiGetPaginated<Customer>('/customers', { params });
       return { items, meta: meta! };
+    },
+  });
+}
+
+export interface CreateUserBody {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  middleName?: string;
+  position?: string;
+  phone?: string;
+  regionId?: string;
+  districtId?: string;
+  contractorId?: string;
+}
+
+/**
+ * YANGI FOYDALANUVCHI (mas’ul, kurator, tuman admini…).
+ *
+ * ⚠️ Mas’ullar ro‘yxati ham, obyekt formasidagi TANLOV ro‘yxati ham
+ * eskiradi: yangi kurator darhol biriktirish uchun tayyor bo‘lishi kerak.
+ * Faqat bittasini yangilash — «odam qo‘shdim, lekin ro‘yxatda yo‘q»
+ * degan eng ko‘p uchraydigan shikoyatning sababi.
+ */
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateUserBody) => apiPost<UserSummary>('/users', body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+}
+
+export interface CreateContractorBody {
+  name: string;
+  inn: string;
+  director?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
+  foundedYear?: number;
+  employeesCount?: number;
+  note?: string;
+}
+
+export function useCreateContractor() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateContractorBody) => apiPost<Contractor>('/contractors', body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['contractors'] });
+    },
+  });
+}
+
+export function useUpdateContractor(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: Partial<CreateContractorBody>) =>
+      apiPatch<Contractor>(`/contractors/${id}`, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['contractors'] });
     },
   });
 }

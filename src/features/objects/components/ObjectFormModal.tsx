@@ -14,6 +14,7 @@ import {
 import type { ConstructionObject } from '@/shared/api/types';
 import { Button, Field, Input, Modal, Select, Textarea } from '@/shared/ui';
 import { useFilterParams } from '@/store/filters.store';
+import { LocationPicker } from './LocationPicker';
 
 interface Props {
   open: boolean;
@@ -355,34 +356,60 @@ export function ObjectFormModal({ open, onClose, object }: Props) {
           />
         </div>
 
+        {/* ───── Joylashuv ───── */}
+        <fieldset className="rounded-xl border border-cell p-3 sm:p-4">
+          <legend className="t-label px-1.5">Xaritadagi joylashuvi</legend>
+
+          {/*
+            ⚠️ XARITA va QO‘LDA KIRITISH — IKKALASI ham bor, biri
+            ikkinchisining o‘rnini bosmaydi. Xaritadan bosish — odatiy
+            yo‘l; raqamli maydonlar esa GPS qurilmadan yoki Excel’dan
+            ko‘chirilgan aniq koordinatani kiritish uchun kerak.
+            Ular BIR holatga bog‘langan: birini o‘zgartirsang ikkinchisi
+            darhol ergashadi.
+          */}
+          <LocationPicker
+            lat={form.lat}
+            lng={form.lng}
+            districtId={form.districtId || undefined}
+            onChange={(lat, lng) => setForm((prev) => ({ ...prev, lat, lng }))}
+          />
+
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <Field label="Kenglik (lat)" error={show('lat')}>
+              <Input
+                value={form.lat}
+                onChange={(e) => set('lat', e.target.value)}
+                inputMode="decimal"
+                placeholder="40.8012"
+              />
+            </Field>
+            <Field label="Uzunlik (lng)" error={show('lng')}>
+              <Input
+                value={form.lng}
+                onChange={(e) => set('lng', e.target.value)}
+                inputMode="decimal"
+                placeholder="72.0145"
+              />
+            </Field>
+          </div>
+        </fieldset>
+
         {/* ───── Qo‘shimcha ───── */}
-        <div className="grid gap-4 sm:grid-cols-4">
-          <Field
-            label="Kenglik (lat)"
-            error={show('lat')}
-            hint={!form.lat && !form.lng ? 'Bo‘sh qolsa xaritada ko‘rinmaydi' : undefined}
-          >
-            <Input
-              value={form.lat}
-              onChange={(e) => set('lat', e.target.value)}
-              inputMode="decimal"
-              placeholder="40.8012"
-            />
-          </Field>
-          <Field label="Uzunlik (lng)" error={show('lng')}>
-            <Input
-              value={form.lng}
-              onChange={(e) => set('lng', e.target.value)}
-              inputMode="decimal"
-              placeholder="72.0145"
-            />
-          </Field>
+        <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Quvvat" error={show('capacity')}>
             <Input
               value={form.capacity}
               onChange={(e) => set('capacity', e.target.value)}
               inputMode="numeric"
               placeholder="600"
+            />
+          </Field>
+          <Field label="Quvvat birligi">
+            <Input
+              value={form.capacityUnit}
+              onChange={(e) => set('capacityUnit', e.target.value)}
+              placeholder="ishchi o‘rni"
             />
           </Field>
           <Field label="Qavatlar" error={show('floors')}>
@@ -395,23 +422,14 @@ export function ObjectFormModal({ open, onClose, object }: Props) {
           </Field>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-[200px_1fr]">
-          <Field label="Quvvat birligi">
-            <Input
-              value={form.capacityUnit}
-              onChange={(e) => set('capacityUnit', e.target.value)}
-              placeholder="o‘quvchi o‘rni"
-            />
-          </Field>
-          <Field label="Izoh">
-            <Textarea
-              rows={2}
-              value={form.description}
-              onChange={(e) => set('description', e.target.value)}
-              placeholder="Ixtiyoriy"
-            />
-          </Field>
-        </div>
+        <Field label="Izoh">
+          <Textarea
+            rows={2}
+            value={form.description}
+            onChange={(e) => set('description', e.target.value)}
+            placeholder="Ixtiyoriy"
+          />
+        </Field>
       </form>
     </Modal>
   );

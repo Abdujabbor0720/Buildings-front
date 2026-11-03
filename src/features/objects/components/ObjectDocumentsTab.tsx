@@ -1,34 +1,60 @@
-import { Download, FileText } from 'lucide-react';
-import { resolveFileUrl } from '@/shared/api/client';
-import { useDocuments } from '@/shared/api/queries';
+import { Download, FileText, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { getErrorMessage, resolveFileUrl } from '@/shared/api/client';
+import { useDeleteDocument, useDocuments } from '@/shared/api/queries';
 import { DOCUMENT_TYPE_LABELS } from '@/shared/constants/health';
 import {
-  Badge, Card, CardBody, CardHeader, EmptyState, LoadingBlock,
+  Badge, Button, Card, CardBody, CardHeader, EmptyState, LoadingBlock,
   Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { diffInDays, formatDateUz, tashkentToday } from '@/shared/utils/date.utils';
 import { cn } from '@/shared/utils/cn';
+import { useAuthStore } from '@/store/auth.store';
+import { DocumentFormModal } from './DocumentFormModal';
 
 export function ObjectDocumentsTab({ objectId }: { objectId: string }) {
   const { data, isLoading } = useDocuments({ objectId, limit: 50 });
+  const remove = useDeleteDocument();
+  const can = useAuthStore((state) => state.can);
+  const canManage = can('documents.manage');
+  const [addOpen, setAddOpen] = useState(false);
   // Bugungi kun BIR MARTA olinadi — har qator uchun emas.
   const today = tashkentToday();
+
+  const addButton = canManage ? (
+    <Button size="sm" onClick={() => setAddOpen(true)} leftIcon={<Plus className="size-3.5" />}>
+      Hujjat qo‘shish
+    </Button>
+  ) : null;
 
   if (isLoading) return <LoadingBlock />;
   const documents = data?.items ?? [];
 
   if (documents.length === 0) {
     return (
-      <Card>
-        <EmptyState title="Hujjat biriktirilmagan" icon={<FileText className="size-5" />} />
-      </Card>
+      <>
+        <Card>
+          <EmptyState
+            title="Hujjat biriktirilmagan"
+            description="Loyiha-smeta, shartnoma, ekspertiza xulosasi va ruxsatnomalarni shu yerga qo‘shing."
+            icon={<FileText className="size-5" />}
+            action={addButton}
+          />
+        </Card>
+        <DocumentFormModal open={addOpen} onClose={() => setAddOpen(false)} objectId={objectId} />
+      </>
     );
   }
 
   return (
     <Card flush>
       <div className="px-4 pt-4 sm:px-5 sm:pt-5">
-        <CardHeader title="Hujjatlar" subtitle={`${data?.meta.total ?? 0} ta hujjat`} />
+        <CardHeader
+          title="Hujjatlar"
+          subtitle={`${data?.meta.total ?? 0} ta hujjat`}
+          action={addButton}
+        />
       </div>
       <CardBody className="px-4 pb-1 sm:px-5">
         <TableWrap>
@@ -61,17 +87,38 @@ export function ObjectDocumentsTab({ objectId }: { objectId: string }) {
                         {formatDateUz(document.expiryDate)}
                       </Td>
                       <Td align="right">
-                        {url ? (
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="inline-flex size-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-neutral-100 hover:text-brand-600 dark:hover:bg-white/5"
-                            aria-label="Yuklab olish"
-                          >
-                            <Download className="size-3.5" />
-                          </a>
-                        ) : null}
+                        <span className="inline-flex items-center gap-0.5">
+                          {url ? (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              className="inline-flex size-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-neutral-100 hover:text-brand-600 dark:hover:bg-white/5"
+                              aria-label={`«${document.title}» hujjatini yuklab olish`}
+                            >
+                              <Download className="size-3.5" />
+                            </a>
+                          ) : null}
+                          {canManage ? (
+                            <button
+                              type="button"
+                              disabled={remove.isPending}
+                              aria-label={`«${document.title}» hujjatini o‘chirish`}
+                              onClick={async () => {
+                                if (!window.confirm(`«${document.title}» o‘chirilsinmi?`)) return;
+                                try {
+                                  await remove.mutateAsync(document.id);
+                                  toast.success('Hujjat o‘chirildi');
+                                } catch (error) {
+                                  toast.error(getErrorMessage(error));
+                                }
+                              }}
+                              className="inline-flex size-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-danger-50 hover:text-danger-600 disabled:opacity-50 dark:hover:bg-danger-500/10"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          ) : null}
+                        </span>
                       </Td>
                     </Tr>
                   );
@@ -81,6 +128,8 @@ export function ObjectDocumentsTab({ objectId }: { objectId: string }) {
           </Table>
         </TableWrap>
       </CardBody>
+
+      <DocumentFormModal open={addOpen} onClose={() => setAddOpen(false)} objectId={objectId} />
     </Card>
   );
 }

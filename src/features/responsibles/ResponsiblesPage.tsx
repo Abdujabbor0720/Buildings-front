@@ -1,16 +1,21 @@
 import { getErrorMessage } from '@/shared/api/client';
-import { Mail, Phone, UserCog } from 'lucide-react';
+import { Mail, Phone, Plus, UserCog } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useResponsibles } from '@/shared/api/queries';
 import { ROLE_LABELS } from '@/shared/constants/health';
-import { Avatar, Card, EmptyState, LoadingBlock, PageHeader, ProgressBar, StatPills, ErrorState} from '@/shared/ui';
+import { Avatar, Button, Card, EmptyState, LoadingBlock, PageHeader, ProgressBar, StatPills, ErrorState} from '@/shared/ui';
 import { formatCount } from '@/shared/utils/money.utils';
+import { useAuthStore } from '@/store/auth.store';
 import { useFiltersStore } from '@/store/filters.store';
+import { UserFormModal } from './components/UserFormModal';
 
 /** «Mas’ullar» — har kurator va uning obyektlari kesimi. */
 export default function ResponsiblesPage() {
   const { regionId } = useFiltersStore();
   const { data, isLoading, isError, error, refetch } = useResponsibles(regionId ?? undefined);
+  const can = useAuthStore((state) => state.can);
+  const [createOpen, setCreateOpen] = useState(false);
 
   if (isLoading) return <LoadingBlock className="min-h-[50vh]" />;
   // ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda sahifa BO‘SH
@@ -48,11 +53,33 @@ export default function ResponsiblesPage() {
             ]}
           />
         }
+        actions={
+          can('users.manage') ? (
+            <Button onClick={() => setCreateOpen(true)} leftIcon={<Plus className="size-4" />}>
+              Yangi mas’ul
+            </Button>
+          ) : null
+        }
       />
 
+      {/* ⚠️ Bu ro‘yxat OBYEKTI BOR mas’ullarni ko‘rsatadi (hisobot
+          kesimi). Yangi qo‘shilgan kurator unga obyekt biriktirilgach
+          tushadi — shuning uchun bo‘sh holat buni AYTADI, aks holda
+          foydalanuvchi «qo‘shdim, lekin yo‘q» deb o‘ylardi. */}
       {items.length === 0 ? (
         <Card>
-          <EmptyState title="Mas’ul biriktirilmagan" icon={<UserCog className="size-5" />} />
+          <EmptyState
+            title="Mas’ul biriktirilmagan"
+            description="Bu ro‘yxatda obyekti bor mas’ullar ko‘rinadi. Mas’ul qo‘shilgach, uni obyekt kartasidagi «Tahrirlash» oynasidan biriktiring."
+            icon={<UserCog className="size-5" />}
+            action={
+              can('users.manage') ? (
+                <Button onClick={() => setCreateOpen(true)} leftIcon={<Plus className="size-4" />}>
+                  Yangi mas’ul
+                </Button>
+              ) : null
+            }
+          />
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -108,6 +135,8 @@ export default function ResponsiblesPage() {
           })}
         </div>
       )}
+
+      <UserFormModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </>
   );
 }

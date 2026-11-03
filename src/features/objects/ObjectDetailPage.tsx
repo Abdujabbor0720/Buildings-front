@@ -1,10 +1,10 @@
 import { ArrowLeft, Building2, CalendarDays, MapPin, Pencil, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { getErrorMessage } from '@/shared/api/client';
 import {
-  useObject, useObjectAi, useObjectFunding, useObjectMilestones, useObjectProgress,
+  useMilestoneAi, useObject, useObjectAi, useObjectFunding, useObjectMilestones, useObjectProgress,
 } from '@/shared/api/queries';
 import { HEALTH_META, RISK_META, STATUS_META } from '@/shared/constants/health';
 import { Badge, Button, Card, ErrorState, LoadingBlock, ProgressBar, Tabs, type TabOption } from '@/shared/ui';
@@ -33,14 +33,38 @@ const TABS: ReadonlyArray<TabOption<Tab>> = [
   { value: 'ai', label: 'AI tahlil' },
 ];
 
+const TAB_VALUES = TABS.map((option) => option.value);
+
 export default function ObjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('overview');
+
+  /**
+   * ⚠️ Tanlangan tab MANZILDA (`?tab=milestones`), `useState` da EMAS.
+   *
+   * Uch sabab: «Ish rejasi»ga havola yuborib bo‘ladi, brauzerning
+   * «Orqaga» tugmasi kutilganidek ishlaydi, va sahifa yangilanganda
+   * odam o‘zi turgan joyda qoladi. Ilgari har yangilanishda
+   * «Umumiy» tabiga qaytarib yuborardi.
+   */
+  const [searchParams, setSearchParams] = useSearchParams();
+  const raw = searchParams.get('tab');
+  const tab: Tab = TAB_VALUES.includes(raw as Tab) ? (raw as Tab) : 'overview';
+  const setTab = (next: Tab) => {
+    // `replace` — tab almashtirish tarixni to‘ldirmasligi kerak,
+    // aks holda «Orqaga» sakkiz marta bosilardi.
+    setSearchParams(next === 'overview' ? {} : { tab: next }, { replace: true });
+  };
 
   const { data: object, isLoading, isError, error, refetch } = useObject(id);
   const progress = useObjectProgress(tab === 'progress' || tab === 'overview' ? id : undefined);
-  const milestones = useObjectMilestones(tab === 'milestones' ? id : undefined);
+  /*
+   * ⚠️ Bosqichlar «AI tahlil» tabida HAM kerak: u yerda har tahlil
+   * qaysi bosqichga tegishli ekani ko‘rsatiladi. Ikkinchi so‘rov
+   * yozilmaydi — bitta kesh ikkala tabga xizmat qiladi.
+   */
+  const milestones = useObjectMilestones(tab === 'milestones' || tab === 'ai' ? id : undefined);
+  const milestoneAi = useMilestoneAi(id, tab === 'ai' || tab === 'milestones');
   const funding = useObjectFunding(tab === 'funding' ? id : undefined);
   const ai = useObjectAi(tab === 'ai' || tab === 'overview' ? id : undefined);
   const [editOpen, setEditOpen] = useState(false);
@@ -187,15 +211,27 @@ export default function ObjectDetailPage() {
         <ObjectProgressTab object={object} history={progress.data ?? []} isLoading={progress.isLoading} />
       ) : null}
       {tab === 'milestones' ? (
-        <ObjectMilestonesTab milestones={milestones.data ?? []} isLoading={milestones.isLoading} />
+        <ObjectMilestonesTab
+          object={object}
+          milestones={milestones.data ?? []}
+          isLoading={milestones.isLoading}
+        />
       ) : null}
-      {tab === 'photos' ? <ObjectPhotosTab objectId={object.id} /> : null}
+      {tab === 'photos' ? <ObjectPhotosTab object={object} /> : null}
       {tab === 'documents' ? <ObjectDocumentsTab objectId={object.id} /> : null}
       {tab === 'funding' ? (
         <ObjectFundingTab object={object} data={funding.data} isLoading={funding.isLoading} />
       ) : null}
       {tab === 'delays' ? <ObjectDelaysTab objectId={object.id} /> : null}
-      {tab === 'ai' ? <ObjectAiTab analyses={ai.data ?? []} isLoading={ai.isLoading} /> : null}
+      {tab === 'ai' ? (
+        <ObjectAiTab
+          objectId={object.id}
+          analyses={ai.data ?? []}
+          milestoneAnalyses={milestoneAi.data ?? []}
+          milestones={milestones.data ?? []}
+          isLoading={ai.isLoading}
+        />
+      ) : null}
       <ObjectFormModal open={editOpen} onClose={() => setEditOpen(false)} object={object} />
     </>
   );

@@ -1,14 +1,17 @@
-import { ArrowLeft, Building, Mail, MapPin, Phone, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, Building, Mail, MapPin, Pencil, Phone, ShieldCheck, Users } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { getErrorMessage } from '@/shared/api/client';
 import { useContractor, useObjects } from '@/shared/api/queries';
 import { CONTRACTOR_STATUS_META, HEALTH_META } from '@/shared/constants/health';
 import {
-  Badge, Card, CardBody, CardHeader, ErrorState, LoadingBlock, ProgressBar,
+  Badge, Button, Card, CardBody, CardHeader, ErrorState, LoadingBlock, ProgressBar,
   Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';
+import { useAuthStore } from '@/store/auth.store';
+import { ContractorFormModal } from './components/ContractorFormModal';
 import { RatingStars } from './ContractorsPage';
 
 export default function ContractorDetailPage() {
@@ -16,6 +19,8 @@ export default function ContractorDetailPage() {
   const navigate = useNavigate();
   const { data: contractor, isLoading, isError, error, refetch } = useContractor(id);
   const objects = useObjects({ contractorId: id, limit: 50, sortBy: 'plannedEndDate', sortOrder: 'ASC' });
+  const can = useAuthStore((state) => state.can);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) return <LoadingBlock className="min-h-[50vh]" />;
   if (isError || !contractor) {
@@ -27,14 +32,26 @@ export default function ContractorDetailPage() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="mb-3 inline-flex items-center gap-1.5 text-meta text-muted transition-colors hover:text-strong"
-      >
-        <ArrowLeft className="size-3.5" />
-        Orqaga
-      </button>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1.5 text-meta text-muted transition-colors hover:text-strong"
+        >
+          <ArrowLeft className="size-3.5" />
+          Orqaga
+        </button>
+        {can('contractors.manage') ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setEditOpen(true)}
+            leftIcon={<Pencil className="size-3.5" />}
+          >
+            Tahrirlash
+          </Button>
+        ) : null}
+      </div>
 
       <Card className="mb-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -153,6 +170,11 @@ export default function ContractorDetailPage() {
           </TableWrap>
         </CardBody>
       </Card>
+      <ContractorFormModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        contractor={contractor}
+      />
     </>
   );
 }

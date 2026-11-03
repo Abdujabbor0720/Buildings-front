@@ -1,4 +1,4 @@
-import { Building, Star } from 'lucide-react';
+import { Building, Plus, Star } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContractors } from '@/shared/api/queries';
@@ -6,12 +6,14 @@ import { CONTRACTOR_STATUS_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { getErrorMessage } from '@/shared/api/client';
 import {
-  Badge, Card, ErrorState, LoadingBlock, PageHeader, Pagination, SearchInput, Select, StatPills,
+  Badge, Button, Card, ErrorState, LoadingBlock, PageHeader, Pagination, SearchInput, Select, StatPills,
   Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCount } from '@/shared/utils/money.utils';
+import { useAuthStore } from '@/store/auth.store';
+import { ContractorFormModal } from './components/ContractorFormModal';
 
 export default function ContractorsPage() {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ export default function ContractorsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [status, setStatus] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const can = useAuthStore((state) => state.can);
 
   const params = useMemo(
     () => ({
@@ -41,6 +45,13 @@ export default function ContractorsPage() {
         title="Pudratchilar"
         description="Reyting obyektlar muddatida topshirilishidan avtomatik hisoblanadi"
         stats={data ? <StatPills items={[{ label: 'Jami pudratchilar', value: formatCount(data.meta.total) }]} /> : null}
+        actions={
+          can('contractors.manage') ? (
+            <Button onClick={() => setCreateOpen(true)} leftIcon={<Plus className="size-4" />}>
+              Yangi pudratchi
+            </Button>
+          ) : null
+        }
       />
 
       <Card flush>
@@ -125,6 +136,8 @@ export default function ContractorsPage() {
           )}
         </div>
       </Card>
+
+      <ContractorFormModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </>
   );
 }

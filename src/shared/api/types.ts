@@ -13,7 +13,12 @@ export type MilestoneStatus = 'planned' | 'in_progress' | 'done' | 'delayed' | '
 export type DelayStatus = 'open' | 'mitigating' | 'resolved';
 export type PhotoReportStatus = 'pending' | 'approved' | 'rejected';
 export type AiVerdict = 'confirmed' | 'suspicious' | 'rejected' | 'pending';
-export type AiAnalysisType = 'delay_forecast' | 'risk_score' | 'photo_check' | 'budget_deviation';
+export type AiAnalysisType =
+  | 'delay_forecast'
+  | 'risk_score'
+  | 'photo_check'
+  | 'budget_deviation'
+  | 'milestone_progress';
 export type DocumentType = 'project' | 'contract' | 'expertise' | 'permit' | 'act' | 'estimate' | 'other';
 export type ContractorStatus = 'active' | 'suspended' | 'blacklisted';
 export type FundingTxType = 'allocation' | 'payment' | 'adjustment';
@@ -270,9 +275,27 @@ export interface Milestone {
   actualStart: string | null;
   actualEnd: string | null;
   progressPercent: number;
+  /** Umumiy bajarilishdagi ulushi, %. Barcha bosqichlarniki = 100. */
   weight: number;
   status: MilestoneStatus;
   sortOrder: number;
+  /** Shu bosqichga biriktirilgan ishchilar soni. */
+  workerCount: number | null;
+  /* ── Topshirish izlari ── */
+  submittedAt: string | null;
+  submissionNote: string | null;
+  /** Shu bosqich bo‘yicha yuborilgan foto-hisobotlar soni. */
+  reportCount: number;
+  submittedBy?: UserSummary | null;
+}
+
+/** `POST /milestones/:id/submit` javobi. */
+export interface MilestoneSubmission {
+  milestone: Milestone;
+  report: PhotoReport;
+  /** Obyekt bajarilishi o‘zgargan bo‘lsa — oldingi va yangi qiymat. */
+  objectProgress: { previous: number; current: number } | null;
+  analysis: AiAnalysis | null;
 }
 
 export interface CalendarItem {
@@ -349,6 +372,10 @@ export interface PhotoVisionAnalysis {
 export interface PhotoReport {
   id: string;
   objectId: string;
+  /** Bosqich topshirilgan bo‘lsa — qaysi bosqich. */
+  milestoneId: string | null;
+  /** Bosqichning O‘Z foizi (`progressPercent` — OBYEKTNIKI). */
+  milestonePercent: number | null;
   capturedAt: string;
   lat: number | null;
   lng: number | null;
@@ -438,6 +465,8 @@ export interface FundingSummary {
 export interface AiAnalysis {
   id: string;
   objectId: string;
+  /** Bosqich tahlili bo‘lsa — qaysi bosqich. Obyekt tahlilida `null`. */
+  milestoneId: string | null;
   type: AiAnalysisType;
   score: number;
   riskLevel: RiskLevel;

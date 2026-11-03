@@ -1,4 +1,4 @@
-import { CheckCircle2, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Plus, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/shared/api/client';
@@ -8,29 +8,49 @@ import { DELAY_STATUS_META, RISK_META } from '@/shared/constants/health';
 import { Badge, Button, Card, CardBody, CardHeader, EmptyState, LoadingBlock, Modal, Textarea } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { useAuthStore } from '@/store/auth.store';
+import { DelayFormModal } from './DelayFormModal';
 
 export function ObjectDelaysTab({ objectId }: { objectId: string }) {
   const { data, isLoading } = useDelays({ objectId, limit: 50 });
   const [resolving, setResolving] = useState<ObjectDelay | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
   const can = useAuthStore((state) => state.can);
+  const canManage = can('delays.manage');
+
+  const addButton = canManage ? (
+    <Button size="sm" onClick={() => setAddOpen(true)} leftIcon={<Plus className="size-3.5" />}>
+      Kechikish qayd etish
+    </Button>
+  ) : null;
 
   if (isLoading) return <LoadingBlock />;
   const delays = data?.items ?? [];
 
   if (delays.length === 0) {
     return (
-      <Card>
-        <EmptyState
-          title="Kechikish qayd etilmagan"
-          description="Obyekt bo‘yicha ochiq muammolar yo‘q."
-          icon={<CheckCircle2 className="size-5 text-ok-500" />}
-        />
-      </Card>
+      <>
+        <Card>
+          <EmptyState
+            title="Kechikish qayd etilmagan"
+            description="Obyekt bo‘yicha ochiq muammolar yo‘q. Muammo yuzaga kelsa, uni shu yerda qayd eting — u risk bahosiga kiradi."
+            icon={<CheckCircle2 className="size-5 text-ok-500" />}
+            action={addButton}
+          />
+        </Card>
+        <DelayFormModal open={addOpen} onClose={() => setAddOpen(false)} objectId={objectId} />
+      </>
     );
   }
 
   return (
     <>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-meta text-muted">
+          {delays.length} ta yozuv · ochiq muammolar obyekt risk bahosiga kiradi
+        </p>
+        {addButton}
+      </div>
+
       <div className="space-y-3">
         {delays.map((delay) => {
           const status = DELAY_STATUS_META[delay.status];
@@ -75,6 +95,7 @@ export function ObjectDelaysTab({ objectId }: { objectId: string }) {
       </div>
 
       <ResolveModal delay={resolving} onClose={() => setResolving(null)} />
+      <DelayFormModal open={addOpen} onClose={() => setAddOpen(false)} objectId={objectId} />
     </>
   );
 }

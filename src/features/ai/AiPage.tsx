@@ -1,4 +1,4 @@
-import { Info, Lightbulb, Play, Sparkles } from 'lucide-react';
+import { Info, Lightbulb, ListChecks, Play, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
@@ -12,12 +12,14 @@ import { formatCount, formatPercent } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
 import { useFiltersStore } from '@/store/filters.store';
 import { CHART_TOOLTIP_STYLE } from '@/shared/hooks/useChartColors';
+import { AnalyzeObjectsModal } from './components/AnalyzeObjectsModal';
 
 export default function AiPage() {
   const { regionId } = useFiltersStore();
   const can = useAuthStore((state) => state.can);
   const { data, isLoading, isError, error, refetch } = useAiOverview(regionId ?? undefined);
   const [running, setRunning] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   async function runAnalysis() {
     setRunning(true);
@@ -60,11 +62,24 @@ export default function AiPage() {
             : 'Obyektlar bo‘yicha risk va prognoz tahlili'
         }
         actions={
-          can('settings.manage') ? (
-            <Button loading={running} onClick={runAnalysis} leftIcon={<Play className="size-4" />}>
-              Hozir tahlil qilish
+          <div className="flex flex-wrap items-center gap-2">
+            {/* ⚠️ Tanlab tahlil qilish HAMMAGA ochiq (obyektni ko‘rish
+                huquqi yetarli), «Hammasini» esa faqat `settings.manage` ga:
+                birinchisi bir nechta qatorni yangilaydi, ikkinchisi butun
+                bazani aylanadi va tasodifan bosilmasligi kerak. */}
+            <Button
+              variant="secondary"
+              onClick={() => setPickerOpen(true)}
+              leftIcon={<ListChecks className="size-4" />}
+            >
+              Tanlab tahlil qilish
             </Button>
-          ) : null
+            {can('settings.manage') ? (
+              <Button loading={running} onClick={runAnalysis} leftIcon={<Play className="size-4" />}>
+                Hammasini tahlil qilish
+              </Button>
+            ) : null}
+          </div>
         }
       />
 
@@ -154,6 +169,8 @@ export default function AiPage() {
           </CardBody>
         </Card>
       ) : null}
+
+      <AnalyzeObjectsModal open={pickerOpen} onClose={() => setPickerOpen(false)} />
     </>
   );
 }

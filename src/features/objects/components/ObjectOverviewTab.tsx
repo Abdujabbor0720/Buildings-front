@@ -1,7 +1,9 @@
+import { MapPin } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { AiAnalysis, ConstructionObject, ProgressUpdate } from '@/shared/api/types';
 import { RISK_META } from '@/shared/constants/health';
 import { Badge, Card, CardBody, CardHeader, EmptyState } from '@/shared/ui';
+import { LocationPicker } from './LocationPicker';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatAmount, formatCount, formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';
 import { CHART_TOOLTIP_STYLE, useChartColors } from '@/shared/hooks/useChartColors';
@@ -14,6 +16,7 @@ interface Props {
 
 export function ObjectOverviewTab({ object, progress, ai }: Props) {
   const { seriesHex } = useChartColors();
+  const hasCoords = object.lat !== null && object.lng !== null;
   const chartData = progress.map((point) => ({
     date: formatDateUz(point.reportDate),
     bajarilish: point.progressPercent,
@@ -78,6 +81,37 @@ export function ObjectOverviewTab({ object, progress, ai }: Props) {
               <Row label="Ajratilgan" value={formatMoneyFull(object.fundedAmount)} />
               <Row label="To‘langan" value={formatMoneyFull(object.paidAmount)} />
             </dl>
+          </CardBody>
+        </Card>
+
+        {/* ───── Joylashuvi ─────
+            ⚠️ Koordinata bo‘lsa — XARITA, bo‘lmasa buni AYTADI va
+            qayerdan to‘ldirish kerakligini ko‘rsatadi. Ilgari bu
+            ma’lumot faqat raqam sifatida tahrirlash oynasida turardi
+            va «obyekt xaritada nega yo‘q» degan savolga javob
+            topilmasdi. */}
+        <Card>
+          <CardHeader
+            title="Joylashuvi"
+            subtitle={object.address ?? object.district?.name ?? undefined}
+          />
+          <CardBody>
+            {hasCoords ? (
+              <LocationPicker
+                readOnly
+                heightClass="h-[200px]"
+                lat={String(object.lat)}
+                lng={String(object.lng)}
+                districtId={object.districtId}
+                onChange={() => undefined}
+              />
+            ) : (
+              <p className="flex items-start gap-2 rounded-lg surface-muted px-3 py-2.5 text-meta text-muted">
+                <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                Koordinata kiritilmagan — obyekt xaritada ko‘rinmaydi. «Tahrirlash»
+                oynasidagi xaritadan nuqtani belgilang.
+              </p>
+            )}
           </CardBody>
         </Card>
 

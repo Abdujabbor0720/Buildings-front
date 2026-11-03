@@ -1,10 +1,14 @@
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 import type { ConstructionObject, FundingAllocation, FundingTransaction } from '@/shared/api/types';
 import {
-  Badge, Card, CardBody, CardHeader, EmptyState, LoadingBlock, ProgressBar,
+  Badge, Button, Card, CardBody, CardHeader, EmptyState, LoadingBlock, ProgressBar,
   Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatMoneyFull, formatPercent, toNumber } from '@/shared/utils/money.utils';
+import { useAuthStore } from '@/store/auth.store';
+import { TransactionFormModal } from './TransactionFormModal';
 
 const TX_LABELS: Record<string, { label: string; chip: string }> = {
   allocation: { label: 'Mablag‘ ajratildi', chip: 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' },
@@ -21,6 +25,9 @@ export function ObjectFundingTab({
   data: { allocations: FundingAllocation[]; transactions: FundingTransaction[] } | undefined;
   isLoading: boolean;
 }) {
+  const can = useAuthStore((state) => state.can);
+  const [addOpen, setAddOpen] = useState(false);
+
   if (isLoading) return <LoadingBlock />;
   if (!data) return <Card><EmptyState title="Moliyaviy ma’lumot topilmadi" /></Card>;
 
@@ -100,6 +107,13 @@ export function ObjectFundingTab({
           <CardHeader
             title="Moliyaviy harakatlar daftari"
             subtitle="Yozuvlar o‘chirilmaydi — tuzatish teskari qator bilan kiritiladi"
+            action={
+              can('funding.manage') ? (
+                <Button size="sm" onClick={() => setAddOpen(true)} leftIcon={<Plus className="size-3.5" />}>
+                  Harakat qayd etish
+                </Button>
+              ) : null
+            }
           />
         </div>
         <CardBody className="px-4 pb-1 sm:px-5">
@@ -136,6 +150,13 @@ export function ObjectFundingTab({
           </TableWrap>
         </CardBody>
       </Card>
+
+      <TransactionFormModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        objectId={object.id}
+        allocations={data.allocations}
+      />
     </div>
   );
 }
