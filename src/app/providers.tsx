@@ -33,8 +33,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
           duration: 4000,
           className:
             '!rounded-xl !border !border-subtle !bg-[var(--surface)] !text-strong !text-sm !shadow-[var(--shadow-pop)]',
-          success: { iconTheme: { primary: '#12805C', secondary: '#fff' } },
-          error: { duration: 6000, iconTheme: { primary: '#B42318', secondary: '#fff' } },
+          // ⚠️ Toast kutubxonasi CSS o‘zgaruvchisini qabul qilmaydi —
+          // HEX majburiy. Qiymatlar `health.ts` dagi `ok`/`danger`
+          // 500-pog‘onasi bilan AYNI bo‘lishi kerak; u yerda o‘zgarsa,
+          // bu yer ham qo‘lda yangilanadi.
+          success: { iconTheme: { primary: '#0A924B', secondary: '#fff' } },
+          error: { duration: 6000, iconTheme: { primary: '#AC1730', secondary: '#fff' } },
         }}
       />
     </QueryClientProvider>

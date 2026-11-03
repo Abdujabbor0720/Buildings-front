@@ -1,7 +1,7 @@
 import type { ConstructionObject, FundingAllocation, FundingTransaction } from '@/shared/api/types';
 import {
   Badge, Card, CardBody, CardHeader, EmptyState, LoadingBlock, ProgressBar,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr,
+  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatMoneyFull, formatPercent, toNumber } from '@/shared/utils/money.utils';

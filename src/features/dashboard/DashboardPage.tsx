@@ -66,7 +66,16 @@ export default function DashboardPage() {
           </CardBody>
         </Card>
 
-        <Card className="flex flex-col xl:col-span-4">
+        {/* ⚠️ `max-h` AYNAN KARTADA. Grid qatorining balandligi
+            undagi eng baland elementga teng; chegarasiz 16 ta tuman bu
+            kartani ~500px ga cho‘zib, XARITANI ham cho‘zar va o‘ng
+            ustundagi ikki karta tepada qolib ketardi.
+
+            Hisob: 12 qator × 31px + jadval sarlavhasi 28px + tablar
+            46px + karta to‘ldirishi 32px ≈ 480px. Qator balandligi
+            `Table.tsx` dagi `py-1.5` ga bog‘liq — u o‘zgarsa bu son
+            ham qayta hisoblanadi. */}
+        <Card className="flex max-h-[480px] flex-col xl:col-span-4">
           <CardHeader title="Tumanlar kesimida obyektlar" moreTo="/districts" />
           <CardBody className="flex min-h-0 flex-1 flex-col">
             {data ? <DistrictTable districts={data.districts} /> : <BlockSkeleton rows={8} />}

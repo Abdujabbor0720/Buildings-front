@@ -6,7 +6,7 @@ import { useAddProgress } from '@/shared/api/queries';
 import type { ConstructionObject, ProgressUpdate } from '@/shared/api/types';
 import {
   Button, Card, CardBody, CardHeader, Input, LoadingBlock, Modal, ProgressBar, Table, TableEmpty,
-  TableWrap, TBody, Td, Textarea, Th, THead, Tr,
+  TableWrap, TBody, Td, Textarea, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz, toInputDate, tashkentToday } from '@/shared/utils/date.utils';
 import { useAuthStore } from '@/store/auth.store';

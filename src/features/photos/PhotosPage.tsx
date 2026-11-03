@@ -8,8 +8,8 @@ import type { PhotoReport } from '@/shared/api/types';
 import { AI_VERDICT_META, PHOTO_STATUS_LABELS } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
-  Badge, Button, Card, EmptyState, LoadingBlock, Modal, PageHeader, Pagination,
-  SearchInput, Select, StatPills, Textarea,
+  Badge, Button, Card, EmptyState, ErrorState, LoadingBlock, Modal, PageHeader, Pagination,
+  SearchInput, Select, StatPills, Textarea
 } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
@@ -49,7 +49,7 @@ export default function PhotosPage() {
     [page, debouncedSearch, status, verdict, districtId],
   );
 
-  const { data, isLoading } = usePhotoReports(params);
+  const { data, isLoading, isError, error, refetch } = usePhotoReports(params);
   const reports = data?.items ?? [];
 
   async function approve(report: PhotoReport) {
@@ -128,8 +128,13 @@ export default function PhotosPage() {
         </div>
 
         <div className="p-3 sm:p-4">
+          {/* ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda bu yerda
+              BO‘SH ro‘yxat ko‘rinardi — foydalanuvchi «ma’lumot yo‘q»
+              deb o‘ylab, aslida tarmoq uzilganini bilmay qolardi. */}
           {isLoading ? (
             <LoadingBlock />
+          ) : isError ? (
+            <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
           ) : reports.length === 0 ? (
             <EmptyState title="Foto-hisobot topilmadi" icon={<Camera className="size-5" />} />
           ) : (

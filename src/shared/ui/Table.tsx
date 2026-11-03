@@ -49,7 +49,11 @@ export function Th({ children, sortKey, activeSort, onSort, align = 'left', clas
     <th
       scope="col"
       className={cn(
+        // ⚠️ `border-r` OXIRGI ustunda yo‘q (`last:border-r-0`): aks
+        // holda jadvalning o‘ng chekkasida kartaning chegarasi ustiga
+        // tushadigan ikkinchi chiziq paydo bo‘lardi.
         't-label surface sticky top-0 z-10 border-b border-subtle px-3 pt-0.5 pb-1.5 whitespace-nowrap',
+        'border-r border-cell last:border-r-0',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
         align === 'left' && 'text-left',
@@ -133,6 +137,10 @@ export function Td({ children, align = 'left', muted, className, ...rest }: TdPr
         // qator 41px chiqardi: 11 ta tuman kartaga sig'may, ro'yxat
         // skroll ortida qolardi.
         'border-b border-subtle px-3 py-1.5 align-middle',
+        // Ustunlar orasidagi chiziq — `--border-cell`, qator
+        // ajratgichidan ANCHA och. Ikkalasi bir xil quyuqlikda bo‘lsa,
+        // jadval «to‘r» bo‘lib ko‘rinib, raqamlar o‘qilmay qolardi.
+        'border-r border-cell last:border-r-0',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
         muted && 'text-muted',

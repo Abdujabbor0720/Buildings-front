@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { useCalendar, useDistricts } from '@/shared/api/queries';
 import type { CalendarItem } from '@/shared/api/types';
 import { MILESTONE_LABELS } from '@/shared/constants/health';
-import { Badge, Button, Card, CardBody, CardHeader, EmptyState, LoadingBlock, PageHeader, ProgressBar, Select } from '@/shared/ui';
+import { getErrorMessage } from '@/shared/api/client';
+import { Badge, Button, Card, CardBody, CardHeader, EmptyState, ErrorState, LoadingBlock, PageHeader, ProgressBar, Select } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { MONTHS_UZ_CAP, WEEKDAYS_UZ_SHORT, formatDateUz, tashkentToday } from '@/shared/utils/date.utils';
 import { useFiltersStore } from '@/store/filters.store';
@@ -30,7 +31,7 @@ export default function CalendarPage() {
     () => ({ year, month, ...(districtId ? { districtId } : {}) }),
     [year, month, districtId],
   );
-  const { data, isLoading } = useCalendar(params);
+  const { data, isLoading, isError, error, refetch } = useCalendar(params);
   // ⚠️ `data ?? []` har renderda YANGI massiv yaratadi va pastdagi
   // `useMemo` bog‘liqligini har safar buzadi.
   const items = useMemo(() => data ?? [], [data]);
@@ -99,8 +100,14 @@ export default function CalendarPage() {
         }
       />
 
+      {/* ⚠️ XATO HOLATI MAJBURIY — busiz so‘rov yiqilganda bo‘sh
+          kalendar ko‘rinardi va odam «ish rejasi yo‘q» deb o‘ylardi. */}
       {isLoading ? (
         <LoadingBlock className="min-h-[50vh]" />
+      ) : isError ? (
+        <Card>
+          <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
+        </Card>
       ) : (
         <div className="space-y-4">
           <Card flush>

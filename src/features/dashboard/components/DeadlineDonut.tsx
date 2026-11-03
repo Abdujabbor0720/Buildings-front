@@ -47,7 +47,8 @@ export function DeadlineDonut({ buckets }: { buckets: DeadlineBucket[] }) {
 
   const visible = active === 'all' ? colored : colored.filter((bucket) => bucket.label === active);
   const total = visible.reduce((sum, bucket) => sum + bucket.count, 0);
-  const emptyHex = dark ? '#2a2a2c' : '#e8e8ea';
+  // Bo‘sh halqa — neytral shkaladan (`neutral-200` / qorong‘ida `800`).
+  const emptyHex = dark ? '#22313f' : '#e2eaf2';
 
   return (
     <>

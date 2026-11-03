@@ -7,6 +7,7 @@ import type { ConstructionObject } from '@/shared/api/types';
 import { HEALTH_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { Badge } from '@/shared/ui';
+import { CATEGORICAL_REST_HEX } from '@/shared/constants/health';
 import { cn } from '@/shared/utils/cn';
 
 /** Sarlavhadagi umumiy qidiruv — obyekt nomi, kodi va manzili bo‘yicha. */
@@ -135,9 +136,9 @@ export function GlobalSearch() {
                     >
                       <span
                         className="grid size-8 shrink-0 place-items-center rounded-lg"
-                        style={{ backgroundColor: `${object.type?.color ?? '#B4B4BC'}1f` }}
+                        style={{ backgroundColor: `${object.type?.color ?? CATEGORICAL_REST_HEX}1f` }}
                       >
-                        <Building2 className="size-4" style={{ color: object.type?.color ?? '#B4B4BC' }} />
+                        <Building2 className="size-4" style={{ color: object.type?.color ?? CATEGORICAL_REST_HEX }} />
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-ui font-medium text-strong">

@@ -276,9 +276,14 @@ function DistrictLayer({
  * qorong‘i rejimda to‘q yashil qora fonda ko‘rinmay qolardi.
  */
 function tooltipHtml(props: DistrictStats, palette: ReturnType<typeof useChartColors>): string {
-  const ink = palette.dark ? '#f5f5f4' : '#ffffff';
-  const bg = palette.dark ? '#262626' : '#0a0a0a';
-  const faint = palette.dark ? '#a1a1aa' : 'rgba(255,255,255,.62)';
+  // ⚠️ Ko‘rsatma HAR DOIM to‘q fonli — yorug‘ rejimda ham. U xarita
+  // USTIDA suzadi va oq fonli bo‘lsa, ochiq ko‘k tumanlar ustida
+  // chegarasi yo‘qolib ketardi.
+  // Ranglar sovuq neytral oiladan (`neutral-900/800`), iliq kulrangdan
+  // emas: ko‘kish xarita ustida sarg‘ish kulrang «kir» bo‘lib ko‘rinadi.
+  const ink = palette.dark ? '#eef3f8' : '#ffffff';
+  const bg = palette.dark ? '#243344' : '#16222f';
+  const faint = palette.dark ? '#94a6bd' : 'rgba(255,255,255,.64)';
 
   const row = (label: string, value: string | number, color?: string) =>
     `<div style="display:flex;justify-content:space-between;gap:14px">

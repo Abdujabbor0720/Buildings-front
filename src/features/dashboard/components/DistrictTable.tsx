@@ -36,16 +36,15 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
     <div className="flex min-h-0 flex-1 flex-col">
       <Tabs options={TABS} value={filter} onChange={setFilter} className="mb-3 shrink-0" />
 
-      {/* ⚠️ BALANDLIK CHEGARALANADI — 12 qator ko‘rinadi, qolgani skroll.
-          Chegarasiz 16 ta tuman kartani ~500px ga cho‘zadi; karta esa
-          gridning o‘sha QATORIDAGI eng balandi bo‘lgani uchun xarita ham
-          cho‘ziladi, o‘ng ustundagi «Muddatlar» va «Qurilish turlari»
-          esa tepada qolib, ostida katta bo‘sh joy paydo bo‘ladi.
+      {/* ⚠️ Chegara KARTADA (`DashboardPage` dagi `max-h`), bu yerda
+          EMAS. Jadvalga `max-h` qo‘yilganda u kartadan past bo‘lib
+          qolardi va ostida bo‘sh joy ochilardi: karta balandligini
+          gridning o‘sha qatori (o‘ng ustun) belgilaydi, jadval esa
+          o‘zining 400px ida to‘xtab turardi.
 
-          Hisob: sarlavha 28px + 12 × 31px qator = 400px. Qator
-          balandligi `Table.tsx` dagi `py-1.5` bilan bog‘liq — u
-          o‘zgarsa, bu son ham qayta hisoblanishi kerak. */}
-      <TableWrap className="max-h-[400px] min-h-0 flex-1 overflow-y-auto">
+          Endi jadval `flex-1` bilan kartani TO‘LDIRADI va ortig‘i
+          skroll bo‘ladi — qancha joy bo‘lsa, shuncha qator ko‘rinadi. */}
+      <TableWrap className="min-h-0 flex-1 overflow-y-auto">
         <Table>
           <THead>
             <Tr>

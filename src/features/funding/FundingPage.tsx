@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { getErrorMessage } from '@/shared/api/client';
 import { useFundingAllocations, useFundingSummary, useFundingTransactions } from '@/shared/api/queries';
 import {
-  Badge, Card, CardBody, CardHeader, LoadingBlock, PageHeader, Pagination, ProgressBar,
-  Tabs, type TabOption, Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr,
+  Badge, Card, CardBody, CardHeader, ErrorState, LoadingBlock, PageHeader, Pagination, ProgressBar,
+  Tabs, type TabOption, Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatMoneyFull, formatPercent, toNumber } from '@/shared/utils/money.utils';
@@ -27,10 +28,16 @@ const TX_LABELS: Record<string, { label: string; chip: string }> = {
 export default function FundingPage() {
   // Reja ⊇ ajratilgan ⊇ to‘langan — bu TARTIBLI qator, turkum emas:
   // bitta rang oilasining pog‘onalari (to‘langan = eng to‘q, eng «haqiqiy»).
+  //
+  // ⚠️ BINAFSHA (`done` oilasi), ko‘k EMAS. Shu sahifada moliya
+  // manbalari doirasi TURKUM palitrasida chiziladi va uning birinchi
+  // rangi ko‘k; ustunlar ham ko‘k bo‘lsa, bir ekranda bitta rang ikki
+  // xil ma’no anglatardi. Pog‘onalar yorqinlik bo‘yicha monoton
+  // (ΔL ≈ 0.14) — bosma nusxada ham ajraladi.
   const { dark } = useChartColors();
   const fundingRamp = dark
-    ? ['#FFC48F', '#E07C10', '#9E4F00']
-    : ['#FF8C1A', '#C06300', '#7A3D00'];
+    ? ['#7444b4', '#956ed2', '#b69be6']
+    : ['#b69be6', '#9065d0', '#6b30af'];
   const { regionId } = useFiltersStore();
   const [view, setView] = useState<View>('allocations');
   const [page, setPage] = useState(1);
@@ -43,6 +50,18 @@ export default function FundingPage() {
   const transactions = useFundingTransactions(view === 'transactions' ? listParams : { page: 1, limit: 1 });
 
   if (summary.isLoading) return <LoadingBlock className="min-h-[50vh]" />;
+  // ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda sahifa BO‘SH
+  // ro‘yxat ko‘rsatardi — foydalanuvchi «ma’lumot yo‘q» deb o‘ylab,
+  // aslida tarmoq uzilganini bilmay qolardi.
+  if (summary.isError)
+    return (
+      <Card>
+        <ErrorState
+          message={getErrorMessage(summary.error)}
+          onRetry={() => void summary.refetch()}
+        />
+      </Card>
+    );
   const data = summary.data;
 
   const yearChart = (data?.byYear ?? []).map((item) => ({

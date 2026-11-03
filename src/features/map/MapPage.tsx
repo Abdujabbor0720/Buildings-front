@@ -6,7 +6,8 @@ import { Link } from 'react-router-dom';
 import { useCatalogs, useDistrictGeoJson, useObjectsMap } from '@/shared/api/queries';
 import type { DistrictGeoJson, ObjectHealth } from '@/shared/api/types';
 import { HEALTH_LEGEND, HEALTH_META } from '@/shared/constants/health';
-import { Badge, Card, LoadingBlock, PageHeader, Select, StatPills } from '@/shared/ui';
+import { getErrorMessage } from '@/shared/api/client';
+import { Badge, Card, ErrorState, LoadingBlock, PageHeader, Select, StatPills } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatCount } from '@/shared/utils/money.utils';
 import { useFiltersStore } from '@/store/filters.store';
@@ -123,14 +124,28 @@ export default function MapPage() {
       />
 
       <Card flush className="overflow-hidden">
+        {/* ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda BO‘SH
+            xarita ko‘rinardi — foydalanuvchi «obyekt yo‘q» deb o‘ylab,
+            aslida chegaralar yuklanmaganini bilmay qolardi. Xarita
+            holatida bu ayniqsa yomon: bo‘sh xarita xatoga o‘xshamaydi. */}
         {view === 'districts' ? (
           geojson.isLoading ? (
             <LoadingBlock className="h-[calc(100dvh-16rem)]" />
+          ) : geojson.isError ? (
+            <ErrorState
+              message={getErrorMessage(geojson.error)}
+              onRetry={() => void geojson.refetch()}
+            />
           ) : (
             <DistrictMap geojson={geojson.data} showTiles heightClass="h-[calc(100dvh-16rem)]" className="rounded-none border-0" />
           )
         ) : points.isLoading ? (
           <LoadingBlock className="h-[calc(100dvh-16rem)]" />
+        ) : points.isError ? (
+          <ErrorState
+            message={getErrorMessage(points.error)}
+            onRetry={() => void points.refetch()}
+          />
         ) : (
           <ObjectsMap points={points.data ?? []} geojson={geojson.data ?? null} />
         )}

@@ -1,13 +1,13 @@
 import { Download, FileText, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { resolveFileUrl } from '@/shared/api/client';
+import { getErrorMessage, resolveFileUrl } from '@/shared/api/client';
 import { useDistricts, useDocuments } from '@/shared/api/queries';
 import { DOCUMENT_TYPE_LABELS } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
-  Badge, Card, LoadingBlock, PageHeader, Pagination, SearchInput, Select, StatPills,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr,
+  Badge, Card, ErrorState, LoadingBlock, PageHeader, Pagination, SearchInput, Select, StatPills,
+  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { diffInDays, formatDateUz, tashkentToday } from '@/shared/utils/date.utils';
@@ -38,7 +38,7 @@ export default function DocumentsPage() {
     [page, limit, debouncedSearch, type, districtId, expiringOnly],
   );
 
-  const { data, isLoading } = useDocuments(params);
+  const { data, isLoading, isError, error, refetch } = useDocuments(params);
   const today = tashkentToday();
 
   return (
@@ -83,8 +83,13 @@ export default function DocumentsPage() {
         </div>
 
         <div className="p-3 sm:p-4">
+          {/* ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda bu yerda
+              BO‘SH ro‘yxat ko‘rinardi — foydalanuvchi «ma’lumot yo‘q»
+              deb o‘ylab, aslida tarmoq uzilganini bilmay qolardi. */}
           {isLoading ? (
             <LoadingBlock />
+          ) : isError ? (
+            <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
           ) : (
             <>
               <TableWrap>

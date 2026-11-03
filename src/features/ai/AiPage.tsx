@@ -6,7 +6,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { apiPost, getErrorMessage } from '@/shared/api/client';
 import { useAiOverview } from '@/shared/api/queries';
 import { RISK_META } from '@/shared/constants/health';
-import { Badge, Button, Card, CardBody, CardHeader, EmptyState, LoadingBlock, PageHeader, ProgressBar } from '@/shared/ui';
+import { Badge, Button, Card, CardBody, CardHeader, EmptyState, LoadingBlock, PageHeader, ProgressBar, ErrorState} from '@/shared/ui';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
 import { formatCount, formatPercent } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
@@ -16,7 +16,7 @@ import { CHART_TOOLTIP_STYLE } from '@/shared/hooks/useChartColors';
 export default function AiPage() {
   const { regionId } = useFiltersStore();
   const can = useAuthStore((state) => state.can);
-  const { data, isLoading, refetch } = useAiOverview(regionId ?? undefined);
+  const { data, isLoading, isError, error, refetch } = useAiOverview(regionId ?? undefined);
   const [running, setRunning] = useState(false);
 
   async function runAnalysis() {
@@ -33,6 +33,15 @@ export default function AiPage() {
   }
 
   if (isLoading) return <LoadingBlock className="min-h-[50vh]" />;
+  // ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda sahifa BO‘SH
+  // ro‘yxat ko‘rsatardi — foydalanuvchi «ma’lumot yo‘q» deb o‘ylab,
+  // aslida tarmoq uzilganini bilmay qolardi.
+  if (isError)
+    return (
+      <Card>
+        <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
+      </Card>
+    );
 
   const distribution = (data?.distribution ?? []).map((item) => ({
     name: RISK_META[item.level].label,

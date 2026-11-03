@@ -8,8 +8,7 @@ import { apiDownload, getErrorMessage } from '@/shared/api/client';
 import { useDistrictStats } from '@/shared/api/queries';
 import {
   Button, Card, CardBody, CardHeader, LoadingBlock, PageHeader, ProgressBar,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr,
-} from '@/shared/ui';
+  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr, ErrorState} from '@/shared/ui';
 import { formatCompact, formatCount, formatPercent } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
 import { useFiltersStore } from '@/store/filters.store';
@@ -25,7 +24,7 @@ export default function DistrictsPage() {
   const [exporting, setExporting] = useState(false);
 
   const params = useMemo(() => ({ ...(regionId ? { regionId } : {}), yearFrom, yearTo }), [regionId, yearFrom, yearTo]);
-  const { data, isLoading } = useDistrictStats(params);
+  const { data, isLoading, isError, error, refetch } = useDistrictStats(params);
 
   const rows = useMemo(() => {
     const list = data ?? [];
@@ -64,6 +63,15 @@ export default function DistrictsPage() {
   }
 
   if (isLoading) return <LoadingBlock className="min-h-[50vh]" />;
+  // ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda sahifa BO‘SH
+  // ro‘yxat ko‘rsatardi — foydalanuvchi «ma’lumot yo‘q» deb o‘ylab,
+  // aslida tarmoq uzilganini bilmay qolardi.
+  if (isError)
+    return (
+      <Card>
+        <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
+      </Card>
+    );
 
   return (
     <>

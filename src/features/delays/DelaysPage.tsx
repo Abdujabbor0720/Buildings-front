@@ -9,7 +9,7 @@ import { DELAY_STATUS_META, RISK_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
   Badge, Button, Card, CardBody, CardHeader, ErrorState, Modal, PageHeader, Pagination,
-  SearchInput, Select, StatPills, Table, TableEmpty, TableWrap, TBody, Td, Textarea, Th, THead, Tr,
+  SearchInput, Select, StatPills, Table, TableEmpty, TableWrap, TBody, Td, Textarea, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCount, formatPercent } from '@/shared/utils/money.utils';

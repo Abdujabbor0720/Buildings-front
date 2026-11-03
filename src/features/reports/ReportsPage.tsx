@@ -8,7 +8,7 @@ import {
 import { apiDownload, getErrorMessage } from '@/shared/api/client';
 import { useProgressTimeline, useReportSummary } from '@/shared/api/queries';
 import { CATEGORICAL_REST_HEX, HEALTH_META, STATUS_META } from '@/shared/constants/health';
-import { Button, Card, CardBody, CardHeader, LoadingBlock, PageHeader } from '@/shared/ui';
+import { Button, Card, CardBody, CardHeader, ErrorState, LoadingBlock, PageHeader } from '@/shared/ui';
 import { formatCompact, formatCount } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
 import { useFiltersStore } from '@/store/filters.store';
@@ -42,6 +42,18 @@ export default function ReportsPage() {
   }
 
   if (summary.isLoading) return <LoadingBlock className="min-h-[50vh]" />;
+  // ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda sahifa BO‘SH
+  // ro‘yxat ko‘rsatardi — foydalanuvchi «ma’lumot yo‘q» deb o‘ylab,
+  // aslida tarmoq uzilganini bilmay qolardi.
+  if (summary.isError)
+    return (
+      <Card>
+        <ErrorState
+          message={getErrorMessage(summary.error)}
+          onRetry={() => void summary.refetch()}
+        />
+      </Card>
+    );
 
   const statusData = (summary.data?.byStatus ?? []).map((item) => ({
     name: item.label,

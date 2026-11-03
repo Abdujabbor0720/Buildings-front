@@ -4,7 +4,7 @@ import { useDocuments } from '@/shared/api/queries';
 import { DOCUMENT_TYPE_LABELS } from '@/shared/constants/health';
 import {
   Badge, Card, CardBody, CardHeader, EmptyState, LoadingBlock,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr,
+  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { diffInDays, formatDateUz, tashkentToday } from '@/shared/utils/date.utils';
 import { cn } from '@/shared/utils/cn';

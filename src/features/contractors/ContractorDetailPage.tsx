@@ -5,7 +5,7 @@ import { useContractor, useObjects } from '@/shared/api/queries';
 import { CONTRACTOR_STATUS_META, HEALTH_META } from '@/shared/constants/health';
 import {
   Badge, Card, CardBody, CardHeader, ErrorState, LoadingBlock, ProgressBar,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr,
+  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';

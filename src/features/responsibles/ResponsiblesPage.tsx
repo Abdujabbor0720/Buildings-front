@@ -1,17 +1,27 @@
+import { getErrorMessage } from '@/shared/api/client';
 import { Mail, Phone, UserCog } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useResponsibles } from '@/shared/api/queries';
 import { ROLE_LABELS } from '@/shared/constants/health';
-import { Avatar, Card, EmptyState, LoadingBlock, PageHeader, ProgressBar, StatPills } from '@/shared/ui';
+import { Avatar, Card, EmptyState, LoadingBlock, PageHeader, ProgressBar, StatPills, ErrorState} from '@/shared/ui';
 import { formatCount } from '@/shared/utils/money.utils';
 import { useFiltersStore } from '@/store/filters.store';
 
 /** «Mas’ullar» — har kurator va uning obyektlari kesimi. */
 export default function ResponsiblesPage() {
   const { regionId } = useFiltersStore();
-  const { data, isLoading } = useResponsibles(regionId ?? undefined);
+  const { data, isLoading, isError, error, refetch } = useResponsibles(regionId ?? undefined);
 
   if (isLoading) return <LoadingBlock className="min-h-[50vh]" />;
+  // ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda sahifa BO‘SH
+  // ro‘yxat ko‘rsatardi — foydalanuvchi «ma’lumot yo‘q» deb o‘ylab,
+  // aslida tarmoq uzilganini bilmay qolardi.
+  if (isError)
+    return (
+      <Card>
+        <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />
+      </Card>
+    );
   const items = data ?? [];
 
   const totals = items.reduce(

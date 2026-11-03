@@ -9,7 +9,7 @@ import { HEALTH_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
   Badge, Button, Card, ErrorState, PageHeader, Pagination, ProgressBar, SearchInput, Select,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr,
+  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatCount } from '@/shared/utils/money.utils';

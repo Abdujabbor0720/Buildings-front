@@ -5,7 +5,7 @@ import { getErrorMessage } from '@/shared/api/client';
 import { useCatalogs, useResetSetting, useSettings, useUpdateSetting, type SettingDefinition } from '@/shared/api/queries';
 import { ROLE_LABELS } from '@/shared/constants/health';
 import {
-  Avatar, Badge, Button, Card, CardBody, CardHeader, Input, LoadingBlock, PageHeader, Tabs, type TabOption,
+  Avatar, Badge, Button, Card, CardBody, CardHeader, ErrorState, Input, LoadingBlock, PageHeader, Tabs, type TabOption
 } from '@/shared/ui';
 import { useAuthStore } from '@/store/auth.store';
 import { useUiStore } from '@/store/ui.store';
@@ -105,8 +105,13 @@ export default function SettingsPage() {
 }
 
 function SystemSettings({ canManage }: { canManage: boolean }) {
-  const { data, isLoading } = useSettings();
+  const { data, isLoading, isError, error, refetch } = useSettings();
   if (isLoading) return <LoadingBlock />;
+  // ⚠️ XATO HOLATI MAJBURIY. Busiz so‘rov yiqilganda sahifa BO‘SH
+  // ro‘yxat ko‘rsatardi — foydalanuvchi «ma’lumot yo‘q» deb o‘ylab,
+  // aslida tarmoq uzilganini bilmay qolardi.
+  if (isError)
+    return <ErrorState message={getErrorMessage(error)} onRetry={() => void refetch()} />;
 
   return (
     <div className="space-y-4">

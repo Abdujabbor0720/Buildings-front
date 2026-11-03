@@ -3,7 +3,7 @@ import type { AiAnalysis, ConstructionObject, ProgressUpdate } from '@/shared/ap
 import { RISK_META } from '@/shared/constants/health';
 import { Badge, Card, CardBody, CardHeader, EmptyState } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
-import { formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';
+import { formatAmount, formatCount, formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';
 import { CHART_TOOLTIP_STYLE, useChartColors } from '@/shared/hooks/useChartColors';
 
 interface Props {
@@ -65,8 +65,13 @@ export function ObjectOverviewTab({ object, progress, ai }: Props) {
               <Row label="Pudratchi" value={object.contractor?.name ?? '—'} />
               <Row label="Mas’ul" value={object.responsible ? `${object.responsible.lastName} ${object.responsible.firstName}` : '—'} />
               <Row label="Moliya manbai" value={object.fundingSource?.name ?? '—'} />
-              <Row label="Quvvati" value={object.capacity ? `${object.capacity} ${object.capacityUnit ?? ''}` : '—'} />
-              <Row label="Maydoni" value={object.areaM2 ? `${object.areaM2.toLocaleString('ru-RU')} m²` : '—'} />
+              {/* ⚠️ `toLocaleString('ru-RU')` ISHLATILMAYDI: natija kod
+                  ishlayotgan muhitga (brauzer, Node ICU) bog‘liq va
+                  bitta kartada «9 054,6» bilan «9.054,6» yonma-yon
+                  chiqishi mumkin. `formatAmount` — loyihaning yagona
+                  son formatlovchisi (`dates.md` §3 bilan bir mantiq). */}
+              <Row label="Quvvati" value={object.capacity ? `${formatCount(object.capacity)} ${object.capacityUnit ?? ''}`.trim() : '—'} />
+              <Row label="Maydoni" value={object.areaM2 ? `${formatAmount(object.areaM2, 1)} m²` : '—'} />
               <Row label="Qavatlar" value={object.floors ? String(object.floors) : '—'} />
               <Row label="Haqiqiy boshlanish" value={formatDateUz(object.actualStartDate)} />
               <Row label="Loyiha qiymati" value={formatMoneyFull(object.totalCost)} />

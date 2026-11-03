@@ -188,6 +188,12 @@
 
     --border-subtle: #e6edf5;
     --border-strong: #d4e0ec;
+    /* Jadval katagi — `--border-subtle` dan ANCHA och.
+       Ustunlar orasidagi chiziq qator ajratgichi bilan BIR XIL
+       quyuqlikda bo‘lsa, jadval «to‘r» bo‘lib ko‘rinadi va raqamlar
+       o‘qilmay qoladi: vertikal chiziq faqat ustunni BELGILASHI kerak,
+       e’tibor tortmasligi. */
+    --border-cell: #eef2f7;
 
     --ink-strong: #16222f;
     --ink-body: #35465a;
@@ -214,6 +220,7 @@
 
     --border-subtle: #243444;
     --border-strong: #324455;
+    --border-cell: #1e2c3a;
 
     --ink-strong: #eef3f8;
     --ink-body: #ccd8e4;
@@ -324,6 +331,9 @@
   }
   .border-subtle {
     border-color: var(--border-subtle);
+  }
+  .border-cell {
+    border-color: var(--border-cell);
   }
 
   /* ───────── Panel (sidebar) ───────── */
