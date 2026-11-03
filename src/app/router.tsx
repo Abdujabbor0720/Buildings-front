@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router-dom';
 import { AppLayout } from '@/layouts/AppLayout';
 import { LoadingBlock } from '@/shared/ui';
 import { useAuthStore } from '@/store/auth.store';
+import { lazyPage } from './lazy-page';
 import { LoginPage } from '@/features/auth/LoginPage';
 
 /**
@@ -10,23 +11,23 @@ import { LoginPage } from '@/features/auth/LoginPage';
  * (Recharts) birgalikda ~400 KB: ularni bosh sahifa bilan birga
  * yuklash birinchi ochilishni sezilarli sekinlashtirardi.
  */
-const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
-const ObjectsPage = lazy(() => import('@/features/objects/ObjectsPage'));
-const ObjectDetailPage = lazy(() => import('@/features/objects/ObjectDetailPage'));
-const MapPage = lazy(() => import('@/features/map/MapPage'));
-const DistrictsPage = lazy(() => import('@/features/districts/DistrictsPage'));
-const CalendarPage = lazy(() => import('@/features/calendar/CalendarPage'));
-const DelaysPage = lazy(() => import('@/features/delays/DelaysPage'));
-const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
-const PhotosPage = lazy(() => import('@/features/photos/PhotosPage'));
-const DocumentsPage = lazy(() => import('@/features/documents/DocumentsPage'));
-const ResponsiblesPage = lazy(() => import('@/features/responsibles/ResponsiblesPage'));
-const ContractorsPage = lazy(() => import('@/features/contractors/ContractorsPage'));
-const ContractorDetailPage = lazy(() => import('@/features/contractors/ContractorDetailPage'));
-const FundingPage = lazy(() => import('@/features/funding/FundingPage'));
-const AiPage = lazy(() => import('@/features/ai/AiPage'));
-const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
-const NotFoundPage = lazy(() => import('@/features/misc/NotFoundPage'));
+const DashboardPage = lazyPage(() => import('@/features/dashboard/DashboardPage'));
+const ObjectsPage = lazyPage(() => import('@/features/objects/ObjectsPage'));
+const ObjectDetailPage = lazyPage(() => import('@/features/objects/ObjectDetailPage'));
+const MapPage = lazyPage(() => import('@/features/map/MapPage'));
+const DistrictsPage = lazyPage(() => import('@/features/districts/DistrictsPage'));
+const CalendarPage = lazyPage(() => import('@/features/calendar/CalendarPage'));
+const DelaysPage = lazyPage(() => import('@/features/delays/DelaysPage'));
+const ReportsPage = lazyPage(() => import('@/features/reports/ReportsPage'));
+const PhotosPage = lazyPage(() => import('@/features/photos/PhotosPage'));
+const DocumentsPage = lazyPage(() => import('@/features/documents/DocumentsPage'));
+const ResponsiblesPage = lazyPage(() => import('@/features/responsibles/ResponsiblesPage'));
+const ContractorsPage = lazyPage(() => import('@/features/contractors/ContractorsPage'));
+const ContractorDetailPage = lazyPage(() => import('@/features/contractors/ContractorDetailPage'));
+const FundingPage = lazyPage(() => import('@/features/funding/FundingPage'));
+const AiPage = lazyPage(() => import('@/features/ai/AiPage'));
+const SettingsPage = lazyPage(() => import('@/features/settings/SettingsPage'));
+const NotFoundPage = lazyPage(() => import('@/features/misc/NotFoundPage'));
 
 function ProtectedRoute() {
   const user = useAuthStore((state) => state.user);
