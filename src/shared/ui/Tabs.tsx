@@ -69,14 +69,21 @@ export function Tabs<T extends string>({
     );
   }
 
+  /*
+   * ⚠️ Segmentlar ALOHIDA tugmalar — umumiy «yo‘lak» (`surface-inset`
+   * konteyner) ICHIDA emas. Maketda ham shunday: tugmalar orasida
+   * bo‘shliq bor va har biri o‘z kartochkasida turadi. Umumiy
+   * yo‘lakda ular bir-biriga yopishib, «bitta uzun maydon» bo‘lib
+   * ko‘rinardi.
+   *
+   * ⚠️ FAOL segment TO‘Q KO‘K (brend rangi) + oq matn. Ilgari u oq
+   * fon va soya bilan ajratilardi: oq karta ustida oq segment
+   * deyarli bilinmas, qaysi tab tanlanganini faqat soya aytardi.
+   */
   return (
     <div
       role="tablist"
-      className={cn(
-        'items-center gap-0.5 rounded-lg surface-inset p-0.5',
-        fill ? 'flex w-full' : 'inline-flex',
-        className,
-      )}
+      className={cn('items-center gap-1.5', fill ? 'flex w-full' : 'inline-flex', className)}
     >
       {options.map((option) => {
         const active = option.value === value;
@@ -88,17 +95,22 @@ export function Tabs<T extends string>({
             aria-selected={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'rounded-md font-medium whitespace-nowrap transition-all duration-150',
+              'rounded-lg font-medium whitespace-nowrap transition-colors duration-150',
               size === 'sm' ? 'px-3 py-1 text-meta' : 'px-4 py-1.5 text-ui',
-              fill && 'min-w-0 flex-1 truncate px-0.5 text-nano',
+              fill && 'min-w-0 flex-1 truncate px-1 text-nano',
               active
-                ? 'surface text-strong shadow-[0_0_0_1px_rgb(16_42_76/0.08),0_1px_2px_rgb(16_42_76/0.06)] dark:shadow-[0_0_0_1px_rgb(255_255_255/0.12)]'
-                : 'text-muted hover:text-strong',
+                ? 'bg-brand-500 text-white shadow-[0_1px_2px_rgb(10_108_240/0.35)]'
+                : 'surface-inset text-muted hover:bg-neutral-200/80 hover:text-strong dark:hover:bg-white/10',
             )}
           >
             {option.label}
             {option.count !== undefined ? (
-              <span className={cn('num ml-1.5 text-meta', active ? 'text-brand-700 dark:text-brand-400' : 'text-faint')}>
+              <span
+                className={cn(
+                  'num ml-1.5 text-meta',
+                  active ? 'text-white/80' : 'text-faint',
+                )}
+              >
                 {option.count}
               </span>
             ) : null}
