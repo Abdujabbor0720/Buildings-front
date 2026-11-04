@@ -13,13 +13,19 @@ interface ProgressBarProps {
   target?: number | null;
 }
 
-const HEIGHTS = { xs: 'h-1', sm: 'h-1.5', md: 'h-2' } as const;
-
 /**
- * ⚠️ Chiziq INGICHKA. Qalin progress bar e’tiborni raqamdan tortib oladi,
- * holbuki foiz raqami aniqroq ma’lumot — chiziq faqat «ko‘z bilan
- * taqqoslash» uchun.
+ * Chiziq balandligi.
+ *
+ * ⚠️ 4px lik chiziq EKRANDA SOCH TOLASIGA aylanadi: rang to‘yinganligi
+ * yo‘qoladi (yashil bilan qahrabo ajralmay qoladi), to‘ldirilgan qism
+ * esa jadval qatorida ko‘zga tashlanmaydi. 6–10px — raqamni
+ * ko‘lagalamaydigan, lekin rangi aniq o‘qiladigan oraliq.
+ *
+ * ⚠️ Balandlik matn qatoridan (16–18px) PAST bo‘lib qolishi kerak:
+ * aks holda jadval qatorlari baland bo‘lib, bosh sahifa bir ekranga
+ * sig‘masdi.
  */
+const HEIGHTS = { xs: 'h-1.5', sm: 'h-2', md: 'h-2.5' } as const;
 export function ProgressBar({ value, showValue = false, tone, size = 'sm', className, target }: ProgressBarProps) {
   const clamped = Math.max(0, Math.min(100, value));
   const clampedTarget = target === null || target === undefined ? null : Math.max(0, Math.min(100, target));
@@ -41,7 +47,7 @@ export function ProgressBar({ value, showValue = false, tone, size = 'sm', class
             taqqoslash, uni alohida ustun qilib ko‘rsatish joy egallardi. */}
         {clampedTarget !== null && Math.abs(clampedTarget - clamped) > 1 ? (
           <span
-            className="absolute top-0 h-full w-px bg-neutral-900/55 dark:bg-white/60"
+            className="absolute top-0 h-full w-0.5 rounded-full bg-neutral-900/60 dark:bg-white/70"
             style={{ left: `${clampedTarget}%` }}
             title={`Reja bo‘yicha: ${clampedTarget.toFixed(0)}%`}
           />

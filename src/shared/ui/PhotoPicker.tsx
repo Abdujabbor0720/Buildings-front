@@ -176,7 +176,7 @@ export function UploadProgress({ percent }: { percent: number }) {
         <span className="text-muted">Suratlar yuklanmoqda</span>
         <span className="num text-strong">{percent}%</span>
       </div>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
         <div
           className="h-full rounded-full bg-ok-500 transition-[width] duration-200"
           style={{ width: `${percent}%` }}

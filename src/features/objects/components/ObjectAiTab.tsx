@@ -333,7 +333,7 @@ function FactorBreakdown({ factors }: { factors: Record<string, unknown> }) {
               <span className="w-[108px] shrink-0 truncate text-muted">
                 {meta?.label ?? key}
               </span>
-              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+              <span className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
                 <span
                   className="block h-full rounded-full bg-danger-400"
                   style={{ width: `${Math.min(100, (value / max) * 100)}%` }}

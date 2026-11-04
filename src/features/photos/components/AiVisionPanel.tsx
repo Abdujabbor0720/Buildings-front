@@ -198,7 +198,7 @@ function ComparisonBar({
   const width = Math.max(1.5, clamp(high) - left);
 
   return (
-    <div className="relative mt-3 h-2.5 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+    <div className="relative mt-3 h-3 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
       <span
         className="absolute inset-y-0 rounded-full bg-ok-500/35"
         style={{ left: `${left}%`, width: `${width}%` }}

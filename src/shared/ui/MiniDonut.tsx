@@ -16,7 +16,7 @@ interface MiniDonutProps {
  * ⚠️ Sof SVG: 6 ta kartada 6 ta Recharts konteyneri ResizeObserver bilan
  * birga kelardi va sahifa birinchi chizilishini sezilarli sekinlashtirardi.
  */
-export function MiniDonut({ value, color, size = 38, thickness = 3.5, className, label }: MiniDonutProps) {
+export function MiniDonut({ value, color, size = 38, thickness = 4, className, label }: MiniDonutProps) {
   const clamped = Math.max(0, Math.min(100, value));
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;

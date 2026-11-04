@@ -210,7 +210,7 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         visual={
           <MiniDonut
             size={30}
-            thickness={3.5}
+            thickness={4}
             value={cards.onPlan.percent}
             color={statusHex(HEALTH_META.on_schedule)}
             label={`Reja asosida ${cards.onPlan.percent}%`}
@@ -227,7 +227,7 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         visual={
           <MiniDonut
             size={30}
-            thickness={3.5}
+            thickness={4}
             value={cards.delayed.percent}
             color={statusHex(HEALTH_META.delayed)}
             label={`Kechikayotgan ${cards.delayed.percent}%`}
@@ -244,7 +244,7 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         visual={
           <MiniDonut
             size={30}
-            thickness={3.5}
+            thickness={4}
             value={cards.atRisk.percent}
             color={statusHex(HEALTH_META.at_risk)}
             label={`Xavfli ${cards.atRisk.percent}%`}

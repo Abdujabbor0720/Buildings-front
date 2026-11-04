@@ -82,7 +82,7 @@ export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
               {/* Tor konteynerda chiziq va foiz PASTKI qatorga tushadi —
                   shunda sabab nomiga butun kenglik qoladi. */}
               <span className="flex w-full items-center gap-2 pl-6.5 @[19rem]:w-auto @[19rem]:shrink-0 @[19rem]:pl-0">
-                <span className="h-1.5 w-full min-w-10 overflow-hidden rounded-full bg-neutral-200 @[19rem]:w-[64px] dark:bg-white/12">
+                <span className="h-2 w-full min-w-10 overflow-hidden rounded-full bg-neutral-200 @[19rem]:w-[68px] dark:bg-white/12">
                   <span
                     className="block h-full rounded-full transition-[width] duration-500"
                     style={{ width: `${(item.count / max) * 100}%`, backgroundColor: hex }}

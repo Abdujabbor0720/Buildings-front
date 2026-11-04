@@ -42,7 +42,7 @@ export function TypeBreakdown({ items }: { items: TypeBreakdownItem[] }) {
             <span className="num w-5 shrink-0 text-right text-micro font-semibold text-strong">
               {item.count}
             </span>
-            <span className="h-1.5 w-8 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+            <span className="h-2 w-9 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
               <span
                 className="block h-full rounded-full transition-[width] duration-500"
                 style={{ width: `${(item.count / max) * 100}%`, backgroundColor: seriesHex(index) }}
