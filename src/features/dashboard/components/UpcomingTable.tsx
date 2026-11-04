@@ -17,8 +17,8 @@ export function UpcomingTable({ items }: { items: UpcomingItem[] }) {
      * saqlasak, u ma’lumotni TAKRORLAB, nom uchun 60px joy yeb
      * qo‘yardi va nom o‘qib bo‘lmas darajada qisqarardi.
      */
-    <TableWrap>
-      <Table className="text-micro [&_td]:py-px [&_th]:py-px">
+    <TableWrap fill>
+      <Table className="h-full text-micro [&_td]:py-px [&_th]:py-px">
         <THead>
           <Tr>
             <Th className="w-7 px-2">#</Th>

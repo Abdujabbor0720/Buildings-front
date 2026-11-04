@@ -43,12 +43,19 @@ export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
      * bu ro‘yxat, jadval emas, va quyuq chiziq uni «to‘r» qilib
      * yuborardi.
      */
-    <ul className="@container divide-y divide-[color:var(--border-cell)]">
+    /*
+     * ⚠️ `h-full` + har qator `flex-1`: ro‘yxat KARTA BALANDLIGINI
+     * to‘ldiradi. Qat'iy qator balandligida keng monitorda karta
+     * ostida 60px bo‘sh joy qolar, tor ekranda esa qatorlar
+     * bir-biriga yopishib ketardi. Endi bitta qoida ikkalasini ham
+     * hal qiladi.
+     */
+    <ul className="@container flex h-full flex-col divide-y divide-[color:var(--border-cell)]">
       {items.map((item, index) => {
         const hex = reasonHex(index);
         const Icon = catalogIcon(item.icon);
         return (
-          <li key={item.reasonId}>
+          <li key={item.reasonId} className="flex min-h-[21px] flex-1 items-center">
             <button
               type="button"
               onClick={() => navigate(`/delays?reasonId=${item.reasonId}`)}

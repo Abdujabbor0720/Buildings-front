@@ -67,7 +67,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
             olinmagani uchun bosh sahifa ostida ~110px bo‘sh joy
             qolib ketgan edi.
           */}
-          <div className="mx-auto flex min-h-full w-full max-w-[1560px] flex-col px-3.5 py-3 sm:px-4 lg:px-5">
+          {/* ⚠️ Kenglik chegarasi 2160px. Ilgari 1560px edi va 1920px li
+              monitorda ikki chekkada ~80px dan bo‘sh joy qolib, bosh
+              sahifa o‘rtada «siqilgan» bo‘lib ko‘rinardi. 2160 —
+              amaldagi monitorlar (1920, 2048) to‘liq ishlatiladi, 4K da
+              esa qator cheksiz cho‘zilib ketmaydi. */}
+          <div className="mx-auto flex min-h-full w-full max-w-[2160px] flex-col px-3.5 py-3 sm:px-4 lg:px-5">
             {children}
           </div>
         </main>

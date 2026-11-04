@@ -15,8 +15,8 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
      * sukutdagi 31px lik qatorda beshta qator sig‘masdi.
      * Ustun kengliklari maketdan olingan.
      */
-    <TableWrap>
-      <Table className="text-micro [&_td]:py-px [&_th]:py-px">
+    <TableWrap fill>
+      <Table className="h-full text-micro [&_td]:py-px [&_th]:py-px">
         <THead>
           <Tr>
             <Th className="w-7 px-2">#</Th>

@@ -3,18 +3,41 @@ import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
 
 /**
- * Jadval o‘ralmasi — kartaning chekkasigacha cho‘ziladi.
+ * Jadval o‘ralmasi.
  *
- * ⚠️ `-mx-3.5` KARTA TO‘LDIRISHI bilan AYNI bo‘lishi shart
- * (`Card` dagi `p-3.5`). Ular ajralib ketsa, jadval kartadan
- * tashqariga chiqib (yoki ichkarida qolib) gorizontal skroll
- * hosil qiladi — bosh sahifadagi jadvallar aynan shu sababdan
- * qirqilib turgan edi.
+ * ⚠️ MANFIY CHET (`-mx-*`) YO‘Q va QAYTA KIRITILMAYDI.
+ *
+ * Ilgari jadval kartaning chekkasigacha cho‘zilsin deb manfiy chet
+ * qo‘yilgan edi. U ikki xatoni birga keltirib chiqardi:
+ *   1. chet karta to‘ldirishiga mos kelmasa (14px va 12px), jadval
+ *      kartadan 2px tashqariga chiqardi;
+ *   2. o‘ralma SKROLL QILINADIGAN element ichida bo‘lsa (bosh
+ *      sahifadagi `CardBody`), chapga chiqqan qism skroll bilan
+ *      YETIB BO‘LMAYDIGAN joyga tushib, qirqilardi — «#» ustunidagi
+ *      1, 2, 3 raqamlari aynan shu sababdan yarmigacha kesilib
+ *      turgan edi, o‘ngda esa keraksiz gorizontal skroll paydo
+ *      bo‘lardi.
+ *
+ * Endi jadval karta to‘ldirishi ichida qoladi — bu maketdagi
+ * ko‘rinish bilan ham mos.
+ *
+ * `fill` — jadval o‘ralma BALANDLIGINI to‘ldiradi: qatorlar qolgan
+ * joyni o‘zaro bo‘lishadi va karta ostida bo‘sh joy qolmaydi.
  */
-export function TableWrap({ children, className }: { children: ReactNode; className?: string }) {
+export function TableWrap({
+  children,
+  className,
+  fill,
+}: {
+  children: ReactNode;
+  className?: string;
+  fill?: boolean;
+}) {
   return (
-    <div className={cn('-mx-3.5 overflow-x-auto', className)}>
-      <div className="inline-block min-w-full align-middle">{children}</div>
+    <div className={cn('overflow-x-auto', fill && 'h-full', className)}>
+      <div className={cn('inline-block min-w-full align-middle', fill && 'h-full')}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -63,7 +86,10 @@ export function Th({ children, sortKey, activeSort, onSort, align = 'left', clas
         // ⚠️ `border-r` OXIRGI ustunda yo‘q (`last:border-r-0`): aks
         // holda jadvalning o‘ng chekkasida kartaning chegarasi ustiga
         // tushadigan ikkinchi chiziq paydo bo‘lardi.
-        't-label surface-muted sticky top-0 z-10 border-b border-subtle px-3 py-1.5 whitespace-nowrap',
+        // ⚠️ `h-px` — jadval `h-full` bo‘lganda ortiqcha balandlikni
+        // FAQAT tana qatorlari olishi uchun. Busiz sarlavha ham
+        // cho‘zilib, ustun nomlari qator o‘rtasida osilib qolardi.
+        't-label surface-muted sticky top-0 z-10 h-px border-b border-subtle px-3 py-1.5 whitespace-nowrap',
         'border-r border-cell last:border-r-0',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',

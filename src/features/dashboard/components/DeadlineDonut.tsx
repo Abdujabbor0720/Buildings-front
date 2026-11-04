@@ -68,7 +68,7 @@ export function DeadlineDonut({ buckets }: { buckets: DeadlineBucket[] }) {
         ko‘rinardi. Endi halqa mavjud joyga moslashadi.
       */}
       <div className="flex min-h-0 flex-1 items-center gap-2.5 overflow-hidden">
-        <div className="relative aspect-square h-full max-h-[104px] shrink-0">
+        <div className="relative aspect-square h-full max-h-[150px] shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -104,7 +104,7 @@ export function DeadlineDonut({ buckets }: { buckets: DeadlineBucket[] }) {
 
         {/* ⚠️ Har guruh BITTA satrda: ikki satrli ko‘rinishda uchta
             guruh 84px egallab, halqa bilan yonma-yon sig‘masdi. */}
-        <ul className="min-w-0 flex-1 space-y-1.5">
+        <ul className="min-w-0 flex-1 space-y-0.5">
           {colored.map((bucket) => (
             <li key={bucket.label} className="flex min-w-0 items-center gap-1.5">
               <span

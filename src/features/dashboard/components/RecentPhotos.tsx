@@ -13,7 +13,7 @@ export function RecentPhotos({ items }: { items: RecentPhotoItem[] }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid h-full grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
       {items.slice(0, 3).map((item) => (
         <PhotoCard key={item.id} item={item} />
       ))}
@@ -28,12 +28,13 @@ function PhotoCard({ item }: { item: RecentPhotoItem }) {
   return (
     <Link
       to={`/objects/${item.objectId}`}
-      className="group overflow-hidden rounded-xl border border-subtle surface transition-shadow hover:shadow-[var(--shadow-raise)]"
+      className="group flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-subtle surface transition-shadow hover:shadow-[var(--shadow-raise)]"
     >
-      {/* ⚠️ Balandlik QAT'IY (nisbat emas): bosh sahifada bu qatorga
-          ~180px ajratilgan va nisbat bilan rasm karta kengligiga
-          bog‘lanib, pastki matnni qirqib yuborardi. */}
-      <div className="relative h-[62px] overflow-hidden surface-muted">
+      {/* ⚠️ Rasm QOLGAN joyni egallaydi (`flex-1`), nisbat bilan
+          emas: nisbat karta KENGLIGIGA bog‘lanib, keng monitorda
+          pastki matnni qirqib yuborardi. Eng kichik balandlik esa
+          rasmni «chiziq» bo‘lib qolishidan saqlaydi. */}
+      <div className="relative min-h-[56px] flex-1 overflow-hidden surface-muted">
         {src ? (
           <img
             src={src}
@@ -52,7 +53,7 @@ function PhotoCard({ item }: { item: RecentPhotoItem }) {
         </span>
       </div>
 
-      <div className="p-2">
+      <div className="shrink-0 p-2">
         <p className="truncate text-micro font-medium text-strong">{item.objectName}</p>
         {/* Sana va AI xulosasi BITTA qatorda — alohida qatorda
             turganda kartochka 20px baland bo‘lib, uchtasi qatorga

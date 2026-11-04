@@ -34,7 +34,7 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <Tabs options={TABS} value={filter} onChange={setFilter} fill className="mb-1.5 shrink-0" />
+      <Tabs options={TABS} value={filter} onChange={setFilter} fill className="mx-3 mb-1.5 shrink-0" />
 
       {/* ⚠️ Chegara KARTADA (`DashboardPage` dagi `max-h`), bu yerda
           EMAS. Jadvalga `max-h` qo‘yilganda u kartadan past bo‘lib
@@ -44,8 +44,8 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
 
           Endi jadval `flex-1` bilan kartani TO‘LDIRADI va ortig‘i
           skroll bo‘ladi — qancha joy bo‘lsa, shuncha qator ko‘rinadi. */}
-      <TableWrap className="min-h-0 flex-1 overflow-y-auto">
-        <Table className="text-micro [&_td]:py-0.5 [&_th]:py-px">
+      <TableWrap fill className="min-h-0 flex-1 overflow-y-auto">
+        <Table className="h-full text-micro [&_td]:py-0.5 [&_th]:py-px">
           <THead>
             <Tr>
               <Th className="w-6 px-1.5">#</Th>

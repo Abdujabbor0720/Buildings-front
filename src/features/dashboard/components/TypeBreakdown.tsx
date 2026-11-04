@@ -18,9 +18,11 @@ export function TypeBreakdown({ items }: { items: TypeBreakdownItem[] }) {
   const max = Math.max(1, ...items.map((item) => item.count));
 
   return (
-    <ul className="space-y-0.5">
+    /* ⚠️ Ro‘yxat karta balandligini to‘ldiradi — `DelayReasons`
+       bilan AYNI qoida. */
+    <ul className="flex h-full flex-col gap-0.5">
       {items.map((item, index) => (
-        <li key={item.typeId}>
+        <li key={item.typeId} className="flex min-h-[19px] flex-1 items-center">
           <button
             type="button"
             onClick={() => navigate(`/objects?typeIds=${item.typeId}`)}

@@ -1,7 +1,9 @@
 import { RefreshCw } from 'lucide-react';
 import { useDashboard, useDistrictGeoJson } from '@/shared/api/queries';
 import { getErrorMessage } from '@/shared/api/client';
+import type { ReactNode } from 'react';
 import { Card, CardBody, CardHeader, ErrorState, Skeleton } from '@/shared/ui';
+import { cn } from '@/shared/utils/cn';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
 import { useFilterParams } from '@/store/filters.store';
 import { DeadlineDonut } from './components/DeadlineDonut';
@@ -66,8 +68,15 @@ export default function DashboardPage() {
      * ⚠️ `lg:` dan pastda (planshet, telefon) qat’iy balandlik YO‘Q:
      * u yerda kartalar ustma-ust tushadi va ularni bir ekranga siqish
      * o‘qib bo‘lmas holga keltirardi — odatiy oqim va skroll.
+     *
+     * ⚠️ `min-h-[760px]` — KONTENTNING eng kichik ehtiyoji. Past
+     * (768px) ekranda oyna shuncha joy bermaydi; chegara bo‘lmasa
+     * kartalar ichidagi oxirgi qatorlar QIRQILIB qolardi. Chegara
+     * bilan esa sahifa 40–50px skroll bo‘ladi — bu qirqilgan
+     * ma’lumotdan ko‘ra yaxshiroq. 1080px li monitorda bu chegara
+     * umuman sezilmaydi.
      */
-    <div className="rise-in flex flex-col gap-1 lg:h-[calc(100dvh-80px)] lg:min-h-[600px]">
+    <div className="rise-in flex flex-col gap-1 lg:h-[calc(100dvh-80px)] lg:min-h-[760px]">
       {/* ───── 1-qator: ko‘rsatkichlar ───── */}
       {/* ⚠️ Oltita TENG ustun. Ilgari oxirgi ikkitasiga kengroq ulush
           berilgan edi (`1.1fr`, `1.35fr`) va 1280px li ekranda oltinchi
@@ -93,18 +102,27 @@ export default function DashboardPage() {
           </CardBody>
         </Card>
 
-        <Card className="flex min-h-0 flex-col p-3 xl:col-span-4">
-          <CardHeader title="Tumanlar kesimida obyektlar" moreTo="/districts" />
-          <CardBody className="mt-1.5 flex min-h-0 flex-1 flex-col">
-            {data ? <DistrictTable districts={data.districts} /> : <BlockSkeleton rows={8} />}
-          </CardBody>
-        </Card>
+        <TableCard
+          className="xl:col-span-4"
+          header={<CardHeader title="Tumanlar kesimida obyektlar" moreTo="/districts" />}
+        >
+          <div className="flex h-full min-h-0 flex-col">
+            {data ? <DistrictTable districts={data.districts} /> : <div className="px-3"><BlockSkeleton rows={8} /></div>}
+          </div>
+        </TableCard>
 
         {/* ⚠️ Ikki karta BIR USTUNDA va ikkalasi ham `min-h-0`: halqa
             diagrammasi o‘z balandligini `ResponsiveContainer` dan oladi
             va ota element cheksiz bo‘lsa u 0px bo‘lib qolardi. */}
         <div className="flex min-h-0 flex-col gap-1.5 xl:col-span-3">
-          <Card className="flex min-h-0 flex-[46] flex-col p-3">
+          {/*
+            ⚠️ `min-h-*` MAJBURIY. Faqat nisbat (`flex-[N]`) bilan
+            bo‘lganda 1280px li ekranda bu karta 132px gacha
+            kichrayib, halqa va ro‘yxat qirqilib qolardi. Eng kichik
+            balandlik ichidagi kontentdan hisoblangan; ortiqcha joy
+            esa baribir nisbatda bo‘linadi.
+          */}
+          <Card className="flex min-h-[130px] flex-[45] flex-col p-3">
             {/* ⚠️ Yorliqsiz havola (faqat strelka): bu ustun 240px va
                 «Barchasi →» sarlavhani «Muddatlar bo‘…» ga qisqartirardi. */}
             <CardHeader title="Muddatlar bo‘yicha" moreTo="/reports" moreLabel="" />
@@ -113,7 +131,7 @@ export default function DashboardPage() {
             </CardBody>
           </Card>
 
-          <Card className="flex min-h-0 flex-[54] flex-col p-3">
+          <Card className="flex min-h-[165px] flex-[55] flex-col p-3">
             <CardHeader title="Qurilish turlari bo‘yicha" />
             <CardBody className="mt-1.5 min-h-0 flex-1 overflow-y-auto">
               {data ? <TypeBreakdown items={data.byType} /> : <BlockSkeleton rows={6} />}
@@ -124,16 +142,18 @@ export default function DashboardPage() {
 
       {/* ───── 3-qator: kechikishlar ───── */}
       <section className="grid gap-1.5 lg:min-h-0 lg:flex-[26] xl:grid-cols-12">
-        <Card className="flex min-h-0 flex-col p-3 xl:col-span-7">
-          <CardHeader
-            title="Kechikayotgan obyektlar (TOP 5)"
-            moreTo="/delays"
-            moreLabel="Barchasini ko‘rish"
-          />
-          <CardBody className="mt-1.5 min-h-0 flex-1 overflow-y-auto">
-            {data ? <TopDelayed items={data.topDelayed} /> : <BlockSkeleton rows={5} />}
-          </CardBody>
-        </Card>
+        <TableCard
+          className="xl:col-span-7"
+          header={
+            <CardHeader
+              title="Kechikayotgan obyektlar (TOP 5)"
+              moreTo="/delays"
+              moreLabel="Barchasini ko‘rish"
+            />
+          }
+        >
+          {data ? <TopDelayed items={data.topDelayed} /> : <div className="px-3"><BlockSkeleton rows={5} /></div>}
+        </TableCard>
 
         <Card className="flex min-h-0 flex-col p-3 xl:col-span-5">
           <CardHeader title="Asosiy kechikish sabablari" moreTo="/delays" />
@@ -145,15 +165,17 @@ export default function DashboardPage() {
 
       {/* ───── 4-qator: muddat va fotoarxiv ───── */}
       <section className="grid gap-1.5 lg:min-h-0 lg:flex-[26] xl:grid-cols-12">
-        <Card className="flex min-h-0 flex-col p-3 xl:col-span-5">
-          <CardHeader
-            title="Yaqin muddatda topshiriladigan obyektlar"
-            moreTo="/objects?dueWithinDays=90"
-          />
-          <CardBody className="mt-1.5 min-h-0 flex-1 overflow-y-auto">
-            {data ? <UpcomingTable items={data.upcoming} /> : <BlockSkeleton rows={5} />}
-          </CardBody>
-        </Card>
+        <TableCard
+          className="xl:col-span-5"
+          header={
+            <CardHeader
+              title="Yaqin muddatda topshiriladigan obyektlar"
+              moreTo="/objects?dueWithinDays=90"
+            />
+          }
+        >
+          {data ? <UpcomingTable items={data.upcoming} /> : <div className="px-3"><BlockSkeleton rows={5} /></div>}
+        </TableCard>
 
         <Card className="flex min-h-0 flex-col p-3 xl:col-span-7">
           {/* ⚠️ «Yangilash» AYNAN shu yerda: sahifa bir ekranga sig‘ishi
@@ -185,6 +207,36 @@ export default function DashboardPage() {
         </Card>
       </section>
     </div>
+  );
+}
+
+/**
+ * JADVALLI KARTA — sarlavha to‘ldirish ichida, jadval esa KARTA
+ * KENGLIGINING O‘ZIDA.
+ *
+ * ⚠️ Jadvalga 24px to‘ldirish berilsa, 1280px li ekranda ustunlar
+ * sig‘may qoladi va «Bajarilish» / «Asosiy sabab» / «Status»
+ * ustunlari qirqilib, gorizontal skroll paydo bo‘ladi. Shuning
+ * uchun karta `flush`, to‘ldirish esa faqat sarlavhaga beriladi.
+ *
+ * ⚠️ Manfiy chet (`-mx-*`) bilan QILINMAYDI: u skroll qilinadigan
+ * ota element ichida chapga chiqqan qismni yetib bo‘lmas joyga
+ * tushirib, «#» ustunidagi raqamlarni yarmigacha kesib qo‘yardi.
+ */
+function TableCard({
+  className,
+  header,
+  children,
+}: {
+  className?: string;
+  header: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <Card flush className={cn('flex min-h-0 flex-col overflow-hidden', className)}>
+      <div className="shrink-0 px-3 pt-3">{header}</div>
+      <div className="mt-1.5 min-h-0 flex-1 pb-2">{children}</div>
+    </Card>
   );
 }
 
