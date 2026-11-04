@@ -123,7 +123,7 @@ function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatV
      * chiqarib yuborardi (gorizontal skroll). `min-w-0` + `truncate`
      * uni qisqartiradi.
      */
-    <div className={cn('card card-hover relative flex min-w-0 items-center gap-2 px-2.5 py-2', SURFACE[tone])}>
+    <div className={cn('card card-hover relative flex min-w-0 items-center gap-2 px-2 py-2', SURFACE[tone])}>
       <span className={cn('tile size-8 shrink-0 rounded-lg', TILE[tone])} aria-hidden>
         <Icon className="size-[17px]" strokeWidth={2.1} />
       </span>
@@ -142,14 +142,14 @@ function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatV
           {unit ? <span className="text-micro font-normal text-muted">{unit}</span> : null}
         </p>
         {caption ? (
-          <p className={cn('mt-0.5 truncate text-nano font-medium', floatVisual && 'pr-11', CAPTION[tone])}>
+          <p className={cn('mt-0.5 truncate text-nano font-medium', floatVisual && 'pr-10', CAPTION[tone])}>
             {caption}
           </p>
         ) : null}
       </div>
 
       {visual ? (
-        <span className={cn('shrink-0', floatVisual && 'absolute right-2.5 bottom-2')}>{visual}</span>
+        <span className={cn('shrink-0', floatVisual && 'absolute right-2 bottom-2')}>{visual}</span>
       ) : null}
     </div>
   );
@@ -159,7 +159,7 @@ export function KpiCardsSkeleton() {
   return (
     <>
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="card flex min-w-0 items-center gap-1.5 px-2 py-2">
+        <div key={index} className="card flex min-w-0 items-center gap-2 px-2 py-2">
           <Skeleton className="size-7 rounded-lg" />
           <div className="min-w-0 flex-1">
             <Skeleton className="h-2 w-16" />

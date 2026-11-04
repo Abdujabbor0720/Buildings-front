@@ -18,9 +18,16 @@ export function TypeBreakdown({ items }: { items: TypeBreakdownItem[] }) {
   const max = Math.max(1, ...items.map((item) => item.count));
 
   return (
-    /* ⚠️ Ro‘yxat karta balandligini to‘ldiradi — `DelayReasons`
-       bilan AYNI qoida. */
-    <ul className="flex h-full flex-col gap-0.5">
+    /*
+     * ⚠️ Ro‘yxat karta balandligini to‘ldiradi — `DelayReasons`
+     * bilan AYNI qoida.
+     *
+     * ⚠️ Qatorlar orasida BO‘SHLIQ (`gap`) yo‘q: `flex-1` baribir
+     * qolgan joyni teng bo‘lib beradi, qo‘shimcha oraliq esa
+     * 1280px li ekranda oltinchi qatorni («Boshqa») kartadan
+     * chiqarib yuborardi.
+     */
+    <ul className="flex h-full flex-col">
       {items.map((item, index) => (
         <li key={item.typeId} className="flex min-h-[19px] flex-1 items-center">
           <button

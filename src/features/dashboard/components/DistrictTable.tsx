@@ -45,7 +45,7 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
           Endi jadval `flex-1` bilan kartani TO‘LDIRADI va ortig‘i
           skroll bo‘ladi — qancha joy bo‘lsa, shuncha qator ko‘rinadi. */}
       <TableWrap fill className="min-h-0 flex-1 overflow-y-auto">
-        <Table className="h-full text-micro [&_td]:py-0.5 [&_th]:py-px">
+        <Table className="h-full text-micro [&_td]:py-0.5 [&_th]:py-1">
           <THead>
             <Tr>
               <Th className="w-6 px-1.5">#</Th>

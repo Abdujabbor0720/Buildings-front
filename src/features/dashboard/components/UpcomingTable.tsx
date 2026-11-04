@@ -18,7 +18,7 @@ export function UpcomingTable({ items }: { items: UpcomingItem[] }) {
      * qo‘yardi va nom o‘qib bo‘lmas darajada qisqarardi.
      */
     <TableWrap fill>
-      <Table className="h-full text-micro [&_td]:py-px [&_th]:py-px">
+      <Table className="h-full text-micro [&_td]:py-0.5 [&_th]:py-1">
         <THead>
           <Tr>
             <Th className="w-7 px-2">#</Th>

@@ -16,7 +16,7 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
      * Ustun kengliklari maketdan olingan.
      */
     <TableWrap fill>
-      <Table className="h-full text-micro [&_td]:py-px [&_th]:py-px">
+      <Table className="h-full text-micro [&_td]:py-0.5 [&_th]:py-1">
         <THead>
           <Tr>
             <Th className="w-7 px-2">#</Th>

@@ -92,7 +92,7 @@ export default function DashboardPage() {
       </section>
 
       {/* ───── 2-qator: xarita · tumanlar · diagrammalar ───── */}
-      <section className="grid gap-1.5 lg:min-h-0 lg:flex-[47] xl:grid-cols-12">
+      <section className="grid gap-1.5 lg:min-h-0 lg:flex-[45] xl:grid-cols-12">
         <Card className="flex min-h-0 flex-col p-3 xl:col-span-5">
           {/* ⚠️ Afsona SARLAVHA qatorida (`action`), xarita ustida emas:
               suzuvchi afsona o‘ng yuqoridagi tumanlarni yopib qo‘yardi. */}
@@ -122,7 +122,7 @@ export default function DashboardPage() {
             balandlik ichidagi kontentdan hisoblangan; ortiqcha joy
             esa baribir nisbatda bo‘linadi.
           */}
-          <Card className="flex min-h-[130px] flex-[45] flex-col p-3">
+          <Card className="flex min-h-[130px] flex-[43] flex-col p-3">
             {/* ⚠️ Yorliqsiz havola (faqat strelka): bu ustun 240px va
                 «Barchasi →» sarlavhani «Muddatlar bo‘…» ga qisqartirardi. */}
             <CardHeader title="Muddatlar bo‘yicha" moreTo="/reports" moreLabel="" />
@@ -131,7 +131,7 @@ export default function DashboardPage() {
             </CardBody>
           </Card>
 
-          <Card className="flex min-h-[165px] flex-[55] flex-col p-3">
+          <Card className="flex min-h-[165px] flex-[57] flex-col p-3">
             <CardHeader title="Qurilish turlari bo‘yicha" />
             <CardBody className="mt-1.5 min-h-0 flex-1 overflow-y-auto">
               {data ? <TypeBreakdown items={data.byType} /> : <BlockSkeleton rows={6} />}
@@ -141,7 +141,7 @@ export default function DashboardPage() {
       </section>
 
       {/* ───── 3-qator: kechikishlar ───── */}
-      <section className="grid gap-1.5 lg:min-h-0 lg:flex-[26] xl:grid-cols-12">
+      <section className="grid gap-1.5 lg:min-h-0 lg:flex-[27.5] xl:grid-cols-12">
         <TableCard
           className="xl:col-span-7"
           header={
@@ -164,7 +164,7 @@ export default function DashboardPage() {
       </section>
 
       {/* ───── 4-qator: muddat va fotoarxiv ───── */}
-      <section className="grid gap-1.5 lg:min-h-0 lg:flex-[26] xl:grid-cols-12">
+      <section className="grid gap-1.5 lg:min-h-0 lg:flex-[27.5] xl:grid-cols-12">
         <TableCard
           className="xl:col-span-5"
           header={
