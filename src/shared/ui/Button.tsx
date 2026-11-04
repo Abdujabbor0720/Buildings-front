@@ -17,13 +17,25 @@ type Size = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
  * `accent` — ko‘kdan farq qilishi kerak bo‘lgan yagona urg‘u (sahifada
  * ko‘pi bilan bitta); shuning uchun u binafsha `done` oilasida.
  */
+/*
+ * ⚠️ TO'LDIRILGAN tugmalar (primary / accent / danger) — VERTIKAL
+ * GRADIENT va o'z rangidagi soya. Yassi bir rang bu o'lchamda
+ * «chizilgan to'rtburchak» bo'lib ko'rinadi; yuqoridan yorug',
+ * pastdan to'q o'tish esa tugmani bosiladigan predmetga aylantiradi.
+ * Faol tab va sarlavhadagi asosiy tugma ham AYNI shaklda — ular
+ * bitta ekranda turadi.
+ *
+ * ⚠️ `disabled:bg-none` MAJBURIY. `disabled:bg-*` faqat `background-color`
+ * ni almashtiradi, gradient esa `background-image` da qoladi: usiz
+ * o'chirilgan tugma baribir yorqin ko'k bo'lib turardi.
+ */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    'bg-brand-500 text-white shadow-[0_1px_2px_rgb(10_60_140/0.25)] hover:bg-brand-600 active:bg-brand-700 ' +
-    'disabled:bg-brand-200',
+    'bg-linear-to-b from-brand-400 to-brand-600 text-white shadow-[var(--shadow-brand)] hover:brightness-110 active:brightness-95 ' +
+    'disabled:bg-none disabled:bg-brand-200 disabled:shadow-none',
   accent:
-    'bg-done-500 text-white shadow-[0_1px_2px_rgb(60_37_118/0.25)] hover:bg-done-600 active:bg-done-700 ' +
-    'disabled:bg-done-200',
+    'bg-linear-to-b from-done-400 to-done-600 text-white shadow-[0_1px_2px_rgb(60_37_118/0.3),0_4px_10px_-4px_rgb(123_71_191/0.4)] hover:brightness-110 active:brightness-95 ' +
+    'disabled:bg-none disabled:bg-done-200 disabled:shadow-none',
   secondary:
     'surface text-strong shadow-[0_0_0_1px_rgb(16_42_76/0.12)] hover:bg-neutral-100 ' +
     'dark:shadow-[0_0_0_1px_rgb(255_255_255/0.14)] dark:hover:bg-white/8',
@@ -32,8 +44,8 @@ const VARIANTS: Record<Variant, string> = {
     'dark:shadow-[0_0_0_1px_rgb(255_255_255/0.16)] dark:hover:bg-white/8',
   ghost: 'bg-transparent text-muted hover:bg-neutral-100 hover:text-strong dark:hover:bg-white/8',
   danger:
-    'bg-danger-500 text-white shadow-[0_1px_2px_rgb(160_20_30/0.25)] hover:bg-danger-600 active:bg-danger-700 ' +
-    'disabled:bg-danger-200',
+    'bg-linear-to-b from-danger-400 to-danger-600 text-white shadow-[0_1px_2px_rgb(120_10_25/0.3),0_4px_10px_-4px_rgb(172_23_48/0.4)] hover:brightness-110 active:brightness-95 ' +
+    'disabled:bg-none disabled:bg-danger-200 disabled:shadow-none',
 };
 
 const SIZES: Record<Size, string> = {

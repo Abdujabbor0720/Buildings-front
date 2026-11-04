@@ -16,7 +16,10 @@ export function Header() {
   const setMobileNav = useUiStore((state) => state.setMobileNav);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-subtle surface-blur px-3 backdrop-blur-xl sm:gap-3 sm:px-5">
+    /* ⚠️ Pastdagi chegaraga YUMSHOQ soya qo'shilgan: shaffof panel
+       ostidan kontent o'tganda faqat 1px chiziq uni ushlab turolmas,
+       panel «suzayotgan» emas, «kesilgan» bo'lib ko'rinardi. */
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b border-subtle surface-blur px-3 shadow-[0_6px_18px_-16px_rgb(16_42_76/0.5)] backdrop-blur-xl sm:gap-3 sm:px-5">
       <button
         type="button"
         onClick={() => setMobileNav(true)}

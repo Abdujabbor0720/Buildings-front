@@ -51,7 +51,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <Header />
         {/* ⚠️ Skroll AYNAN shu elementda: `body` da bo‘lsa, yopishqoq
             sarlavha va yon menyu birga siljib ketardi. */}
-        <main className="surface-sunken min-h-0 flex-1 overflow-y-auto">
+        {/* ⚠️ `app-canvas` — `surface-sunken` emas: yassi rang o'rniga
+            yuqorida ikkita juda past to'yinganlikdagi yoy (ko'k va
+            binafsha). Kartalar ostida chuqurlik paydo bo'ladi, fon esa
+            baribir neytral qoladi — `index.css` ga qarang. */}
+        <main className="app-canvas min-h-0 flex-1 overflow-y-auto">
           {/*
             ⚠️ `flex min-h-full flex-col` — bosh sahifa shu tufayli
             «bir ekranga» sig‘adi.

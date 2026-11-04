@@ -65,10 +65,18 @@ export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
               {/* Ikonka plitkasi — fon sabab rangining 12% i, belgi esa
                   to‘liq rangda: to‘ldirilgan kvadrat qatorni «menyu
                   bandi» ga o‘xshatib yuborardi. */}
+              {/* Plitka foni — sabab rangining DIAGONAL o'tishi (18%
+                  dan 8% gacha), yassi 12% emas: 18px lik kvadrat yassi
+                  bo'lganda «rangli dog'» bo'lib ko'rinardi. Ichki halqa
+                  esa uni oq fondan ajratadi. */}
               <span
                 aria-hidden
                 className="grid size-[18px] shrink-0 place-items-center rounded-md"
-                style={{ backgroundColor: `${hex}1f`, color: hex }}
+                style={{
+                  backgroundImage: `linear-gradient(135deg, ${hex}2e, ${hex}12)`,
+                  boxShadow: `inset 0 0 0 1px ${hex}2b`,
+                  color: hex,
+                }}
               >
                 {Icon ? <Icon className="size-3" strokeWidth={2.2} /> : null}
               </span>
@@ -82,9 +90,9 @@ export function DelayReasons({ items }: { items: DelayReasonBreakdown[] }) {
               {/* Tor konteynerda chiziq va foiz PASTKI qatorga tushadi —
                   shunda sabab nomiga butun kenglik qoladi. */}
               <span className="flex w-full items-center gap-2 pl-6.5 @[19rem]:w-auto @[19rem]:shrink-0 @[19rem]:pl-0">
-                <span className="h-2 w-full min-w-10 overflow-hidden rounded-full bg-neutral-200 @[19rem]:w-[68px] dark:bg-white/12">
+                <span className="bar-track h-2 w-full min-w-10 overflow-hidden rounded-full bg-neutral-200 @[19rem]:w-[68px] dark:bg-white/12">
                   <span
-                    className="block h-full rounded-full transition-[width] duration-500"
+                    className="bar-fill block h-full rounded-full transition-[width] duration-500"
                     style={{ width: `${(item.count / max) * 100}%`, backgroundColor: hex }}
                   />
                 </span>

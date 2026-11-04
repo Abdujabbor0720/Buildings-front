@@ -160,12 +160,31 @@
 
   /* ───────── Soyalar ─────────
      Yengil va ko'kish: sof qora soya oq karta ostida «kir» bo'lib
-     ko'rinadi, ko'kish soya esa fon bilan bitta oilada qoladi. */
+     ko'rinadi, ko'kish soya esa fon bilan bitta oilada qoladi.
+
+     ⚠️ Har bir soya UCH QATLAMDAN: halqa (1px chegara), YAQIN soya
+     (predmetni yuzadan ko'taradi) va UZOQ, juda tarqoq soya (katta
+     manfiy tarqalish bilan). Uchinchi qatlamsiz karta ekranga
+     «yopishtirilgan» bo'lib ko'rinadi — ko'z chuqurlikni aynan uzoq,
+     yumshoq soyadan o'qiydi. U alohida qaraganda bilinmaydi, lekin
+     olib tashlansa butun ekran «yassi» bo'lib qoladi. */
   --shadow-hair: 0 0 0 1px rgb(16 42 76 / 0.06);
-  --shadow-card: 0 1px 2px rgb(16 42 76 / 0.05), 0 0 0 1px rgb(16 42 76 / 0.05);
-  --shadow-raise: 0 2px 6px rgb(16 42 76 / 0.07), 0 10px 24px -14px rgb(16 42 76 / 0.28), 0 0 0 1px rgb(16 42 76 / 0.05);
-  --shadow-pop: 0 1px 2px rgb(16 42 76 / 0.06), 0 16px 36px -14px rgb(16 42 76 / 0.3), 0 0 0 1px rgb(16 42 76 / 0.07);
+  --shadow-card:
+    0 0 0 1px rgb(16 42 76 / 0.055), 0 1px 1.5px rgb(16 42 76 / 0.04),
+    0 6px 18px -12px rgb(16 42 76 / 0.22);
+  --shadow-raise:
+    0 0 0 1px rgb(16 42 76 / 0.06), 0 2px 5px rgb(16 42 76 / 0.055),
+    0 14px 30px -16px rgb(16 42 76 / 0.3);
+  --shadow-pop:
+    0 0 0 1px rgb(16 42 76 / 0.07), 0 2px 6px rgb(16 42 76 / 0.06),
+    0 20px 44px -18px rgb(16 42 76 / 0.32);
   --shadow-rail: 0 10px 30px -12px rgb(2 24 58 / 0.45);
+
+  /* ───────── Rangli soya ─────────
+     Brend tugmasi va faol tab ostidagi soya KULRANG emas, KO'K: rangli
+     element ostidagi neytral soya uni «kesib qo'yilgan» qilib
+     ko'rsatadi, o'z rangidagi soya esa yuzadan ko'taradi. */
+  --shadow-brand: 0 1px 2px rgb(0 61 150 / 0.24), 0 4px 10px -4px rgb(10 108 240 / 0.36);
 
   /* ───────── Tartib o'lchamlari ───────── */
   --spacing-rail: 196px;
@@ -204,7 +223,11 @@
        sahifa yorug': bitta `--ink-*` to'plami ikkalasiga yaramaydi. */
     --rail-bg: var(--color-rail-900);
     --rail-ink: #dbe6f4;
-    --rail-ink-muted: #8aa2c2;
+    /* ⚠️ Oldin `#8aa2c2` edi (kontrast 5.8:1). Faol band endi TO'LIQ
+       bo'yalgan (gradient + yog'du), ya'ni ierarxiyani matn xiraligi
+       ushlab turishi shart emas — shuning uchun oddiy bandlar
+       yorug'roq va menyu uzoqdan ham o'qiladi (7.6:1). */
+    --rail-ink-muted: #9fb4ce;
     --rail-hover: rgb(255 255 255 / 0.07);
     --rail-active: var(--color-brand-500);
     --rail-line: rgb(255 255 255 / 0.09);
@@ -339,6 +362,18 @@
   /* ───────── Panel (sidebar) ───────── */
   .rail {
     background-color: var(--rail-bg);
+    /*
+     * Yuqorida yupqa brend yog'dusi, pastda quyuqlashish. Panel
+     * 100vh balandlikda yassi bir rangda bo'lsa, u «qora ustun»
+     * bo'lib ko'rinadi; o'tish esa unga hajm beradi va logotip
+     * turgan yuqori qism o'z-o'zidan e'tiborga tushadi.
+     */
+    background-image:
+      radial-gradient(560px 320px at 6% -6%, rgb(10 108 240 / 0.26), transparent 72%),
+      linear-gradient(180deg, rgb(255 255 255 / 0.035) 0%, rgb(255 255 255 / 0) 28%, rgb(0 0 0 / 0.22) 100%);
+    /* O'ng chetdagi 1px yorug'lik — panel bilan sahifa orasidagi
+       chegara soyasiz ham aniq bo'lishi uchun. */
+    box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.055);
     color: var(--rail-ink);
   }
   .rail-ink {
@@ -374,6 +409,13 @@
   .rail-item-active,
   .rail-item-active:hover {
     background-color: var(--rail-active);
+    /* Diagonal o'tish + o'z rangidagi yog'du: to'q fonda yassi ko'k
+       to'rtburchak «yopishtirilgan stiker» bo'lib ko'rinardi. */
+    background-image: linear-gradient(135deg, var(--color-brand-400) 0%, var(--color-brand-600) 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 1px 2px rgb(0 18 56 / 0.45),
+      0 6px 14px -7px rgb(10 108 240 / 0.6);
     color: #ffffff;
   }
 
@@ -458,20 +500,30 @@
      ichki o'lchamni 2px ga kichraytirib, gridni siljitadi. */
   .card {
     background-color: var(--surface);
+    /*
+     * ⚠️ Yassi oq EMAS: pastga qarab 1.8% ko'kish quyuqlashadi.
+     * Son sifatida bu deyarli hech nima, ko'z uchun esa karta
+     * «yuza» bo'lib qoladi — oq to'rtburchak qog'oz bo'lib
+     * ko'rinardi. Qorong'i rejimda teskari: yuqorida yupqa
+     * yorug'lik — chiroq tepadan tushgandek.
+     */
+    background-image: linear-gradient(177deg, rgb(255 255 255 / 0) 38%, rgb(16 42 76 / 0.018) 100%);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
     transition:
-      box-shadow 0.18s ease,
-      transform 0.18s cubic-bezier(0.2, 0.7, 0.2, 1);
+      box-shadow 0.2s ease,
+      transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .card-hover:hover {
     box-shadow: var(--shadow-raise);
     transform: translateY(-1px);
   }
   .dark .card {
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.038) 0%, rgb(255 255 255 / 0) 48%);
     box-shadow:
       0 0 0 1px rgb(255 255 255 / 0.06),
-      0 1px 2px rgb(0 0 0 / 0.35);
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 10px 26px -18px rgb(0 0 0 / 0.7);
   }
   .dark .card-hover:hover {
     box-shadow:
@@ -479,9 +531,37 @@
       0 10px 26px -16px rgb(0 0 0 / 0.75);
   }
 
+  /* ───────── Sahifa foni ─────────
+     Yassi rang EMAS: ikkita juda past to'yinganlikdagi yoy — yuqori
+     chapda ko'k, yuqori o'ngda binafsha. Ular alohida ko'rinmaydi,
+     lekin kartalar ostidagi fonga CHUQURLIK beradi va ekranning
+     yuqori qismi («hozir ahvol qanday» deb qaraladigan joy) o'z-o'zidan
+     yorug'roq bo'ladi.
+
+     ⚠️ Yoylar HAR DOIM yuqorida (`-10%` / `-4%`) va `no-repeat`:
+     skroll qilinadigan konteynerda takrorlanuvchi fon kontent bilan
+     birga «suzib» ko'rinardi. */
+  .app-canvas {
+    background-color: var(--surface-sunken);
+    background-image:
+      radial-gradient(1200px 520px at 10% -12%, rgb(10 108 240 / 0.1), transparent 66%),
+      radial-gradient(940px 420px at 98% -6%, rgb(123 71 191 / 0.062), transparent 70%);
+    background-repeat: no-repeat;
+  }
+  .dark .app-canvas {
+    background-image:
+      radial-gradient(1100px 460px at 12% -10%, rgb(10 108 240 / 0.1), transparent 68%),
+      radial-gradient(900px 400px at 96% -4%, rgb(123 71 191 / 0.06), transparent 70%);
+  }
+
   /* ───────── Ikonka plitkasi ─────────
      Stat kartasidagi rangli kvadrat. Rang `bg-*-100` bilan yoniga
-     yoziladi — plitka faqat SHAKLNI beradi. */
+     yoziladi — plitka faqat SHAKLNI beradi.
+
+     ⚠️ BU YERDA `box-shadow` YO'Q va qo'shilmaydi. Plitkaga hajm
+     beradigan halqa va soya chaqiruv joyida (`ring-*`, `shadow-*`)
+     yoziladi; bu yerda ham `box-shadow` bo'lsa, u AYNI xossani
+     egallab, Tailwind halqasini butunlay o'chirib qo'yardi. */
   .tile {
     display: inline-flex;
     align-items: center;
@@ -490,6 +570,75 @@
     height: 38px;
     border-radius: var(--radius-tile);
     flex-shrink: 0;
+  }
+
+  /* ───────── Ko'rsatkich kartasi foni ─────────
+     Tus DIAGONAL o'tadi: yuqori chapda eng sezilarli, pastki o'ngda
+     butunlay yo'qoladi.
+
+     ⚠️ Yassi tus (`bg-*-50`) oltita kartani «rangli to'rtburchaklar
+     qatoriga» aylantirardi va ostidagi haqiqiy ogohlantirishlar
+     e'tibordan chetda qolardi. O'tish bilan rang kartani BO'YAMAYDI,
+     YORITADI: ma'no o'qiladi, lekin karta oq qoladi.
+
+     ⚠️ Alfa orqali (rgb(... / 0.1)), tayyor `-50` pog'onasi bilan
+     emas: shu bitta e'lon ikkala rejimda ham ishlaydi — yorug'da oq
+     ustida tus, qorong'ida to'q yuza ustida yog'du. */
+  .kpi-brand {
+    background-image: linear-gradient(134deg, rgb(10 108 240 / 0.13) 0%, rgb(10 108 240 / 0.04) 46%, rgb(10 108 240 / 0) 76%);
+  }
+  .kpi-ok {
+    background-image: linear-gradient(134deg, rgb(10 146 75 / 0.12) 0%, rgb(10 146 75 / 0.035) 46%, rgb(10 146 75 / 0) 76%);
+  }
+  .kpi-warn {
+    background-image: linear-gradient(134deg, rgb(222 156 49 / 0.12) 0%, rgb(222 156 49 / 0.035) 46%, rgb(222 156 49 / 0) 76%);
+  }
+  .kpi-danger {
+    background-image: linear-gradient(134deg, rgb(172 23 48 / 0.105) 0%, rgb(172 23 48 / 0.032) 46%, rgb(172 23 48 / 0) 76%);
+  }
+  .kpi-done {
+    background-image: linear-gradient(134deg, rgb(123 71 191 / 0.12) 0%, rgb(123 71 191 / 0.035) 46%, rgb(123 71 191 / 0) 76%);
+  }
+
+  /* ───────── Progress chizig'i ─────────
+     Sakkiz piksellik chiziq yassi bo'lsa «plastik lenta» bo'lib
+     ko'rinadi. Ikki juda yupqa qatlam uni hajmli qiladi: o'yiq
+     yo'lak (ichki soya) va yuqoridan yorug' to'ldirish.
+
+     ⚠️ Rang O'ZGARMAYDI — `progressTone()` dan kelgan tus ustiga
+     faqat oq/qora alfa qo'yiladi. Rangni bu yerda aralashtirish
+     validatordan o'tgan palitrani buzardi. */
+  .bar-track {
+    box-shadow: inset 0 1px 1.5px rgb(16 42 76 / 0.11);
+  }
+  .dark .bar-track {
+    box-shadow: inset 0 1px 1.5px rgb(0 0 0 / 0.4);
+  }
+  .bar-fill {
+    position: relative;
+  }
+  .bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-image: linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.3) 0%,
+      rgb(255 255 255 / 0.06) 52%,
+      rgb(0 0 0 / 0.07) 100%
+    );
+  }
+
+  /* ───────── Jadval sarlavhasi lentasi ─────────
+     Yassi kulrang lenta jadval ustida «ikkinchi jadval» bo'lib
+     turardi. Pastga qarab yorishadigan o'tish uni qatorlar bilan
+     bog'laydi: lenta tugaydigan joy chiziq emas, o'tish bo'ladi. */
+  .th-band {
+    background-image: linear-gradient(180deg, rgb(16 42 76 / 0.035) 0%, rgb(16 42 76 / 0) 100%);
+  }
+  .dark .th-band {
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.04) 0%, rgb(255 255 255 / 0) 100%);
   }
 
   /* Suzuvchi panel (popover, dropdown) — bitta ko'rinish. */

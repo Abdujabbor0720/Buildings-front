@@ -38,7 +38,12 @@ export function ScopeFilters() {
             boshqaruvlar unga bo‘ysunadi. Ikkinchi, uchinchisi ham
             to‘ldirilsa, sarlavha uchta bir xil «tugma» qatoriga aylanib,
             qaysi biri asosiy ekani yo‘qolardi. */}
-        <PopoverButton className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand-500 px-2.5 text-meta font-semibold text-white transition-colors hover:bg-brand-600 focus:outline-none">
+        {/* ⚠️ Faol tab bilan AYNI ko'rinish (gradient + o'z rangidagi
+            soya): sarlavhadagi asosiy tugma va karta ichidagi faol
+            segment bitta ekranda turadi — ikkalasi boshqa-boshqa
+            ko'kda bo'lsa, interfeys ikki qo'ldan yig'ilgan bo'lib
+            ko'rinardi. */}
+        <PopoverButton className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-linear-to-b from-brand-400 to-brand-600 px-2.5 text-meta font-semibold text-white shadow-[var(--shadow-brand)] transition-[filter] hover:brightness-110 focus:outline-none">
           <MapPin className="size-3.5" />
           <span className="hidden sm:inline">Viloyat</span>
           <ChevronDown className="size-3.5 opacity-80" />

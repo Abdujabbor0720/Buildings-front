@@ -35,19 +35,28 @@ import { formatCompact, formatCount, formatPercent } from '@/shared/utils/money.
  * ular holat EMAS, shuning uchun yashil/qizil tus olmaydi.
  */
 const SURFACE = {
-  brand: 'bg-brand-50/70 dark:bg-brand-500/[0.07]',
-  ok: 'bg-ok-50/70 dark:bg-ok-500/[0.07]',
-  warn: 'bg-warn-50/70 dark:bg-warn-500/[0.07]',
-  danger: 'bg-danger-50/60 dark:bg-danger-500/[0.07]',
-  done: 'bg-done-50/70 dark:bg-done-500/[0.07]',
+  brand: 'kpi-brand outline-brand-500/14 dark:outline-brand-400/16',
+  ok: 'kpi-ok outline-ok-500/16 dark:outline-ok-400/18',
+  warn: 'kpi-warn outline-warn-500/22 dark:outline-warn-400/20',
+  danger: 'kpi-danger outline-danger-500/16 dark:outline-danger-400/18',
+  done: 'kpi-done outline-done-500/16 dark:outline-done-400/18',
 } as const;
 
+/**
+ * Ikonka plitkasi — DIAGONAL o'tish bilan.
+ *
+ * ⚠️ Yassi `bg-*-100` emas: plitka kartaning o'z tusi ustida turadi
+ * va ikkalasi yassi bo'lganda plitka «dog'» bo'lib ko'rinardi. O'tish
+ * + ichki halqa + o'z rangidagi yupqa soya unga qavariq shakl beradi.
+ */
 const TILE = {
-  brand: 'bg-brand-100 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300',
-  ok: 'bg-ok-100 text-ok-600 dark:bg-ok-500/15 dark:text-ok-300',
-  warn: 'bg-warn-100 text-warn-600 dark:bg-warn-500/15 dark:text-warn-300',
-  danger: 'bg-danger-100 text-danger-500 dark:bg-danger-500/15 dark:text-danger-300',
-  done: 'bg-done-100 text-done-600 dark:bg-done-500/15 dark:text-done-300',
+  brand:
+    'bg-linear-to-br from-brand-100 to-brand-50 text-brand-600 ring-1 ring-inset ring-brand-500/14 shadow-[0_1px_2px_rgb(10_108_240/0.16)] dark:from-brand-500/22 dark:to-brand-500/8 dark:text-brand-300 dark:ring-brand-400/18 dark:shadow-none',
+  ok: 'bg-linear-to-br from-ok-100 to-ok-50 text-ok-600 ring-1 ring-inset ring-ok-500/14 shadow-[0_1px_2px_rgb(10_146_75/0.16)] dark:from-ok-500/22 dark:to-ok-500/8 dark:text-ok-300 dark:ring-ok-400/18 dark:shadow-none',
+  warn: 'bg-linear-to-br from-warn-100 to-warn-50 text-warn-600 ring-1 ring-inset ring-warn-500/18 shadow-[0_1px_2px_rgb(222_156_49/0.22)] dark:from-warn-500/22 dark:to-warn-500/8 dark:text-warn-300 dark:ring-warn-400/18 dark:shadow-none',
+  danger:
+    'bg-linear-to-br from-danger-100 to-danger-50 text-danger-500 ring-1 ring-inset ring-danger-500/14 shadow-[0_1px_2px_rgb(172_23_48/0.16)] dark:from-danger-500/22 dark:to-danger-500/8 dark:text-danger-300 dark:ring-danger-400/18 dark:shadow-none',
+  done: 'bg-linear-to-br from-done-100 to-done-50 text-done-600 ring-1 ring-inset ring-done-500/14 shadow-[0_1px_2px_rgb(123_71_191/0.16)] dark:from-done-500/22 dark:to-done-500/8 dark:text-done-300 dark:ring-done-400/18 dark:shadow-none',
 } as const;
 
 /**
@@ -123,7 +132,24 @@ function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatV
      * chiqarib yuborardi (gorizontal skroll). `min-w-0` + `truncate`
      * uni qisqartiradi.
      */
-    <div className={cn('card card-hover relative flex min-w-0 items-center gap-2 px-2 py-2', SURFACE[tone])}>
+    /*
+     * ⚠️ Halqa `outline` BILAN, `ring` bilan EMAS. `.card` o'zining
+     * `box-shadow` ini belgilaydi va Tailwind halqasi ham AYNI
+     * xossani ishlatadi: ikkalasi bir elementda uchrashganda halqa
+     * butunlay yo'qolardi. `outline` boshqa xossa, `-outline-offset-1`
+     * esa uni chegaraning o'ziga qo'yadi va o'lchamni o'zgartirmaydi.
+     *
+     * ⚠️ Halqa KARTANING O'Z TUSIDA. Neytral halqa bilan rangli karta
+     * «kulrang ramkaga solingan» bo'lib ko'rinardi; o'z rangidagi
+     * halqa esa tusni yopib, kartani butun qiladi.
+     */
+    <div
+      className={cn(
+        'card card-hover relative flex min-w-0 items-center gap-2 px-2 py-2',
+        'outline-1 -outline-offset-1',
+        SURFACE[tone],
+      )}
+    >
       <span className={cn('tile size-8 shrink-0 rounded-lg', TILE[tone])} aria-hidden>
         <Icon className="size-[17px]" strokeWidth={2.1} />
       </span>
@@ -260,11 +286,16 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         tone="done"
         floatVisual
         visual={
+          /* ⚠️ Ustunlar KARTANING TUSIDA (binafsha), neytral kulrangda
+             emas: tusli karta ustidagi kulrang diagramma «boshqa
+             joydan kelib qolgan» bo‘lib ko‘rinardi. */
           <SparkBars
             className="w-9"
             values={completingThisYear.byMonth}
             labels={MONTHS_UZ_CAP.map((month) => month)}
             highlightLast
+            barClassName="bg-done-300 dark:bg-done-400/40"
+            highlightClassName="bg-done-500 dark:bg-done-300"
           />
         }
       />
@@ -276,7 +307,14 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
         icon={Database}
         tone="brand"
         floatVisual
-        visual={<SparkBars className="w-9" values={costByYear} labels={costYearLabels} />}
+        visual={
+          <SparkBars
+            className="w-9"
+            values={costByYear}
+            labels={costYearLabels}
+            barClassName="bg-brand-300 dark:bg-brand-400/40"
+          />
+        }
       />
     </>
   );

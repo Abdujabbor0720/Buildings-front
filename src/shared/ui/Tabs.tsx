@@ -83,7 +83,15 @@ export function Tabs<T extends string>({
   return (
     <div
       role="tablist"
-      className={cn('items-center gap-1.5', fill ? 'flex w-full' : 'inline-flex', className)}
+      /*
+       * ⚠️ `fill` da `w-full` YO'Q va qaytarilmaydi. `div` baribir
+       * blok element: `display:flex` unga mavjud kenglikni to'liq
+       * beradi. `w-full` esa kenglikni OTA elementdan oladi va yon
+       * chetni (`mx-3` — tumanlar jadvalidagi tablar) HISOBGA
+       * OLMAYDI: natijada blok 24px keng bo'lib, har ikki tomondan
+       * 12px dan kartadan tashqariga chiqib ketardi.
+       */
+      className={cn('items-center gap-1.5', fill ? 'flex' : 'inline-flex', className)}
     >
       {options.map((option) => {
         const active = option.value === value;
@@ -99,7 +107,10 @@ export function Tabs<T extends string>({
               size === 'sm' ? 'px-3 py-1 text-meta' : 'px-4 py-1.5 text-ui',
               fill && 'min-w-0 flex-1 truncate px-1 text-nano',
               active
-                ? 'bg-brand-500 text-white shadow-[0_1px_2px_rgb(10_108_240/0.35)]'
+                ? // Diagonal o'tish + o'z rangidagi soya: yassi ko'k
+                  // to'rtburchak oq karta ustida «yopishtirilgan» bo'lib
+                  // ko'rinardi, soya esa uni yuzadan ko'taradi.
+                  'bg-linear-to-b from-brand-400 to-brand-600 text-white shadow-[var(--shadow-brand)]'
                 : 'surface-inset text-muted hover:bg-neutral-200/80 hover:text-strong dark:hover:bg-white/10',
             )}
           >

@@ -35,9 +35,16 @@ export function TypeBreakdown({ items }: { items: TypeBreakdownItem[] }) {
             onClick={() => navigate(`/objects?typeIds=${item.typeId}`)}
             className="flex w-full items-center gap-1.5 rounded-md px-1 py-[1px] text-left transition-colors hover:bg-neutral-100/70 dark:hover:bg-white/6"
           >
+            {/* Nuqta atrofidagi o'z rangidagi yumshoq halo (2.5px,
+                15% shaffoflik). 8px lik yalang'och nuqta oq fonda
+                «sanchilgan» bo'lib ko'rinardi; halo uni yumshatadi va
+                o'lchamga TEGMAYDI (soya oqimdan tashqarida). */}
             <span
               className="size-2 shrink-0 rounded-full"
-              style={{ backgroundColor: seriesHex(index) }}
+              style={{
+                backgroundColor: seriesHex(index),
+                boxShadow: `0 0 0 2.5px ${seriesHex(index)}26`,
+              }}
             />
             {/* ⚠️ Nom uchun joy BIRINCHI navbatda: «Ta'li…» bo‘lib
                 qirqilgan yorliq hech narsa tushuntirmaydi. Shuning
@@ -49,9 +56,9 @@ export function TypeBreakdown({ items }: { items: TypeBreakdownItem[] }) {
             <span className="num w-5 shrink-0 text-right text-micro font-semibold text-strong">
               {item.count}
             </span>
-            <span className="h-2 w-9 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+            <span className="bar-track h-2 w-9 shrink-0 overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
               <span
-                className="block h-full rounded-full transition-[width] duration-500"
+                className="bar-fill block h-full rounded-full transition-[width] duration-500"
                 style={{ width: `${(item.count / max) * 100}%`, backgroundColor: seriesHex(index) }}
               />
             </span>

@@ -28,7 +28,7 @@ function PhotoCard({ item }: { item: RecentPhotoItem }) {
   return (
     <Link
       to={`/objects/${item.objectId}`}
-      className="group flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-subtle surface transition-shadow hover:shadow-[var(--shadow-raise)]"
+      className="group flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-subtle surface transition-[box-shadow,transform] duration-200 hover:-translate-y-px hover:shadow-[var(--shadow-raise)]"
     >
       {/* ⚠️ Rasm QOLGAN joyni egallaydi (`flex-1`), nisbat bilan
           emas: nisbat karta KENGLIGIGA bog‘lanib, keng monitorda
@@ -48,7 +48,16 @@ function PhotoCard({ item }: { item: RecentPhotoItem }) {
           </span>
         )}
 
-        <span className="num absolute right-2 bottom-2 rounded-md bg-neutral-900/80 px-1.5 py-0.5 text-micro font-bold text-white backdrop-blur-sm">
+        {/* ⚠️ PARDA (gradient) — belgi uchun emas, RASM uchun.
+            Yorug‘ osmonli fotoda oq raqam yo‘qolib ketardi, to‘q
+            to‘rtburchak esa rasmni «yamoq» qilib qo‘yardi. Pastdan
+            yuqoriga so‘nadigan parda ikkalasini ham hal qiladi va
+            rasmning o‘zi ochiq qoladi. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-neutral-950/55 via-neutral-950/15 to-transparent"
+        />
+        <span className="num absolute right-2 bottom-2 rounded-md bg-neutral-950/55 px-1.5 py-0.5 text-micro font-bold text-white ring-1 ring-white/20 ring-inset backdrop-blur-md">
           {Math.round(item.progressPercent)}%
         </span>
       </div>

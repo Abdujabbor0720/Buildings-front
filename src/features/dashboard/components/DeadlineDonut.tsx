@@ -68,7 +68,11 @@ export function DeadlineDonut({ buckets }: { buckets: DeadlineBucket[] }) {
         ko‘rinardi. Endi halqa mavjud joyga moslashadi.
       */}
       <div className="flex min-h-0 flex-1 items-center gap-2.5 overflow-hidden">
-        <div className="relative aspect-square h-full max-h-[150px] shrink-0">
+        {/* Halqaga yumshoq soya — `MiniDonut` bilan AYNI qoida: yassi
+            doira oq karta ustida «chizilgan» bo'lib ko'rinadi. Soya
+            ichki teshikka ham tushmasligi uchun u SVG ga emas,
+            idishga qo'yilgan. */}
+        <div className="relative aspect-square h-full max-h-[150px] shrink-0 [&_svg]:drop-shadow-[0_2px_4px_rgb(16_42_76/0.16)]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -107,9 +111,15 @@ export function DeadlineDonut({ buckets }: { buckets: DeadlineBucket[] }) {
         <ul className="min-w-0 flex-1 space-y-0.5">
           {colored.map((bucket) => (
             <li key={bucket.label} className="flex min-w-0 items-center gap-1.5">
+              {/* Nuqta atrofidagi o‘z rangidagi yumshoq halo —
+                  `TypeBreakdown` bilan AYNI qoida: 8px lik yalang‘och
+                  nuqta oq fonda «sanchilgan» bo‘lib ko‘rinardi. */}
               <span
                 className="size-2 shrink-0 rounded-full"
-                style={{ backgroundColor: bucket.hex }}
+                style={{
+                  backgroundColor: bucket.hex,
+                  boxShadow: `0 0 0 2.5px ${bucket.hex}26`,
+                }}
               />
               <span className="min-w-0 flex-1 truncate text-micro text-muted">{bucket.label}</span>
               <span className="num shrink-0 text-meta font-bold text-strong">{bucket.count}</span>

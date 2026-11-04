@@ -48,6 +48,10 @@ export function MiniDonut({ value, color, size = 38, thickness = 4, className, l
         strokeWidth={thickness}
         strokeLinecap="round"
         strokeDasharray={`${dash} ${circumference - dash}`}
+        /* Yoyga o‘z rangidagi juda yumshoq yog‘du: 4px lik chiziq
+           rangli tusli karta ustida «chizilgan» emas, «yoqilgan»
+           bo‘lib ko‘rinadi. Alfa past — bu bezak emas, chuqurlik. */
+        style={{ filter: `drop-shadow(0 1px 2px ${color}59)` }}
         className="transition-[stroke-dasharray] duration-700 ease-out"
       />
     </svg>

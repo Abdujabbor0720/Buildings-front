@@ -78,7 +78,13 @@ export function DistrictMap({
   return (
     <div
       className={cn(
-        'surface-muted relative overflow-hidden rounded-xl shadow-[inset_0_0_0_1px_rgb(16_42_76/0.06)]',
+        // ⚠️ Fon YASSI kulrang emas: yuqoridan pastga juda yupqa ko'k
+        // o'tish. Xarita poligonlari ham ko'kish bo'lgani uchun yassi
+        // kulrang maydon ular ostida «qog'oz varaq» bo'lib turardi;
+        // o'tish bilan esa idish xaritaning o'z muhitiga aylanadi.
+        'surface-muted relative overflow-hidden rounded-xl',
+        'bg-[linear-gradient(180deg,rgb(10_108_240/0.05)_0%,rgb(10_108_240/0.012)_55%,rgb(10_108_240/0)_100%)]',
+        'shadow-[inset_0_0_0_1px_rgb(16_42_76/0.07),inset_0_1px_3px_rgb(16_42_76/0.05)]',
         fullscreen ? 'fixed inset-3 z-50 h-auto shadow-[0_24px_64px_-18px_rgb(10_10_10/0.45)]' : heightClass,
         className,
       )}
@@ -321,10 +327,18 @@ function DistrictLayer({
                 <span style="
                   display:grid;place-items:center;
                   width:${size}px;height:${size}px;border-radius:999px;
-                  background:${hex};color:#fff;
+                  /* ⚠️ Yassi doira EMAS: yuqori chapda yupqa yorug'lik
+                     (radial gradient) — belgi xarita ustida sharsimon
+                     bo'lib ko'rinadi. Yassi rangli doira poligon bilan
+                     bitta tekislikda turib, «bo'yoq dog'i» bo'lib
+                     ko'rinardi. Rang O'ZGARMAYDI — faqat oq alfa. */
+                  background:
+                    radial-gradient(120% 120% at 32% 24%, rgba(255,255,255,.34), rgba(255,255,255,0) 58%),
+                    ${hex};
+                  color:#fff;
                   font:600 ${props.total >= 100 ? 10 : 11.5}px/1 var(--font-sans);
                   font-variant-numeric:tabular-nums;
-                  box-shadow:0 1px 4px rgba(2,24,58,.3);
+                  box-shadow:0 1px 3px rgba(2,24,58,.34),0 4px 10px -4px rgba(2,24,58,.45);
                   border:2px solid var(--surface);
                 ">${esc(props.total)}</span>
                 ${
@@ -332,7 +346,10 @@ function DistrictLayer({
                     ? `<span style="
                   display:inline-block;padding:1px 5px;border-radius:5px;
                   background:var(--surface);
-                  box-shadow:0 0 0 1px rgb(16 42 76 / .1);
+                  /* Halqa + yumshoq soya: yorliq xarita poligoni ustida
+                     turadi va faqat 1px halqa bilan u fonga singib
+                     ketardi. */
+                  box-shadow:0 0 0 1px rgb(16 42 76 / .1),0 2px 5px -2px rgba(2,24,58,.3);
                   font:600 9.5px/1.35 var(--font-sans);
                   color:var(--ink-body);white-space:nowrap;
                 ">${esc(props.shortName)}</span>`

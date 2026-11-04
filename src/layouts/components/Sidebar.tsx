@@ -115,7 +115,10 @@ export function Sidebar({ mobile = false }: SidebarProps) {
         ) : (
           <a
             href="tel:1148"
-            className="flex items-center gap-2.5 rounded-xl bg-brand-500 px-3 py-2.5 transition-colors hover:bg-brand-600"
+            /* ⚠️ Asosiy tugma va faol tab bilan AYNI shakl (gradient +
+               o'z rangidagi soya). To'q panel ustida yassi ko'k
+               to'rtburchak «yopishtirilgan» bo'lib ko'rinardi. */
+            className="flex items-center gap-2.5 rounded-xl bg-linear-to-b from-brand-400 to-brand-600 px-3 py-2.5 shadow-[0_2px_6px_rgb(0_18_56/0.4),0_8px_18px_-8px_rgb(10_108_240/0.6)] transition-[filter] hover:brightness-110"
           >
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white/20 text-white">
               <Headset className="size-[18px]" />

@@ -33,14 +33,22 @@ export function ProgressBar({ value, showValue = false, tone, size = 'sm', class
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <div
-        className={cn('relative w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12', HEIGHTS[size])}
+        className={cn(
+          // `bar-track` — ichki soya («o'yiq» yo'lak), `bar-fill`
+          // ustidagi jilva bilan juft ishlaydi; ikkalasi `index.css` da.
+          'bar-track relative w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12',
+          HEIGHTS[size],
+        )}
         role="progressbar"
         aria-valuenow={Math.round(clamped)}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
-          className={cn('h-full rounded-full transition-[width] duration-500 ease-out', tone ?? progressTone(clamped))}
+          className={cn(
+            'bar-fill h-full rounded-full transition-[width] duration-500 ease-out',
+            tone ?? progressTone(clamped),
+          )}
           style={{ width: `${clamped}%` }}
         />
         {/* Reja chizig‘i: «qayerda bo‘lishi kerak edi» — eng muhim

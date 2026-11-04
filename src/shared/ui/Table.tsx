@@ -89,7 +89,9 @@ export function Th({ children, sortKey, activeSort, onSort, align = 'left', clas
         // ⚠️ `h-px` — jadval `h-full` bo‘lganda ortiqcha balandlikni
         // FAQAT tana qatorlari olishi uchun. Busiz sarlavha ham
         // cho‘zilib, ustun nomlari qator o‘rtasida osilib qolardi.
-        't-label surface-muted sticky top-0 z-10 h-px border-b border-subtle px-3 py-1.5 whitespace-nowrap',
+        // `th-band` — pastga qarab yorishadigan yupqa o'tish: yassi
+        // lenta qatorlar ustida «ikkinchi jadval» bo'lib turardi.
+        't-label surface-muted th-band sticky top-0 z-10 h-px border-b border-subtle px-3 py-1.5 whitespace-nowrap',
         'border-r border-cell last:border-r-0',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
