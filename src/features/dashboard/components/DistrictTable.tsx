@@ -50,11 +50,19 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
             <Tr>
               <Th className="w-6 px-1.5">#</Th>
               <Th className="px-1.5">Tuman nomi</Th>
-              <Th align="right" className="w-8 px-1">Jami</Th>
-              <Th align="right" className="w-8 px-1">Reja</Th>
-              <Th align="right" className="w-9 px-1">Kech.</Th>
-              <Th align="right" className="w-8 px-1">Xavf.</Th>
-              <Th className="w-[84px] px-1.5">Bajarilish</Th>
+              <Th align="right" className="w-8 px-0.5">Jami</Th>
+              <Th align="right" className="w-8 px-0.5">Reja</Th>
+              {/* ⚠️ Qisqartma ATAYLAB: 1280px li ekranda kartaga 344px
+                  joy tegadi va «Kechik.» / «Xavfli» to‘liq yozilsa,
+                  oxirgi ustundagi foiz qirqilib, gorizontal skroll
+                  paydo bo‘lardi. */}
+              <Th align="right" className="w-9 px-0.5">Kech.</Th>
+              <Th align="right" className="w-8 px-0.5">Xavf.</Th>
+              {/* ⚠️ Kenglik FOIZDA, piksel emas: keng monitorda ortiqcha joy
+                  faqat tuman nomiga ketib, chiziq 26px lik «dog‘» bo‘lib
+                  qolardi. Foiz bilan u karta bilan birga o‘sadi, eng
+                  kichik kenglik esa 1280px li ekranni kafolatlaydi. */}
+              <Th className="w-[22%] min-w-[88px] px-1.5">Bajarilish</Th>
             </Tr>
           </THead>
           <TBody>
@@ -63,18 +71,25 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
             ) : (
               rows.map((district, index) => (
                 <Tr key={district.districtId} onClick={() => navigate(`/objects?districtIds=${district.districtId}`)}>
-                  <Td muted className="num px-1.5 text-meta">{index + 1}</Td>
-                  <Td className="px-1.5 text-meta font-medium whitespace-nowrap">{district.shortName}</Td>
-                  <Td align="right" className="num px-1 text-meta font-semibold text-strong">{district.total}</Td>
-                  <Td align="right" className={cn('num px-1 text-meta', district.onSchedule > 0 && 'text-ok-600 dark:text-ok-500')}>
-                    {district.onSchedule}
+                  <Td className="num text-faint px-1.5">{index + 1}</Td>
+                  <Td className="px-1.5 font-medium whitespace-nowrap text-strong">{district.shortName}</Td>
+
+                  {/* ⚠️ «Jami» — qatorning TAYANCH raqami: u yarim qalin va
+                      to‘q, qolganlari esa odatiy. Hammasi bir xil
+                      og‘irlikda bo‘lsa, ko‘z qaysi birini avval o‘qishni
+                      bilmaydi. */}
+                  <Td align="right" className="num px-0.5 font-semibold text-strong">
+                    {district.total}
                   </Td>
-                  <Td align="right" className={cn('num px-1 text-meta', district.delayed > 0 && 'text-warn-600 dark:text-warn-500')}>
-                    {district.delayed}
-                  </Td>
-                  <Td align="right" className={cn('num px-1 text-meta', district.atRisk > 0 && 'text-danger-600 dark:text-danger-500')}>
-                    {district.atRisk}
-                  </Td>
+
+                  {/* ⚠️ NOL qiymat XIRA ko‘rsatiladi. Ilgari u ham to‘q
+                      qora edi va «0 ta kechikish» bilan «5 ta kechikish»
+                      bir xil og‘irlikda ko‘rinardi — holbuki bu jadvalda
+                      ko‘z aynan NOLDAN FARQLI raqamlarni qidiradi. */}
+                  <Count value={district.onSchedule} tone="text-ok-600 dark:text-ok-500" />
+                  <Count value={district.delayed} tone="text-warn-600 dark:text-warn-500" />
+                  <Count value={district.atRisk} tone="text-danger-600 dark:text-danger-500" />
+
                   <Td className="px-1.5">
                     {/* ⚠️ Rang BAJARILISH FOIZIDAN emas, HOLATDAN olinadi.
                         Foiz allaqachon chiziq uzunligi va yonidagi raqam
@@ -95,6 +110,15 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
         </Table>
       </TableWrap>
     </div>
+  );
+}
+
+/** Sanoq katagi: noldan farqli qiymat RANGLI, nol esa xira. */
+function Count({ value, tone }: { value: number; tone: string }) {
+  return (
+    <Td align="right" className={cn('num px-0.5', value > 0 ? tone : 'text-faint')}>
+      {value}
+    </Td>
   );
 }
 

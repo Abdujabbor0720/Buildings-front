@@ -9,6 +9,7 @@ import { useDistrictStats } from '@/shared/api/queries';
 import {
   Button, Card, CardBody, CardHeader, LoadingBlock, PageHeader, ProgressBar,
   Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr, ErrorState} from '@/shared/ui';
+import { cn } from '@/shared/utils/cn';
 import { formatCompact, formatCount, formatPercent } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
 import { useFiltersStore } from '@/store/filters.store';
@@ -142,10 +143,15 @@ export default function DistrictsPage() {
                           <Td muted className="num text-micro">{index + 1}</Td>
                           <Td className="font-medium whitespace-nowrap">{row.name}</Td>
                           <Td align="right" className="num font-semibold">{row.total}</Td>
-                          <Td align="right" className="num text-ok-600 dark:text-ok-500">{row.onSchedule}</Td>
-                          <Td align="right" className="num text-warn-600 dark:text-warn-500">{row.delayed}</Td>
-                          <Td align="right" className="num text-danger-600 dark:text-danger-500">{row.atRisk}</Td>
-                          <Td align="right" className="num text-muted">{row.notStarted}</Td>
+                          {/* ⚠️ NOL qiymat XIRA. Ko‘z bu jadvalda noldan
+                              FARQLI raqamlarni qidiradi; «0» ham to‘q
+                              rangda bo‘lsa, u ham muammo bordek
+                              ko‘rinadi. Bosh sahifadagi tumanlar
+                              kartasi bilan AYNI qoida. */}
+                          <Count value={row.onSchedule} tone="text-ok-600 dark:text-ok-500" />
+                          <Count value={row.delayed} tone="text-warn-600 dark:text-warn-500" />
+                          <Count value={row.atRisk} tone="text-danger-600 dark:text-danger-500" />
+                          <Count value={row.notStarted} tone="text-muted" />
                           <Td>
                             {/* ⚠️ Rang HOLATDAN olinmaydi. Ilgari chiziq uzunligi bajarilishni,
                                 rangi esa tumanning ustun holatini bildirardi — natijada bir
@@ -179,5 +185,14 @@ export default function DistrictsPage() {
         </Card>
       </div>
     </>
+  );
+}
+
+/** Sanoq katagi: noldan farqli qiymat RANGLI, nol esa xira. */
+function Count({ value, tone }: { value: number; tone: string }) {
+  return (
+    <Td align="right" className={cn('num', value > 0 ? tone : 'text-faint')}>
+      {value}
+    </Td>
   );
 }

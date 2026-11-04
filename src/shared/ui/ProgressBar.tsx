@@ -54,8 +54,12 @@ export function ProgressBar({ value, showValue = false, tone, size = 'sm', class
         ) : null}
       </div>
 
+      {/* ⚠️ Foiz matnining O‘LCHAMI BERILMAGAN — u atrofdagi matndan
+          meros oladi. Qat‘iy `text-meta` bo‘lganda bosh sahifadagi
+          11px li jadvalda foiz qolgan ustunlardan kattaroq bo‘lib,
+          katakdan «o‘sib chiqqan» kabi ko‘rinardi. */}
       {showValue ? (
-        <span className="num w-9 shrink-0 text-right text-meta">{Math.round(clamped)}%</span>
+        <span className="num w-8 shrink-0 text-right">{Math.round(clamped)}%</span>
       ) : null}
     </div>
   );
