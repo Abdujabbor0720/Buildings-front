@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Headset, PanelLeftClose, PanelLeftOpen, Send, X } from 'lucide-react';
+import { Headset, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { NAV_ITEMS } from '@/shared/constants/nav';
 import { BrandMark } from '@/shared/ui';
@@ -102,32 +102,45 @@ export function Sidebar({ mobile = false }: SidebarProps) {
         </ul>
       </nav>
 
-      {/* ───── Yordam markazi ───── */}
+      {/*
+        ───── Yordam markazi ─────
+
+        ⚠️ Bu blok HAVOLA EMAS va `tel:` manzili YO'Q. Ilgari u
+        «1148» raqamiga qo'ng'iroq qilardi; raqam olib tashlangach,
+        ko'rinmaydigan manzilga olib boradigan havola qolardi —
+        bosgan odam nima bo'lganini tushunmasdi. Manzil aniq bo'lsa
+        (raqam yoki qo'llab-quvvatlash kanali), shu blok qaytadan
+        `a` ga aylantiriladi.
+      */}
       <div className="px-3 pb-2">
         {collapsed ? (
-          <a
-            href="tel:1148"
-            title="Yordam markazi · 1148"
-            className="rail-ink-muted grid h-10 place-items-center rounded-lg bg-white/8 transition-colors hover:bg-white/14 hover:text-white"
+          <div
+            title="Yordam markazi · 24/7"
+            className="rail-ink-muted grid h-10 place-items-center rounded-lg bg-white/8"
           >
             <Headset className="size-[18px]" />
-          </a>
+          </div>
         ) : (
-          <a
-            href="tel:1148"
+          <div
             /* ⚠️ Asosiy tugma va faol tab bilan AYNI shakl (gradient +
                o'z rangidagi soya). To'q panel ustida yassi ko'k
                to'rtburchak «yopishtirilgan» bo'lib ko'rinardi. */
-            className="flex items-center gap-2.5 rounded-xl bg-linear-to-b from-brand-400 to-brand-600 px-3 py-2.5 shadow-[0_2px_6px_rgb(0_18_56/0.4),0_8px_18px_-8px_rgb(10_108_240/0.6)] transition-[filter] hover:brightness-110"
+            className="flex items-center gap-2.5 rounded-xl bg-linear-to-b from-brand-400 to-brand-600 px-3 py-2.5 shadow-[0_2px_6px_rgb(0_18_56/0.4),0_8px_18px_-8px_rgb(10_108_240/0.6)]"
           >
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white/20 text-white">
               <Headset className="size-[18px]" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-nano text-white/75">Yordam markazi · 24/7</span>
-              <span className="num block text-lede leading-tight text-white">1148</span>
+              <span className="block text-ui leading-tight font-semibold text-white">
+                Yordam markazi
+              </span>
+              {/* ⚠️ Izoh BITTA qatorga sig'ishi kerak. Panel 196px va
+                  ikonka 36px ni olgach, matnga ~100px qoladi:
+                  «Kuniga 24 soat, haftada 7 kun» ikkiga bo'linib,
+                  kartani bir qator balandlashtirib yuborardi. */}
+              <span className="block text-nano text-white/75">24/7 ishlaydi</span>
             </span>
-          </a>
+          </div>
         )}
       </div>
 
@@ -135,9 +148,23 @@ export function Sidebar({ mobile = false }: SidebarProps) {
       {!collapsed ? (
         <div className="px-4 pt-1 pb-3">
           <p className="rail-ink-muted mb-2 text-nano">Mobil ilovani yuklab oling</p>
+          {/*
+            ⚠️ Belgilar — HAQIQIY brend markalari, lucide'ning umumiy
+            ikonkalari emas. Ilgari Telegram o'rnida oddiy «qog'oz
+            samolyot» (`Send`) turardi: u Telegram logotipi EMAS va
+            yonidagi ikkita haqiqiy marka (Apple, Google Play) bilan
+            bir qatorda turganda farq darhol bilinardi.
+
+            ⚠️ Ranglar ham brendniki: Telegram — o'z ko'ki, Google
+            Play — to'rt rangli uchburchak, Apple — oq (to'q fonda
+            Apple qoidasi aynan shunday). Shuning uchun plitka foni
+            neytral (`bg-white/8`) qoldi: rang BELGIDA, plitkada emas —
+            aks holda uchta har xil rangli kvadrat yonma-yon turib,
+            panelning pastki qismi chalkash bo'lib ketardi.
+          */}
           <div className="flex items-center gap-1.5">
             <StoreLink href="https://t.me/shaffofqurilish_bot" label="Telegram">
-              <Send className="size-[15px]" />
+              <TelegramMark />
             </StoreLink>
             <StoreLink href="https://apps.apple.com/" label="App Store">
               <AppleMark />
@@ -180,18 +207,61 @@ function StoreLink({ href, label, children }: { href: string; label: string; chi
   );
 }
 
+/**
+ * TELEGRAM — rasmiy marka: ko'k doira + oq samolyot.
+ *
+ * ⚠️ Samolyot doiradan ALOHIDA shakl sifatida chiziladi. Tayyor
+ * «doira + o'yilgan samolyot» yo'li (bitta `path`) to'q panel ustida
+ * ishlamaydi: o'yilgan joydan fon ko'rinib, samolyot oq emas, QORA
+ * bo'lib chiqardi.
+ */
+function TelegramMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-[17px]" aria-hidden>
+      <circle cx="12" cy="12" r="12" fill="#229ED9" />
+      <path
+        fill="#fff"
+        transform="translate(12 12) scale(0.82) translate(-12 -12)"
+        d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"
+      />
+    </svg>
+  );
+}
+
+/** APPLE — rasmiy silueti. To'q fonda OQ (brend qoidasi). */
 function AppleMark() {
   return (
-    <svg viewBox="0 0 24 24" className="size-[15px]" fill="currentColor" aria-hidden>
+    <svg viewBox="0 0 24 24" className="size-[15px]" fill="#ffffff" aria-hidden>
       <path d="M16.37 12.78c.03 2.9 2.55 3.87 2.58 3.88-.02.07-.4 1.38-1.33 2.73-.8 1.17-1.64 2.33-2.96 2.35-1.3.03-1.71-.77-3.2-.77-1.48 0-1.94.75-3.17.8-1.27.05-2.24-1.26-3.05-2.42-1.65-2.4-2.91-6.77-1.22-9.72.84-1.47 2.35-2.4 3.98-2.42 1.25-.03 2.43.84 3.2.84.76 0 2.2-1.04 3.7-.89.63.03 2.4.26 3.54 1.92-.09.06-2.11 1.24-2.09 3.7M14.1 4.3c.68-.82 1.14-1.96 1.01-3.1-.98.04-2.16.65-2.86 1.47-.63.72-1.18 1.88-1.03 2.99 1.09.08 2.2-.55 2.88-1.36" />
     </svg>
   );
 }
 
+/**
+ * GOOGLE PLAY — rasmiy TO'RT RANGLI uchburchak.
+ *
+ * ⚠️ Bitta rangdagi variant Google brend qoidalarida yo'q: belgi
+ * to'rtta bo'lakdan iborat va har biri o'z rangida. Ilgari bu yerda
+ * bitta `currentColor` li yo'l turardi — u Play belgisiga o'xshardi,
+ * lekin Play belgisi EMAS edi.
+ */
 function PlayMark() {
   return (
-    <svg viewBox="0 0 24 24" className="size-[15px]" fill="currentColor" aria-hidden>
-      <path d="M3.6 1.84a1.5 1.5 0 0 0-.6 1.2v17.92a1.5 1.5 0 0 0 .6 1.2l.1.06L13.8 12.1v-.22L3.7 1.78l-.1.06ZM17.2 15.5l-3.4-3.4v-.22l3.4-3.4.08.05 4.03 2.29c1.15.65 1.15 1.72 0 2.38l-4.03 2.29-.08.01ZM17.28 15.49 13.8 12 3.6 22.2c.38.4 1 .45 1.71.05l11.97-6.76M17.28 8.51 5.31 1.75c-.7-.4-1.33-.35-1.71.05L13.8 12l3.48-3.49Z" />
+    <svg viewBox="0 0 512 512" className="size-[15px]" aria-hidden>
+      {/* chap tana */}
+      <path
+        fill="#00A0FF"
+        d="M47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0z"
+      />
+      {/* yuqori qanot */}
+      <path fill="#00E676" d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1z" />
+      {/* o'ng uchi */}
+      <path
+        fill="#FFCE00"
+        d="m472.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8z"
+      />
+      {/* pastki qanot */}
+      <path fill="#FF3A44" d="M104.6 499l280.8-161.2-60.1-60.1L104.6 499z" />
     </svg>
   );
 }
