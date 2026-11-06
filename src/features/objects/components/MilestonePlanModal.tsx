@@ -6,7 +6,7 @@ import { useReplaceMilestones, type MilestoneBody } from '@/shared/api/queries';
 import type { ConstructionObject, Milestone } from '@/shared/api/types';
 import { Button, Field, Input, Modal } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
-import { addDays, toInputDate } from '@/shared/utils/date.utils';
+import { addDays, formatDateRangeUz, toInputDate } from '@/shared/utils/date.utils';
 
 interface Props {
   open: boolean;
@@ -44,6 +44,16 @@ const TEMPLATE: Array<{ name: string; weight: number }> = [
 
 const MAX_ROWS = 50;
 
+/**
+ * USTUNLAR SHABLONI — BITTA joyda.
+ *
+ * ⚠️ Sarlavha qatori va ma'lumot qatorlari AYNI shu doimiydan
+ * foydalanadi. Ikki nusxa bo'lsa, biror ustun kengligi o'zgarganda
+ * sarlavha o'z ustunidan siljib qolardi — jadval esa aynan shu
+ * moslik ustiga qurilgan.
+ */
+const GRID_COLS = 'sm:grid-cols-[18px_1fr_130px_130px_84px_84px_32px]';
+
 let counter = 0;
 const nextKey = () => `row-${(counter += 1)}`;
 
@@ -71,9 +81,62 @@ export function MilestonePlanModal({ open, onClose, object, existing }: Props) {
 
   const total = rows.reduce((sum, row) => sum + (Number(row.weight) || 0), 0);
   const balanced = Math.abs(total - 100) < 0.01;
+  const balance = describeBalance(total);
 
   const patch = (key: string, field: keyof Row, value: string) =>
     setRows((current) => current.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
+
+  /**
+   * ULUSH KATAGI — 100% DAN OSHIRIB YOZIB BO'LMAYDI.
+   *
+   * ⚠️ Bu QATTIQ chegara, ogohlantirish emas (biznes qarori). Ilgari
+   * istalgan son yozilaverardi va yig'indi 106% bo'lib turardi;
+   * foydalanuvchi buni faqat pastdagi yozuvdan bilardi, «Saqlash»
+   * esa jim turardi. Endi katak qolgan ulushdan ortig'ini QABUL
+   * QILMAYDI: yig'indi 100 dan oshishi strukturaviy imkonsiz.
+   *
+   * ⚠️ Chegara SHU QATORDAN BOSHQALARINING yig'indisidan hisoblanadi
+   * (`others`), umumiy yig'indidan emas: aks holda 25% li qatorni
+   * 30% ga o'zgartirmoqchi bo'lgan odam o'zining hozirgi 25% iga
+   * ham joy topolmasdi.
+   *
+   * ⚠️ Bo'sh qiymat HAR DOIM o'tadi — foydalanuvchi katakni tozalab,
+   * qaytadan yozishi kerak. Manfiy va noto'g'ri qiymat ham o'tadi:
+   * uni `rowError` tushuntirib aytadi, bu yerda jim qisqartirish
+   * «nega raqamim o'zgarib ketdi» degan savol tug'dirardi.
+   */
+  function patchWeight(key: string, raw: string) {
+    const text = raw.trim();
+    const typed = Number(text);
+    if (!text || !Number.isFinite(typed) || typed < 0) {
+      patch(key, 'weight', raw);
+      return;
+    }
+
+    const others = rows.reduce(
+      (sum, row) => (row.key === key ? sum : sum + (Number(row.weight) || 0)),
+      0,
+    );
+    const allowance = Number(Math.max(0, 100 - others).toFixed(2));
+
+    if (typed <= allowance + 0.009) {
+      patch(key, 'weight', raw);
+      return;
+    }
+
+    patch(key, 'weight', allowance > 0 ? String(allowance) : '');
+    /*
+     * ⚠️ Xabar BIR XIL `id` bilan: har bosilgan tugma uchun yangi
+     * xabar chiqsa, ekran ularning ustuniga ko'milib qolardi.
+     * Bir xil id eskisini ALMASHTIRADI.
+     */
+    toast.error(
+      allowance > 0
+        ? `Jami ulush 100% dan oshmaydi — bu bosqichga ko‘pi bilan ${allowance}% berish mumkin.`
+        : 'Jami ulush allaqachon 100% — avval boshqa bosqich ulushini kamaytiring.',
+      { id: 'milestone-weight-cap' },
+    );
+  }
 
   const rowErrors = rows.map((row) => rowError(row));
   const hasRowErrors = rowErrors.some(Boolean);
@@ -133,15 +196,30 @@ export function MilestonePlanModal({ open, onClose, object, existing }: Props) {
       description="Har bosqichning ulushi uning umumiy bajarilishdagi og‘irligi. Yig‘indi aniq 100% bo‘lishi kerak."
       footer={
         <>
-          <span
-            className={cn(
-              'num mr-auto text-meta font-semibold',
-              balanced ? 'text-ok-600 dark:text-ok-500' : 'text-danger-600 dark:text-danger-400',
-            )}
-          >
-            Jami ulush: {total.toFixed(2)}%
-            {balanced ? '' : ` — ${(100 - total).toFixed(2)}% yetishmayapti`}
-          </span>
+          {/*
+            ⚠️ Yig'indi holati MATN va CHIZIQ bilan birga ko'rsatiladi.
+            Faqat matn bo'lganda «106.00%» va «100%» raqamlari bir-biriga
+            o'xshab ketardi; chiziq esa «qancha oshgani» ni o'lchovsiz,
+            bir qarashda aytadi.
+          */}
+          <div className="mr-auto min-w-0">
+            <p className={cn('text-meta font-semibold', balance.tone)}>
+              <span className="num">Jami ulush: {total.toFixed(2)}%</span>
+              <span className="font-normal"> — {balance.message}</span>
+            </p>
+            <div className="bar-track mt-1 flex h-1.5 w-[220px] max-w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-white/12">
+              <span
+                className={cn('bar-fill h-full', balance.barTone)}
+                style={{ width: `${balance.fillPercent}%` }}
+              />
+              {balance.overPercent > 0 ? (
+                <span
+                  className="bar-fill h-full bg-danger-500"
+                  style={{ width: `${balance.overPercent}%` }}
+                />
+              ) : null}
+            </div>
+          </div>
           <Button variant="secondary" onClick={onClose} disabled={replace.isPending}>
             Bekor qilish
           </Button>
@@ -153,10 +231,19 @@ export function MilestonePlanModal({ open, onClose, object, existing }: Props) {
     >
       <form id="plan-form" onSubmit={submit} className="space-y-3" noValidate>
         <div className="flex flex-wrap items-center justify-between gap-2">
+          {/*
+            ⚠️ Sana `formatDateRangeUz` bilan — ilgari bu yerda xom ISO
+            («2025-11-13 — 2026-09-09») chiqardi. `dates.md` qoidasi:
+            foydalanuvchi ko'radigan sana faqat «13-noyabr, 2025»
+            ko'rinishida bo'ladi; ISO esa FAQAT `<input type="date">`
+            qiymati va so'rov parametri uchun (qator kataklaridagi
+            sanalar aynan shundaylar va ular qoidadan istisno).
+          */}
           <p className="text-meta text-muted">
             {rows.length} ta bosqich · obyekt muddati:{' '}
-            <span className="num">{object.plannedStartDate.slice(0, 10)}</span> —{' '}
-            <span className="num">{object.plannedEndDate.slice(0, 10)}</span>
+            <span className="font-medium text-strong">
+              {formatDateRangeUz(object.plannedStartDate, object.plannedEndDate)}
+            </span>
           </p>
           <Button
             type="button"
@@ -169,11 +256,45 @@ export function MilestonePlanModal({ open, onClose, object, existing }: Props) {
           </Button>
         </div>
 
+        {/*
+          ⚠️ USTUN SARLAVHALARI — `sticky`. Ellikta bosqichli rejada
+          ro'yxat skroll bo'lganda sarlavha ekranda qoladi, aks holda
+          o'rtadagi qatorga qaragan odam «bu ustun sana edimi yoki
+          ulushmi» deb yuqoriga qaytarishga majbur bo'lardi.
+
+          ⚠️ `-mx-5 px-5` — modal tanasining to'ldirishini qoplaydi:
+          fonsiz sarlavha ostidan qatorlar ko'rinib o'tardi.
+
+          ⚠️ `sm:` dan pastda YASHIRILADI: u yerda grid bitta ustunga
+          tushadi va sarlavhalar o'z maydonlaridan uzilib qolardi.
+          Tor ekranda yo'l-yo'riqni placeholder va `aria-label` beradi.
+        */}
+        <div className="surface sticky top-0 z-10 -mx-5 hidden border-b border-subtle px-5 pt-1 pb-1.5 sm:block">
+          {/*
+            ⚠️ Ichki `px-2.5` — qator kartasining to'ldirishi bilan AYNI.
+            Usiz sarlavhalar o'z ustunidan 10px chapga siljib turardi:
+            qator `p-2.5` li karta ichida, sarlavha esa to'g'ridan-to'g'ri
+            modal tanasida joylashgan.
+          */}
+          <div className={cn('grid gap-2 px-2.5', GRID_COLS)}>
+            <span aria-hidden />
+            <span className="t-label">Bosqich nomi</span>
+            <span className="t-label">Boshlanishi</span>
+            <span className="t-label">Tugashi</span>
+            <span className="t-label text-center">Ulushi, %</span>
+            <span className="t-label text-center">Ishchi</span>
+            <span aria-hidden />
+          </div>
+        </div>
+
         <div className="space-y-2">
           {rows.map((row, index) => (
             <div
               key={row.key}
-              className="surface-muted grid grid-cols-1 items-start gap-2 rounded-xl p-2.5 sm:grid-cols-[18px_1fr_130px_130px_84px_84px_32px]"
+              className={cn(
+                'surface-muted grid grid-cols-1 items-start gap-2 rounded-xl p-2.5',
+                GRID_COLS,
+              )}
             >
               <span className="text-faint mt-2 hidden place-items-center sm:grid">
                 <GripVertical className="size-3.5" />
@@ -199,12 +320,15 @@ export function MilestonePlanModal({ open, onClose, object, existing }: Props) {
                 onChange={(e) => patch(row.key, 'plannedEnd', e.target.value)}
                 aria-label="Tugashi"
               />
+              {/* ⚠️ `patchWeight` — oddiy `patch` EMAS: aynan shu katak
+                  100% chegarasini ushlab turadi (yuqoridagi izohga qarang). */}
               <Input
                 value={row.weight}
-                onChange={(e) => patch(row.key, 'weight', e.target.value)}
+                onChange={(e) => patchWeight(row.key, e.target.value)}
                 inputMode="decimal"
                 placeholder="%"
                 aria-label="Ulushi, foiz"
+                title={`Jami 100% dan oshmaydi. Hozir jami ${total.toFixed(2)}%`}
                 className="text-center"
               />
               <Input
@@ -309,12 +433,75 @@ function initialRows(object: ConstructionObject, existing: Milestone[]): Row[] {
   });
 }
 
+/**
+ * YIG'INDI HOLATI — uch xil, va uchalasi ham BOSHQACHA aytiladi.
+ *
+ * ⚠️ Ilgari bitta formula ishlatilardi: `100 - total`. Yig'indi 100
+ * dan OSHGANDA u manfiy son berib, ekranda «-1.00% yetishmayapti»
+ * degan ma'nosiz yozuv chiqardi: foydalanuvchi ulushni oshirish
+ * kerakmi yoki kamaytirish kerakmi, umuman tushunmasdi. Endi
+ * ortiqcha va yetishmayotgan holat ALOHIDA hisoblanadi.
+ *
+ * ⚠️ «Ortiqcha» tarmog'i endi QO'LDA yozish orqali yuzaga kelmaydi
+ * (`patchWeight` chegarasi), lekin u OLIB TASHLANMAYDI: eski
+ * rejadan kelgan ma'lumot yoki kelajakda qo'shiladigan boshqa
+ * yo'l 100 dan oshiq yig'indi berib qo'ysa, ekran jim qolmasligi
+ * kerak. Server ham aynan shu shartni qo'yadi.
+ */
+function describeBalance(total: number): {
+  message: string;
+  tone: string;
+  barTone: string;
+  fillPercent: number;
+  overPercent: number;
+} {
+  const diff = Number((total - 100).toFixed(2));
+
+  if (Math.abs(diff) < 0.01) {
+    return {
+      message: 'muvozanatda, rejani saqlash mumkin',
+      tone: 'text-ok-600 dark:text-ok-500',
+      barTone: 'bg-ok-500',
+      fillPercent: 100,
+      overPercent: 0,
+    };
+  }
+
+  if (diff > 0) {
+    /*
+     * ⚠️ Chiziq JAMI yig'indiga nisbatan o'lchanadi: 100% lik qismi
+     * yashil, ortig'i qizil. Shunda «qancha oshgani» ulush sifatida
+     * ko'rinadi — chiziqni 100 ga qirqib qo'yilsa, 101% va 160%
+     * bir xil ko'rinardi.
+     */
+    return {
+      message: `${diff.toFixed(2)}% ORTIQCHA — maksimal 100%`,
+      tone: 'text-danger-600 dark:text-danger-400',
+      barTone: 'bg-ok-500',
+      fillPercent: (100 / total) * 100,
+      overPercent: (diff / total) * 100,
+    };
+  }
+
+  return {
+    message: `yana ${Math.abs(diff).toFixed(2)}% taqsimlanishi kerak`,
+    tone: 'text-warn-700 dark:text-warn-600',
+    barTone: 'bg-warn-500',
+    fillPercent: total,
+    overPercent: 0,
+  };
+}
+
 function rowError(row: Row): string | undefined {
   if (row.name.trim().length < 2) return 'Bosqich nomi kamida 2 belgi';
   if (!row.plannedStart || !row.plannedEnd) return 'Muddat to‘liq emas';
   if (row.plannedEnd < row.plannedStart) return 'Tugash sanasi boshlanishdan oldin';
   const weight = Number(row.weight);
   if (!row.weight.trim() || !Number.isFinite(weight) || weight <= 0) return 'Ulush noldan katta bo‘lsin';
+  /* ⚠️ Yuqori chegara ham kerak: bitta bosqichga 120% yozilsa,
+     yig'indi tekshiruvi uni ushlaydi, lekin xabar «20% ortiqcha»
+     bo'lib, xato QAYSI qatorda ekani aytilmasdi. */
+  if (weight > 100) return 'Ulush 100% dan oshmaydi';
   if (row.workerCount.trim()) {
     const workers = Number(row.workerCount);
     if (!Number.isInteger(workers) || workers < 0) return 'Ishchilar soni — butun musbat son';
