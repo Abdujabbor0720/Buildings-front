@@ -650,6 +650,50 @@ export interface DistrictGeoJson {
   }>;
 }
 
+/** Tuman xaritasidagi obyekt nuqtasi. */
+export interface MapObjectPoint {
+  id: string;
+  code: string;
+  name: string;
+  lat: number;
+  lng: number;
+  healthStatus: ObjectHealth;
+  progressPercent: number;
+  /** `null` — mahalla chegarasi yo‘q yoki obyekt ularning tashqarisida. */
+  mahallaId: string | null;
+}
+
+/**
+ * TUMAN XARITASI — mahalla chegaralari, obyekt nuqtalari va tumanning
+ * o‘z konturi BITTA javobda.
+ *
+ * ⚠️ `features[].properties` shakli `DistrictGeoJson` BILAN AYNI
+ * (`DistrictStats`). Bu ataylab: bitta xarita komponenti va bitta
+ * jadval ikkala darajani ham chizadi. Shakl farq qilsa, mahalla uchun
+ * butun boshqa ekran yozishga to‘g‘ri kelardi.
+ */
+export interface MahallaGeoJson {
+  type: 'FeatureCollection';
+  district: {
+    id: string;
+    code: string;
+    name: string;
+    shortName: string;
+    centerLat: number;
+    centerLng: number;
+    geometry: GeoJSON.Geometry | null;
+  };
+  bbox: number[] | null;
+  /** Qoplama o‘lchovi — ekranda ochiq aytiladi, yashirilmaydi. */
+  coverage: { mahallas: number; withMahalla: number; withoutMahalla: number };
+  objects: MapObjectPoint[];
+  features: Array<{
+    type: 'Feature';
+    geometry: GeoJSON.Geometry | null;
+    properties: DistrictStats & { officialName: string | null };
+  }>;
+}
+
 export interface ProgressTimelinePoint {
   month: string;
   label: string;

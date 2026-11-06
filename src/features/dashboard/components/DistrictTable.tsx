@@ -21,7 +21,25 @@ const TABS: ReadonlyArray<TabOption<Filter>> = [
  * ni bosganda tumanlarni yo‘qotishni emas, eng ko‘p kechikkanini tepada
  * ko‘rishni kutadi. Obyekti yo‘q tuman esa chetlab o‘tiladi.
  */
-export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
+/**
+ * ⚠️ Bitta jadval IKKI darajaga xizmat qiladi: viloyat tanlanganda
+ * TUMANLAR, tuman tanlanganda MAHALLALAR. Ma'lumot shakli ikkalasida
+ * ham `DistrictStats` (server shunday qaytaradi), shuning uchun farq
+ * faqat ustun sarlavhasi va qator bosilgandagi xatti-harakatda.
+ *
+ * Ikkinchi jadval yozilsa, saralash, nol qiymat xiraligi va ustun
+ * kengliklari ikki joyda alohida tuzatilishi kerak bo'lardi.
+ */
+export function DistrictTable({
+  districts,
+  level = 'region',
+  onRowClick,
+}: {
+  districts: DistrictStats[];
+  level?: 'region' | 'district';
+  /** Berilmasa — tuman obyektlari ro'yxatiga o'tiladi. */
+  onRowClick?: (row: DistrictStats) => void;
+}) {
   const [filter, setFilter] = useState<Filter>('all');
   const navigate = useNavigate();
 
@@ -49,7 +67,7 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
           <THead>
             <Tr>
               <Th className="w-6 px-1.5">#</Th>
-              <Th className="px-1.5">Tuman nomi</Th>
+              <Th className="px-1.5">{level === 'district' ? 'Mahalla nomi' : 'Tuman nomi'}</Th>
               <Th align="right" className="w-8 px-0.5">Jami</Th>
               <Th align="right" className="w-8 px-0.5">Reja</Th>
               {/* ⚠️ Qisqartma ATAYLAB: 1280px li ekranda kartaga 344px
@@ -67,10 +85,21 @@ export function DistrictTable({ districts }: { districts: DistrictStats[] }) {
           </THead>
           <TBody>
             {rows.length === 0 ? (
-              <TableEmpty colSpan={7}>Tanlangan kesimda tuman topilmadi</TableEmpty>
+              <TableEmpty colSpan={7}>
+                {level === 'district'
+                  ? 'Bu tumanning mahalla chegaralari hali yuklanmagan'
+                  : 'Tanlangan kesimda tuman topilmadi'}
+              </TableEmpty>
             ) : (
               rows.map((district, index) => (
-                <Tr key={district.districtId} onClick={() => navigate(`/objects?districtIds=${district.districtId}`)}>
+                <Tr
+                  key={district.districtId}
+                  onClick={
+                    onRowClick
+                      ? () => onRowClick(district)
+                      : () => navigate(`/objects?districtIds=${district.districtId}`)
+                  }
+                >
                   <Td className="num text-faint px-1.5">{index + 1}</Td>
                   <Td className="px-1.5 font-medium whitespace-nowrap text-strong">{district.shortName}</Td>
 

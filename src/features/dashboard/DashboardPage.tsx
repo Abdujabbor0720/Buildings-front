@@ -1,10 +1,11 @@
 import { RefreshCw } from 'lucide-react';
-import { useDashboard, useDistrictGeoJson } from '@/shared/api/queries';
+import { useDashboard, useDistrictGeoJson, useMahallaGeoJson } from '@/shared/api/queries';
 import { getErrorMessage } from '@/shared/api/client';
 import type { ReactNode } from 'react';
 import { Card, CardBody, CardHeader, ErrorState, Skeleton } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
+import { useNavigate } from 'react-router-dom';
 import { useFilterParams } from '@/store/filters.store';
 import { DeadlineDonut } from './components/DeadlineDonut';
 import { DelayReasons } from './components/DelayReasons';
@@ -41,12 +42,36 @@ import { UpcomingTable } from './components/UpcomingTable';
 
 export default function DashboardPage() {
   const params = useFilterParams();
+  const navigate = useNavigate();
   const dashboard = useDashboard(params);
   const geojson = useDistrictGeoJson({
     regionId: params.regionId,
     yearFrom: params.yearFrom,
     yearTo: params.yearTo,
   });
+
+  /*
+   * ───── TUMAN KESIMIGA O'TISH ─────
+   *
+   * ⚠️ Faqat BITTA tuman tanlanganda. Ikkita tuman tanlangan bo'lsa
+   * «qaysi tumanning mahallalari» degan savolga javob yo'q va xarita
+   * ikki ajralgan hududni ko'rsatib, hech biriga sig'masdi — bunday
+   * holatda viloyat ko'rinishi qoladi.
+   *
+   * ⚠️ So'rov `enabled` orqali boshqariladi (`useMahallaGeoJson`):
+   * viloyat ko'rinishida u umuman yuborilmaydi.
+   */
+  /* ⚠️ `districtIds` — vergul bilan birlashtirilgan SATR (`useFilterParams`),
+     massiv emas: filtr shu ko'rinishda to'g'ridan-to'g'ri so'rov
+     parametriga ketadi. Bitta tuman tanlanganini ANIQLASH uchun u
+     qaytadan bo'linadi. */
+  const selected = params.districtIds ? params.districtIds.split(',').filter(Boolean) : [];
+  const focusedDistrictId = selected.length === 1 ? selected[0] : undefined;
+  const mahallas = useMahallaGeoJson(focusedDistrictId, {
+    yearFrom: params.yearFrom,
+    yearTo: params.yearTo,
+  });
+  const districtView = Boolean(focusedDistrictId) && Boolean(mahallas.data);
 
   if (dashboard.isError) {
     return (
@@ -96,18 +121,64 @@ export default function DashboardPage() {
         <Card className="flex min-h-0 flex-col p-3 xl:col-span-5">
           {/* ⚠️ Afsona SARLAVHA qatorida (`action`), xarita ustida emas:
               suzuvchi afsona o‘ng yuqoridagi tumanlarni yopib qo‘yardi. */}
-          <CardHeader title="Andijon viloyati xaritasi" action={<DistrictMapLegend />} />
+          {/* ⚠️ Sarlavha TANLOVGA ergashadi: bitta tuman tanlanganda
+              xarita o‘sha tumanniki bo‘ladi va «Andijon viloyati
+              xaritasi» degan yozuv yolg‘on bo‘lib qolardi. */}
+          <CardHeader
+            title={
+              districtView
+                ? `${mahallas.data!.district.name} — mahallalar kesimida`
+                : 'Andijon viloyati xaritasi'
+            }
+            subtitle={districtView ? coverageNote(mahallas.data!.coverage) : undefined}
+            action={<DistrictMapLegend />}
+          />
           <CardBody className="mt-1.5 flex min-h-0 flex-1">
-            <DistrictMap geojson={geojson.data} className="flex-1" heightClass="h-full" />
+            <DistrictMap
+              geojson={districtView ? mahallas.data : geojson.data}
+              level={districtView ? 'district' : 'region'}
+              objects={districtView ? mahallas.data!.objects : undefined}
+              outline={districtView ? mahallas.data!.district.geometry : undefined}
+              className="flex-1"
+              heightClass="h-full"
+            />
           </CardBody>
         </Card>
 
         <TableCard
           className="xl:col-span-4"
-          header={<CardHeader title="Tumanlar kesimida obyektlar" moreTo="/districts" />}
+          header={
+            <CardHeader
+              title={districtView ? 'Mahallalar kesimida obyektlar' : 'Tumanlar kesimida obyektlar'}
+              moreTo="/districts"
+            />
+          }
         >
           <div className="flex h-full min-h-0 flex-col">
-            {data ? <DistrictTable districts={data.districts} /> : <div className="px-3"><BlockSkeleton rows={8} /></div>}
+            {/*
+              ⚠️ Mahalla qatorlari XARITA javobidan olinadi, alohida
+              so‘rovdan emas: ikkalasi bitta manbadan kelgani uchun
+              jadvaldagi son bilan xaritadagi rang HAR DOIM mos
+              keladi. Ikki so‘rov bo‘lsa, biri eskirgan paytda ular
+              bir-biriga zid raqam ko‘rsatishi mumkin edi.
+
+              ⚠️ Qator bosilganda obyektlar ro‘yxatiga TUMAN bo‘yicha
+              o‘tiladi: ro‘yxatda mahalla filtri yo‘q va mahalla id si
+              bilan o‘tilsa, bo‘sh ekran ochilardi.
+            */}
+            {districtView ? (
+              <DistrictTable
+                districts={mahallas.data!.features.map((f) => f.properties)}
+                level="district"
+                onRowClick={() => navigate(`/objects?districtIds=${focusedDistrictId}`)}
+              />
+            ) : data ? (
+              <DistrictTable districts={data.districts} />
+            ) : (
+              <div className="px-3">
+                <BlockSkeleton rows={8} />
+              </div>
+            )}
           </div>
         </TableCard>
 
@@ -238,6 +309,24 @@ function TableCard({
       <div className="mt-1.5 min-h-0 flex-1 pb-2">{children}</div>
     </Card>
   );
+}
+
+/**
+ * QOPLAMA IZOHI — sarlavha ostidagi bitta qator.
+ *
+ * ⚠️ Mahallasi aniqlanmagan obyekt YASHIRILMAYDI, ochiq aytiladi.
+ * Mahalla chegaralari (manba — OpenStreetMap) hamma tumanda ham yo‘q;
+ * jim turilsa, hokim xaritadagi nuqtalar bilan jadvaldagi sonlar
+ * nega mos kelmayotganini tushunmasdi.
+ */
+function coverageNote(coverage: { mahallas: number; withoutMahalla: number }): string {
+  if (coverage.mahallas === 0) {
+    return 'Mahalla chegaralari hali yuklanmagan — obyektlar nuqta bilan ko‘rsatilgan';
+  }
+  const base = `${coverage.mahallas} ta mahalla`;
+  return coverage.withoutMahalla > 0
+    ? `${base} · ${coverage.withoutMahalla} ta obyekt chegaradan tashqarida`
+    : base;
 }
 
 function BlockSkeleton({ rows }: { rows: number }) {

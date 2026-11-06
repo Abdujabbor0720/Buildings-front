@@ -71,6 +71,41 @@ export function useChartColors() {
     [dark],
   );
 
+  /**
+   * NISBIY zichlik shkalasi — qatlamning O'Z oralig'iga moslashadi.
+   *
+   * ⚠️ `densityHex` chegaralari MUTLAQ (1–4, 5–9, … 25+) va ular
+   * viloyat xaritasi uchun tanlangan: u yerda tumanlarda 5 dan 29
+   * tagacha obyekt bor va shkala chiroyli yoyiladi.
+   *
+   * MAHALLA kesimida esa sonlar 0–3 oralig'ida bo'ladi va mutlaq
+   * shkalada HAMMASI eng och pog'onaga tushib, xarita bo'm-bo'sh oq
+   * bo'lib ko'rinardi. Shuning uchun tuman xaritasi shkalani o'z eng
+   * katta qiymatiga moslaydi: «1 ta obyekt» och, «eng ko'pi» to'q.
+   *
+   * ⚠️ Viloyat xaritasi AVVALGIDEK `densityHex` ni ishlatadi —
+   * tumanlar rangi o'zgarmasligi kerak.
+   */
+  const densityHexOf = useCallback(
+    (total: number, max: number) => {
+      const ramp = dark ? DENSITY_RAMP_DARK : DENSITY_RAMP;
+      if (total <= 0) return ramp[0];
+      if (max <= 1) return ramp[ramp.length - 1];
+      /*
+       * ⚠️ Shkala 2-pog'onadan boshlanadi, 1-dan emas. Mahalla
+       * kesimida sonlar kichik (ko'pincha 1) va eng past pog'ona
+       * («#d5e2f7») bo'sh mahalladan deyarli farq qilmasdi: xarita
+       * oq bo'lib, «qayerda obyekt bor» degan savol javobsiz
+       * qolardi. Ikkinchi pog'onadan boshlanganda esa bitta obyektli
+       * mahalla ham darhol ko'rinadi, nol esa baribir eng och qoladi.
+       */
+      const FIRST = 2;
+      const t = (total - 1) / (max - 1);
+      return ramp[Math.min(ramp.length - 1, FIRST + Math.round(t * (ramp.length - 1 - FIRST)))];
+    },
+    [dark],
+  );
+
   return {
     dark,
     statusHex,
@@ -78,6 +113,7 @@ export function useChartColors() {
     reasonHex,
     deadlineHex,
     densityHex,
+    densityHexOf,
     /** Diagramma to‘ri va o‘qi — matndan ancha ochroq. */
     grid: dark ? 'rgba(255,255,255,0.08)' : 'rgba(16,42,76,0.08)',
     axis: dark ? '#6f8299' : '#94a6bd',

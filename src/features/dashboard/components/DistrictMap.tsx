@@ -3,7 +3,13 @@ import { Maximize2, Minimize2, Minus, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GeoJSON as GeoJsonLayer, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
-import type { DistrictGeoJson, DistrictStats, ObjectHealth } from '@/shared/api/types';
+import type {
+  DistrictGeoJson,
+  DistrictStats,
+  MahallaGeoJson,
+  MapObjectPoint,
+  ObjectHealth,
+} from '@/shared/api/types';
 import { BASEMAP_ATTRIBUTION, BASEMAP_URL, HAS_BASEMAP } from '@/shared/constants/basemap';
 import { HEALTH_LEGEND, HEALTH_META } from '@/shared/constants/health';
 import { useChartColors } from '@/shared/hooks/useChartColors';
@@ -11,9 +17,34 @@ import { cn } from '@/shared/utils/cn';
 import { formatCompact } from '@/shared/utils/money.utils';
 
 interface DistrictMapProps {
-  geojson: DistrictGeoJson | undefined;
+  geojson: DistrictGeoJson | MahallaGeoJson | undefined;
   /** Tuman bosilganda — filtrga qo‘shish yoki ro‘yxatga o‘tish. */
   onDistrictClick?: (district: DistrictStats) => void;
+  /**
+   * XARITA DARAJASI.
+   *
+   * `region` — viloyat: chegaralar TUMANLAR, yon tomonda qo‘shni
+   * viloyatlar yorlig‘i.
+   * `district` — tuman: chegaralar MAHALLALAR, qo‘shni viloyat
+   * yorliqlari yo‘q (ular bu masshtabda ma’nosiz) va tumanning o‘z
+   * konturi qalinroq chiziq bilan chiziladi.
+   *
+   * ⚠️ Ikkala daraja BITTA komponentda: chegara ma’lumotining shakli
+   * (`DistrictStats`) ikkalasida bir xil va ikkinchi xarita yozilsa,
+   * rang shkalasi, ko‘rsatma va to‘liq ekran rejimi ikki joyda
+   * alohida tuzatilishi kerak bo‘lardi.
+   */
+  level?: 'region' | 'district';
+  /**
+   * Obyekt nuqtalari — faqat tuman darajasida.
+   *
+   * ⚠️ Mahalla chegarasi RANG beradi («bu yerda 3 ta obyekt»), nuqta
+   * esa AYNIQSA JOYNI. Chegarasi yo‘q mahalladagi obyekt ham shu
+   * nuqtalar orqali ko‘rinadi va hisobdan tushib qolmaydi.
+   */
+  objects?: MapObjectPoint[];
+  /** Tumanning o‘z konturi — mahalla chegaralari ustidan chiziladi. */
+  outline?: GeoJSON.Geometry | null;
   /**
    * Fon xaritasi ko‘rsatilsinmi. Dashboard'da toza ko‘rinish afzal.
    * ⚠️ `true` bo‘lsa ham, fon FAQAT sozlangan bo‘lsa chiziladi
@@ -35,6 +66,9 @@ const NEIGHBOURS: Array<{ label: string; position: [number, number] }> = [
 export function DistrictMap({
   geojson,
   onDistrictClick,
+  level = 'region',
+  objects,
+  outline,
   showTiles = false,
   className,
   heightClass = 'h-[300px]',
@@ -109,20 +143,54 @@ export function DistrictMap({
           <TileLayer url={BASEMAP_URL!} attribution={BASEMAP_ATTRIBUTION} />
         ) : null}
 
-        <DistrictLayer geojson={geojson} onSelect={handleClick} palette={palette} />
+        <DistrictLayer
+          geojson={geojson}
+          onSelect={handleClick}
+          palette={palette}
+          level={level}
+        />
 
-        {NEIGHBOURS.map((neighbour) => (
-          <Marker
-            key={neighbour.label}
-            position={neighbour.position}
+        {/* ⚠️ Tuman konturi chegaralar USTIDAN chiziladi va bosilmaydi
+            (`interactive={false}`): mahallalar tumanni to‘liq
+            qoplamaydi va kontursiz tumanning chekkasi qayerda
+            tugashi umuman bilinmasdi. */}
+        {outline ? (
+          <GeoJsonLayer
+            key="district-outline"
+            data={outline as GeoJSON.Geometry}
             interactive={false}
-            icon={L.divIcon({
-              className: '',
-              html: `<span style="white-space:nowrap;font:500 11px/1.4 var(--font-sans);color:var(--ink-faint)">${esc(neighbour.label)}</span>`,
-              iconSize: [0, 0],
-            })}
+            style={{
+              color: palette.dark ? '#7f9ec9' : '#35465a',
+              weight: 2,
+              fill: false,
+              dashArray: '4 3',
+            }}
+          />
+        ) : null}
+
+        {objects?.map((object) => (
+          <Marker
+            key={object.id}
+            position={[object.lat, object.lng]}
+            eventHandlers={{ click: () => navigate(`/objects/${object.id}`) }}
+            icon={objectIcon(object, palette)}
           />
         ))}
+
+        {level === 'region'
+          ? NEIGHBOURS.map((neighbour) => (
+              <Marker
+                key={neighbour.label}
+                position={neighbour.position}
+                interactive={false}
+                icon={L.divIcon({
+                  className: '',
+                  html: `<span style="white-space:nowrap;font:500 11px/1.4 var(--font-sans);color:var(--ink-faint)">${esc(neighbour.label)}</span>`,
+                  iconSize: [0, 0],
+                })}
+              />
+            ))
+          : null}
 
         <BoundsKeeper bounds={bounds} fullscreen={fullscreen} />
 
@@ -211,7 +279,9 @@ const LEGEND_LABELS: Record<ObjectHealth, string> = {
  * ⚠️ Chegara MAYDON bo‘yicha, obyektlar soni bo‘yicha EMAS: masala
  * joyning yetishmasligida, muhimlikda emas.
  */
-function crowdedDistricts(features: DistrictGeoJson['features']): Set<string> {
+function crowdedDistricts(
+  features: DistrictGeoJson['features'] | MahallaGeoJson['features'],
+): Set<string> {
   const spans = features
     .map((feature) => ({
       id: feature.properties.districtId,
@@ -221,6 +291,36 @@ function crowdedDistricts(features: DistrictGeoJson['features']): Set<string> {
 
   const hidden = Math.floor(spans.length / 4);
   return new Set(spans.slice(0, hidden).map((item) => item.id));
+}
+
+/**
+ * OBYEKT NUQTASI — tuman xaritasidagi kichik doira.
+ *
+ * ⚠️ Mahalla pufakchasidan ANCHA kichik (10px va 24–30px) va oq
+ * halqali: ikkalasi bir xil o‘lchamda bo‘lsa, «bu mahallada 3 ta
+ * obyekt» degan son bilan «mana shu bitta obyekt» degan nuqta
+ * aralashib ketardi.
+ *
+ * ⚠️ Rang — HOLAT rangi, mahalla chegarasining zichlik rangi EMAS:
+ * nuqta «qayerda» degan savolga emas, «ahvoli qanday» degan savolga
+ * javob beradi.
+ */
+function objectIcon(
+  object: MapObjectPoint,
+  palette: ReturnType<typeof useChartColors>,
+): L.DivIcon {
+  const hex = palette.statusHex(HEALTH_META[object.healthStatus]);
+  return L.divIcon({
+    className: '',
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+    html: `<span title="${esc(object.name)} — ${Math.round(object.progressPercent)}%" style="
+      display:block;width:12px;height:12px;border-radius:999px;cursor:pointer;
+      background:${hex};
+      border:2px solid var(--surface);
+      box-shadow:0 1px 3px rgba(2,24,58,.4);
+    "></span>`,
+  });
 }
 
 /** Geometriya chegaralovchi to‘rtburchagining yuzasi (daraja²). */
@@ -252,10 +352,12 @@ function DistrictLayer({
   geojson,
   onSelect,
   palette,
+  level,
 }: {
-  geojson: DistrictGeoJson;
+  geojson: DistrictGeoJson | MahallaGeoJson;
   onSelect: (district: DistrictStats) => void;
   palette: ReturnType<typeof useChartColors>;
+  level: 'region' | 'district';
 }) {
   const signature = useMemo(
     () =>
@@ -267,6 +369,13 @@ function DistrictLayer({
 
   const crowded = useMemo(() => crowdedDistricts(geojson.features), [geojson]);
 
+  /* Qatlamdagi eng katta son — mahalla shkalasi shunga moslanadi
+     (`densityHexOf` dagi izohga qarang). */
+  const maxTotal = useMemo(
+    () => Math.max(1, ...geojson.features.map((f) => f.properties.total)),
+    [geojson],
+  );
+
   return (
     <>
       <GeoJsonLayer
@@ -274,10 +383,29 @@ function DistrictLayer({
         data={geojson as unknown as GeoJSON.FeatureCollection}
         style={(feature) => {
           const props = feature?.properties as DistrictStats | undefined;
+          const total = props?.total ?? 0;
           return {
-            color: palette.dark ? '#0d1721' : '#ffffff',
-            weight: 1.5,
-            fillColor: palette.densityHex(props?.total ?? 0),
+            /*
+             * ⚠️ Mahalla chizig'i OQ emas, ko'kish-kulrang. Obyekti
+             * yo'q mahalla deyarli oq bo'ladi va oq chiziq bilan u
+             * fonga butunlay singib ketardi — chegarasi bormi yoki
+             * yo'qmi, bilib bo'lmasdi.
+             */
+            color:
+              level === 'district'
+                ? palette.dark
+                  ? '#3a5170'
+                  : '#9fb6d4'
+                : palette.dark
+                  ? '#0d1721'
+                  : '#ffffff',
+            // Ingichkaroq: mahallalar kichik va yonma-yon turadi,
+            // 1.5px li chiziq och to'ldirishni yeb qo'yardi.
+            weight: level === 'district' ? 0.7 : 1.5,
+            fillColor:
+              level === 'district'
+                ? palette.densityHexOf(total, maxTotal)
+                : palette.densityHex(total),
             fillOpacity: 1,
           };
         }}
@@ -298,9 +426,45 @@ function DistrictLayer({
 
       {geojson.features.map((feature) => {
         const props = feature.properties;
+        /*
+         * ⚠️ MAHALLA darajasida OBYEKTI YO'Q chegara belgilanmaydi.
+         * Bitta tumanda 57 tagacha mahalla bor va ularning ko'pida
+         * obyekt yo'q: hammasiga «0» yozilgan pufakcha qo'yilsa,
+         * xarita nollar to'riga aylanib, haqiqiy raqamlar
+         * ko'rinmay qolardi. Bo'sh mahalla RANGI bilan (eng och
+         * zinapoya) baribir o'qiladi.
+         *
+         * ⚠️ Viloyat darajasida esa nol ham ko'rsatiladi: 16 ta
+         * tuman kam va «bu tumanda obyekt yo'q» degani — xabar.
+         */
+        if (level === 'district' && props.total === 0) return null;
         const hex = palette.statusHex(HEALTH_META[props.dominantHealth]);
-        const size = props.total >= 20 ? 30 : props.total >= 10 ? 27 : 24;
-        const showName = !crowded.has(props.districtId);
+        /*
+         * ⚠️ MAHALLA pufakchasi KICHIKROQ (18–22px, tumanda 24–30px).
+         * Bitta tumanda yigirmagacha belgi bo'ladi va ular tuman
+         * belgilaridan ancha yaqin turadi: katta pufakcha qo'shnisini
+         * yopib qo'yardi. Sonlar ham kichik (1–3), shuning uchun joy
+         * yetadi.
+         */
+        const size =
+          level === 'district'
+            ? props.total >= 5
+              ? 22
+              : 18
+            : props.total >= 20
+              ? 30
+              : props.total >= 10
+                ? 27
+                : 24;
+        /*
+         * ⚠️ MAHALLA NOMI faqat KENG ekranda (to'liq ekran rejimi) yoki
+         * obyekti ko'p mahallada yoziladi. «Mirpo'stin mahallasi» kabi
+         * uzun nomlar yigirmata belgi yonma-yon turganda bir-birining
+         * ustiga tushib, xaritani butunlay yopib qo'yardi; nomni
+         * ko'rsatma (hover) va yonidagi jadval baribir aytadi.
+         */
+        const showName =
+          level === 'district' ? props.total >= 3 : !crowded.has(props.districtId);
 
         return (
           <Marker

@@ -27,6 +27,7 @@ import type {
   DashboardPayload,
   District,
   DistrictGeoJson,
+  MahallaGeoJson,
   DistrictStats,
   FundingAllocation,
   FundingSummary,
@@ -60,6 +61,8 @@ export const qk = {
   districts: (regionId?: string) => ['geo', 'districts', regionId ?? 'all'] as const,
   districtStats: (params: unknown) => ['geo', 'district-stats', params] as const,
   districtGeoJson: (params: unknown) => ['geo', 'geojson', params] as const,
+  mahallaGeoJson: (districtId: string | undefined, params: unknown) =>
+    ['geo', 'mahallas', districtId, params] as const,
 
   dashboard: (params: unknown) => ['dashboard', params] as const,
 
@@ -140,6 +143,24 @@ export function useDistrictStats(params: QueryParams) {
   return useQuery({
     queryKey: qk.districtStats(params),
     queryFn: () => apiGet<DistrictStats[]>('/geo/districts/stats', { params }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * TUMAN XARITASI — mahalla kesimida.
+ *
+ * ⚠️ `districtId` bo‘lmasa so‘rov YUBORILMAYDI (`enabled`): bosh
+ * sahifada viloyat tanlanganda bu ma’lumot kerak emas va uni baribir
+ * yuklash har filtr o‘zgarishida ortiqcha so‘rov bo‘lardi.
+ */
+export function useMahallaGeoJson(districtId: string | undefined, params: QueryParams) {
+  return useQuery({
+    queryKey: qk.mahallaGeoJson(districtId, params),
+    queryFn: () =>
+      apiGet<MahallaGeoJson>(`/geo/districts/${districtId}/mahallas/geojson`, { params }),
+    enabled: Boolean(districtId),
+    staleTime: 5 * 60_000,
     placeholderData: keepPreviousData,
   });
 }
