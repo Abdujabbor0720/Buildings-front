@@ -21,11 +21,31 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
           <Tr>
             <Th className="w-7 px-2">#</Th>
             <Th className="px-2">Obyekt nomi</Th>
-            <Th className="w-[72px] px-2">Tuman</Th>
+            {/*
+              ⚠️ «Mas'ul» ustuni «Tuman» O'RNIGA turibdi, qo'shimcha
+              ustun sifatida EMAS.
+
+              1280px li ekranda bu kartaga ~606px tegadi. Qat'iy
+              ustunlar allaqachon 485px ni egallaydi va obyekt nomiga
+              ~120px qoladi. Sakkizinchi ustun qo'shilsa, nomga ~35px
+              qolib, u «Ulug'no…» bo'lib qirqilardi — ya'ni jadvaldagi
+              ASOSIY ma'lumot yo'qolardi.
+
+              Tuman tanlandi, chunki u obyekt nomining O'ZIDA bor:
+              «Marhamat tumani suv inshooti», «Izboskan tumani
+              madaniyat uyi». Bu kartada tuman ikki marta yozilardi,
+              mas'ul esa umuman yozilmasdi. Qo'shimcha kafolat sifatida
+              tuman nomi obyekt katagining ko'rsatmasida (`title`)
+              qoldi — hech narsa yo'qolmaydi.
+
+              ⚠️ Yaqin muddatdagi obyektlar jadvalida ham tuman AYNI
+              shu sababdan olib tashlangan — ikki jadval bitta ekranda.
+            */}
+            <Th className="w-[78px] px-2">Mas'ul</Th>
             <Th className="w-[102px] px-2">Reja muddati</Th>
             <Th align="right" className="w-[62px] px-2">Kechikish</Th>
             <Th className="w-[92px] px-2">Bajarilish</Th>
-            <Th className="w-[150px] px-2">Asosiy sabab</Th>
+            <Th className="w-[144px] px-2">Asosiy sabab</Th>
           </Tr>
         </THead>
         <TBody>
@@ -36,9 +56,41 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
               <Tr key={item.id} onClick={() => navigate(`/objects/${item.id}`)}>
                 <Td muted className="num px-2 text-meta">{index + 1}</Td>
                 <Td className="max-w-[1px] px-2">
-                  <span className="block truncate font-medium text-strong">{item.name}</span>
+                  {/* ⚠️ Ko'rsatmada TUMAN ham bor: ustun olib tashlangan
+                      (sarlavhadagi izohga qarang), lekin ma'lumotning
+                      o'zi yo'qolmasligi kerak. */}
+                  <span
+                    className="block truncate font-medium text-strong"
+                    title={`${item.name} · ${item.districtName}`}
+                  >
+                    {item.name}
+                  </span>
                 </Td>
-                <Td muted className="truncate px-2 whitespace-nowrap">{item.districtName}</Td>
+                {/*
+                  ⚠️ Mas'ul YO'Q bo'lsa «—» ko'rsatiladi, katak bo'sh
+                  QOLDIRILMAYDI. Kechikayotgan obyektda javobgar
+                  biriktirilmagani — aynan shu jadvalda ko'rinishi kerak
+                  bo'lgan muammo; bo'sh katak esa «ma'lumot yuklanmadi»
+                  bo'lib o'qilardi.
+                */}
+                <Td className="truncate px-2 whitespace-nowrap">
+                  {item.responsibleName ? (
+                    <span
+                      className="text-strong"
+                      title={
+                        item.responsiblePosition
+                          ? `${item.responsibleFullName} — ${item.responsiblePosition}`
+                          : (item.responsibleFullName ?? undefined)
+                      }
+                    >
+                      {item.responsibleName}
+                    </span>
+                  ) : (
+                    <span className="text-faint" title="Mas'ul biriktirilmagan">
+                      —
+                    </span>
+                  )}
+                </Td>
                 <Td className="px-2 text-meta whitespace-nowrap">{formatDateUz(item.plannedEndDate)}</Td>
                 {/* ⚠️ Maketdagi kabi SOF QIZIL MATN, «pill» emas:
                     to‘ldirilgan fon qator balandligini 8px oshirardi va

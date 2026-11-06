@@ -585,6 +585,10 @@ export interface TopDelayedItem {
   healthStatus: ObjectHealth;
   primaryReason: string | null;
   primaryReasonColor: string | null;
+  /** Obyekt mas'uli (kurator). `null` — biriktirilmagan. */
+  responsibleName: string | null;
+  responsibleFullName: string | null;
+  responsiblePosition: string | null;
 }
 
 export interface UpcomingItem {
