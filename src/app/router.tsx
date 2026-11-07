@@ -12,6 +12,7 @@ import { LoginPage } from '@/features/auth/LoginPage';
  * yuklash birinchi ochilishni sezilarli sekinlashtirardi.
  */
 const DashboardPage = lazyPage(() => import('@/features/dashboard/DashboardPage'));
+const KpiDetailPage = lazyPage(() => import('@/features/kpi/KpiDetailPage'));
 const ObjectsPage = lazyPage(() => import('@/features/objects/ObjectsPage'));
 const ObjectDetailPage = lazyPage(() => import('@/features/objects/ObjectDetailPage'));
 const MapPage = lazyPage(() => import('@/features/map/MapPage'));
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       { path: '/', element: <DashboardPage /> },
+      /* ⚠️ Bosh sahifadagi oltita ko‘rsatkichning batafsil sahifasi.
+         Kalit (`total`, `on-plan`, …) serverdagi `KpiMetric` bilan
+         AYNI — havola saqlab qo‘yilsa, keyin ham ochilishi kerak. */
+      { path: '/kpi/:metric', element: <KpiDetailPage /> },
       { path: '/objects', element: <ObjectsPage /> },
       { path: '/objects/:id', element: <ObjectDetailPage /> },
       { path: '/map', element: <MapPage /> },

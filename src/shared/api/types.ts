@@ -639,6 +639,144 @@ export interface DashboardPayload {
   generatedAt: string;
 }
 
+/* ───────────── Ko‘rsatkichning batafsil sahifasi ───────────── */
+
+/**
+ * BOSH SAHIFADAGI OLTITA KARTANING KALITI — URL'da ham shu ko‘rinishda.
+ *
+ * ⚠️ Serverdagi `KpiMetric` enumi bilan AYNI qiymatlar
+ * (`dashboard/dto/kpi-metric.dto.ts`). Bitta harf farq qilsa, havola
+ * 400 bilan qaytadi.
+ */
+export type KpiMetricKey = 'total' | 'on-plan' | 'delayed' | 'at-risk' | 'completing' | 'cost';
+
+/**
+ * Taqsimot qatori.
+ *
+ * ⚠️ `key` — ENUM QIYMATI (`delayed`, `high`, `q3`), ko‘rsatiladigan
+ * matn emas: yorliq va rang mijozda (`health.ts`) turadi.
+ */
+export interface KpiBucket {
+  key: string;
+  count: number;
+  /** Shu ko‘rsatkich to‘plami ichidagi ulush, %. */
+  percent: number;
+  /** Guruhdagi loyiha qiymati, so‘m. */
+  amount: string;
+}
+
+export interface KpiDistrictRow {
+  districtId: string;
+  code: string;
+  name: string;
+  shortName: string;
+  count: number;
+  percent: number;
+  totalCost: string;
+  avgProgress: number;
+  delayed: number;
+  atRisk: number;
+}
+
+export interface KpiTypeRow {
+  typeId: string;
+  code: string;
+  name: string;
+  color: string;
+  count: number;
+  percent: number;
+  totalCost: string;
+  avgProgress: number;
+}
+
+/** Pudratchi / moliya manbasi / kechikish sababi. `id: null` — biriktirilmagan. */
+export interface KpiNamedRow {
+  id: string | null;
+  name: string | null;
+  color: string | null;
+  count: number;
+  percent: number;
+  totalCost: string;
+  avgProgress: number;
+}
+
+/** Yil yoki oy kesimi (`key` — yil raqami yoki 1–12). */
+export interface KpiPeriodRow {
+  key: number;
+  count: number;
+  amount: string;
+}
+
+export interface KpiMetricDetail {
+  metric: KpiMetricKey;
+  year: number;
+  /** Filtrdagi JAMI obyekt — foizlarning maxraji. */
+  scopeTotal: number;
+  count: number;
+  percentOfScope: number;
+  finance: {
+    totalCost: string;
+    fundedAmount: string;
+    paidAmount: string;
+    unfunded: string;
+    fundedPercent: number;
+    paidPercent: number;
+  };
+  progress: { avg: number; expectedAvg: number; gapAvg: number };
+  delays: {
+    delayedCount: number;
+    avgDelayDays: number;
+    maxDelayDays: number;
+    over90: number;
+    openDelays: number;
+    overdue: number;
+    avgRiskScore: number;
+  };
+  coverage: {
+    withoutResponsible: number;
+    withoutContractor: number;
+    withoutCoords: number;
+    staleReports: number;
+  };
+  health: KpiBucket[];
+  status: KpiBucket[];
+  risk: KpiBucket[];
+  progressBuckets: KpiBucket[];
+  byDistrict: KpiDistrictRow[];
+  byType: KpiTypeRow[];
+  byYear: KpiPeriodRow[];
+  /** Joriy yil — har doim 12 ta qator, bo‘sh oy ham bor. */
+  byMonth: KpiPeriodRow[];
+  byFundingSource: KpiNamedRow[];
+  byContractor: KpiNamedRow[];
+  byDelayReason: KpiNamedRow[];
+  generatedAt: string;
+}
+
+export interface KpiMetricObject {
+  id: string;
+  code: string;
+  name: string;
+  districtName: string;
+  typeName: string;
+  typeColor: string;
+  plannedEndDate: string;
+  daysLeft: number;
+  progressPercent: number;
+  expectedProgress: number;
+  healthStatus: ObjectHealth;
+  status: ObjectStatus;
+  delayDays: number;
+  riskLevel: RiskLevel;
+  riskScore: number;
+  totalCost: string;
+  fundedAmount: string;
+  contractorName: string | null;
+  responsibleName: string | null;
+  primaryReason: string | null;
+  lastReportAt: string | null;
+}
+
 /** Xarita uchun GeoJSON — chegara + jonli statistika bitta javobda. */
 export interface DistrictGeoJson {
   type: 'FeatureCollection';

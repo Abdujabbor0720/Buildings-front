@@ -29,6 +29,9 @@ import type {
   DistrictGeoJson,
   MahallaGeoJson,
   DistrictStats,
+  KpiMetricDetail,
+  KpiMetricKey,
+  KpiMetricObject,
   FundingAllocation,
   FundingSummary,
   FundingTransaction,
@@ -65,6 +68,9 @@ export const qk = {
     ['geo', 'mahallas', districtId, params] as const,
 
   dashboard: (params: unknown) => ['dashboard', params] as const,
+  kpiMetric: (metric: string, params: unknown) => ['dashboard', 'metric', metric, params] as const,
+  kpiMetricObjects: (metric: string, params: unknown) =>
+    ['dashboard', 'metric', metric, 'objects', params] as const,
 
   objects: (params: unknown) => ['objects', 'list', params] as const,
   object: (id: string) => ['objects', 'detail', id] as const,
@@ -183,6 +189,45 @@ export function useDashboard(params: QueryParams) {
     queryKey: qk.dashboard(params),
     queryFn: () => apiGet<DashboardPayload>('/dashboard', { params }),
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * KO‘RSATKICHNING BATAFSIL KESIMI — bosh sahifadagi kartani bosganda.
+ *
+ * ⚠️ Parametrlar `useFilterParams()` dan AYNI ko‘rinishda uzatiladi:
+ * kartadagi 116 bilan sahifadagi 116 bir xil doiradan chiqishi kerak.
+ * Bu yerga sahifalash maydonlarini (`page`, `limit`) QO‘SHMANG —
+ * server DTO'si ularni bilmaydi va `forbidNonWhitelisted` tufayli
+ * butun so‘rov 400 bilan qaytadi.
+ */
+export function useKpiMetric(metric: KpiMetricKey, params: QueryParams) {
+  return useQuery({
+    queryKey: qk.kpiMetric(metric, params),
+    queryFn: () => apiGet<KpiMetricDetail>(`/dashboard/metrics/${metric}`, { params }),
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * O‘sha ko‘rsatkich ichidagi obyektlar — sahifalangan jadval.
+ *
+ * ⚠️ `GET /objects` ISHLATILMAYDI: u topshirilgan va bekor qilinganlarni
+ * ham ko‘rsatadi va yil oralig‘ini boshqacha o‘qiydi, ya’ni jadvaldagi
+ * jami son yuqoridagi raqamdan farq qilardi.
+ */
+export function useKpiMetricObjects(metric: KpiMetricKey, params: QueryParams) {
+  return useQuery({
+    queryKey: qk.kpiMetricObjects(metric, params),
+    queryFn: async (): Promise<Paginated<KpiMetricObject>> => {
+      const { items, meta } = await apiGetPaginated<KpiMetricObject>(
+        `/dashboard/metrics/${metric}/objects`,
+        { params },
+      );
+      return { items, meta: meta! };
+    },
     placeholderData: keepPreviousData,
   });
 }

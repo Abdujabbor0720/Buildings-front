@@ -1,101 +1,39 @@
 import type { ReactNode } from 'react';
-import {
-  Building2,
-  CircleCheckBig,
-  Clock,
-  Construction,
-  Database,
-  ShieldAlert,
-  type LucideIcon,
-} from 'lucide-react';
-import type { DashboardSummary } from '@/shared/api/types';
+import { ArrowUpRight, type LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import type { DashboardSummary, KpiMetricKey } from '@/shared/api/types';
 import { HEALTH_META } from '@/shared/constants/health';
+import {
+  KPI_CAPTION,
+  KPI_LABEL,
+  KPI_SURFACE,
+  KPI_TILE,
+  type KpiTone,
+} from '@/shared/constants/kpi-tone';
 import { useChartColors } from '@/shared/hooks/useChartColors';
 import { MiniDonut, Skeleton, SparkBars } from '@/shared/ui';
 import { MONTHS_UZ_CAP } from '@/shared/utils/date.utils';
 import { cn } from '@/shared/utils/cn';
 import { formatCompact, formatCount, formatPercent } from '@/shared/utils/money.utils';
+import { KPI_META, kpiPath } from '@/features/kpi/kpi.meta';
 
 /**
- * Plitka ranglari — TO‘LIQ yozilgan klass nomlari.
- *
- * ⚠️ `bg-${tone}-100` kabi yig‘ilmaydi: Tailwind klasslarni fayl
- * MATNIDAN qidiradi va yig‘ilgan nomni topa olmaydi — plitka rangsiz,
- * shaffof bo‘lib qolardi.
+ * ⚠️ Tus jadvallari (`KPI_SURFACE`, `KPI_TILE`, …) endi
+ * `shared/constants/kpi-tone.ts` da. Ular batafsil sahifaning
+ * sarlavhasida ham ishlatiladi: ikki nusxa bo‘lsa, kartani bosgan
+ * odam ichkarida boshqa tusdagi ekran ko‘rardi.
  */
-/**
- * KARTA FONI — maketdagi kabi toifaga mos ingichka tus.
- *
- * ⚠️ Tus juda och (50-pog‘ona): oltita karta yonma-yon turganda
- * to‘qroq fon ularni «ogohlantirish bannerlari» ga aylantirib,
- * ostidagi haqiqiy ogohlantirishlar e’tibordan chetda qolardi.
- * Rang bu yerda faqat GURUHLASH vazifasini bajaradi.
- *
- * ⚠️ `brand` — «Jami obyektlar» va «Umumiy qiymat» uchun neytral:
- * ular holat EMAS, shuning uchun yashil/qizil tus olmaydi.
- */
-const SURFACE = {
-  brand: 'kpi-brand outline-brand-500/14 dark:outline-brand-400/16',
-  ok: 'kpi-ok outline-ok-500/16 dark:outline-ok-400/18',
-  warn: 'kpi-warn outline-warn-500/22 dark:outline-warn-400/20',
-  danger: 'kpi-danger outline-danger-500/16 dark:outline-danger-400/18',
-  done: 'kpi-done outline-done-500/16 dark:outline-done-400/18',
-} as const;
-
-/**
- * Ikonka plitkasi — DIAGONAL o'tish bilan.
- *
- * ⚠️ Yassi `bg-*-100` emas: plitka kartaning o'z tusi ustida turadi
- * va ikkalasi yassi bo'lganda plitka «dog'» bo'lib ko'rinardi. O'tish
- * + ichki halqa + o'z rangidagi yupqa soya unga qavariq shakl beradi.
- */
-const TILE = {
-  brand:
-    'bg-linear-to-br from-brand-100 to-brand-50 text-brand-600 ring-1 ring-inset ring-brand-500/14 shadow-[0_1px_2px_rgb(10_108_240/0.16)] dark:from-brand-500/22 dark:to-brand-500/8 dark:text-brand-300 dark:ring-brand-400/18 dark:shadow-none',
-  ok: 'bg-linear-to-br from-ok-100 to-ok-50 text-ok-600 ring-1 ring-inset ring-ok-500/14 shadow-[0_1px_2px_rgb(10_146_75/0.16)] dark:from-ok-500/22 dark:to-ok-500/8 dark:text-ok-300 dark:ring-ok-400/18 dark:shadow-none',
-  warn: 'bg-linear-to-br from-warn-100 to-warn-50 text-warn-600 ring-1 ring-inset ring-warn-500/18 shadow-[0_1px_2px_rgb(222_156_49/0.22)] dark:from-warn-500/22 dark:to-warn-500/8 dark:text-warn-300 dark:ring-warn-400/18 dark:shadow-none',
-  danger:
-    'bg-linear-to-br from-danger-100 to-danger-50 text-danger-500 ring-1 ring-inset ring-danger-500/14 shadow-[0_1px_2px_rgb(172_23_48/0.16)] dark:from-danger-500/22 dark:to-danger-500/8 dark:text-danger-300 dark:ring-danger-400/18 dark:shadow-none',
-  done: 'bg-linear-to-br from-done-100 to-done-50 text-done-600 ring-1 ring-inset ring-done-500/14 shadow-[0_1px_2px_rgb(123_71_191/0.16)] dark:from-done-500/22 dark:to-done-500/8 dark:text-done-300 dark:ring-done-400/18 dark:shadow-none',
-} as const;
-
-/**
- * Yorliq va izoh rangi — plitka bilan BITTA oiladan.
- *
- * ⚠️ Kulrang yorliq (`t-label`) ishlatilmaydi: oltita karta yonma-yon
- * turganda faqat plitka rangli bo‘lsa, ko‘z ularni «bir xil oltita
- * karta» deb o‘qiydi. Yorliq ham bo‘yalganda har kartaning MA’NOSI
- * (yaxshi / ogohlantirish / xavf) bir qarashda ko‘rinadi.
- *
- * ⚠️ `neutral` — «Jami obyektlar» uchun: u holat EMAS, shuning uchun
- * holat rangini olmaydi.
- */
-const LABEL = {
-  brand: 'text-brand-700 dark:text-brand-300',
-  ok: 'text-ok-700 dark:text-ok-300',
-  warn: 'text-warn-700 dark:text-warn-300',
-  danger: 'text-danger-600 dark:text-danger-300',
-  done: 'text-done-700 dark:text-done-300',
-} as const;
-
-const CAPTION = {
-  brand: 'text-brand-600/80 dark:text-brand-300/70',
-  ok: 'text-ok-600/85 dark:text-ok-300/70',
-  warn: 'text-warn-600/85 dark:text-warn-300/70',
-  danger: 'text-danger-500/85 dark:text-danger-300/70',
-  done: 'text-done-600/80 dark:text-done-300/70',
-} as const;
-
-type Tone = keyof typeof TILE;
 
 interface KpiCardProps {
+  /** Batafsil sahifa — karta BOSILADIGAN bo‘ladi. */
+  metric: KpiMetricKey;
   label: string;
   value: ReactNode;
   /** Qiymatdan keyingi kichik birlik — «so‘m», «%». */
   unit?: string;
   caption?: ReactNode;
   icon: LucideIcon;
-  tone: Tone;
+  tone: KpiTone;
   visual?: ReactNode;
   /**
    * Grafikani pastki o‘ng burchakka SUZDIRADI (oqimdan chiqaradi).
@@ -113,6 +51,11 @@ interface KpiCardProps {
  * Ko‘rsatkich kartasi: rangli ikonka plitkasi + yorliq + raqam + izoh,
  * o‘ng chekkada kichik grafika (halqa yoki ustunchalar).
  *
+ * ⚠️ KARTA — HAVOLA (`<Link>`), `div` emas. Ichida o‘sha ko‘rsatkichning
+ * batafsil sahifasi ochiladi. `button` bilan qilinmaydi: havola bo‘lsa
+ * sichqonchaning o‘rta tugmasi bilan yangi oynada ochiladi, manzili
+ * ko‘rinadi va saqlab qo‘yish mumkin — hokimlikda bu kundalik ish.
+ *
  * ⚠️ Plitka rangi — KARTANING MA’NOSI, bezak emas: yashil «reja
  * asosida», qahrabo «kechikayotgan», qizil «xavfli». Shuning uchun u
  * `HEALTH_META` bilan bitta oiladan olinadi; yangi karta qo‘shilsa,
@@ -122,7 +65,17 @@ interface KpiCardProps {
  * «nimaning foizi» ekanini aytishi shart: 72.8% o‘zicha hech nima
  * demaydi.
  */
-function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatVisual }: KpiCardProps) {
+function KpiCard({
+  metric,
+  label,
+  value,
+  unit,
+  caption,
+  icon: Icon,
+  tone,
+  visual,
+  floatVisual,
+}: KpiCardProps) {
   return (
     /*
      * ⚠️ `min-w-0` MAJBURIY. Grid yacheykasi sukut bo‘yicha
@@ -131,8 +84,7 @@ function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatV
      * oltinchi karta yacheykani kengaytirib, butun qatorni ekrandan
      * chiqarib yuborardi (gorizontal skroll). `min-w-0` + `truncate`
      * uni qisqartiradi.
-     */
-    /*
+     *
      * ⚠️ Halqa `outline` BILAN, `ring` bilan EMAS. `.card` o'zining
      * `box-shadow` ini belgilaydi va Tailwind halqasi ham AYNI
      * xossani ishlatadi: ikkalasi bir elementda uchrashganda halqa
@@ -143,14 +95,22 @@ function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatV
      * «kulrang ramkaga solingan» bo'lib ko'rinardi; o'z rangidagi
      * halqa esa tusni yopib, kartani butun qiladi.
      */
-    <div
+    /*
+     * ⚠️ `aria-label` QO‘YILMAYDI. U kartaning butun matnini (yorliq,
+     * raqam, izoh) ekran o‘qiyotgan dastur uchun ALMASHTIRIB yuborardi
+     * va foydalanuvchi aynan o‘sha raqamni eshitmay qolardi. Havola
+     * ekani `a` elementining o‘zidan ma’lum.
+     */
+    <Link
+      to={kpiPath(metric)}
       className={cn(
-        'card card-hover relative flex min-w-0 items-center gap-2 px-2 py-2',
+        'card card-hover group relative flex min-w-0 items-center gap-2 px-2 py-2',
         'outline-1 -outline-offset-1',
-        SURFACE[tone],
+        'focus-visible:outline-2 focus-visible:outline-brand-500',
+        KPI_SURFACE[tone],
       )}
     >
-      <span className={cn('tile size-8 shrink-0 rounded-lg', TILE[tone])} aria-hidden>
+      <span className={cn('tile size-8 shrink-0 rounded-lg', KPI_TILE[tone])} aria-hidden>
         <Icon className="size-[17px]" strokeWidth={2.1} />
       </span>
 
@@ -162,13 +122,13 @@ function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatV
           yacheykalari baribir bir xil balandlikka cho‘ziladi, shuning
           uchun qator ko‘rinishi buzilmaydi.
         */}
-        <p className={cn('text-nano leading-[1.25] font-semibold', LABEL[tone])}>{label}</p>
+        <p className={cn('text-nano leading-[1.25] font-semibold', KPI_LABEL[tone])}>{label}</p>
         <p className="num mt-0.5 flex min-w-0 items-baseline gap-1 text-[21px] leading-none whitespace-nowrap text-strong">
           {value}
           {unit ? <span className="text-micro font-normal text-muted">{unit}</span> : null}
         </p>
         {caption ? (
-          <p className={cn('mt-0.5 truncate text-nano font-medium', floatVisual && 'pr-10', CAPTION[tone])}>
+          <p className={cn('mt-0.5 truncate text-nano font-medium', floatVisual && 'pr-10', KPI_CAPTION[tone])}>
             {caption}
           </p>
         ) : null}
@@ -177,7 +137,21 @@ function KpiCard({ label, value, unit, caption, icon: Icon, tone, visual, floatV
       {visual ? (
         <span className={cn('shrink-0', floatVisual && 'absolute right-2 bottom-2')}>{visual}</span>
       ) : null}
-    </div>
+
+      {/*
+        ⚠️ Strelka FAQAT sichqoncha ostida ko‘rinadi va `aria-hidden`:
+        kartada allaqachon oltita element bor, doimiy strelka ettinchisi
+        bo‘lib, raqamdan e’tiborni tortardi. Bosilishini esa butun
+        kartaning ko‘tarilishi (`card-hover`) aytib turadi.
+      */}
+      <ArrowUpRight
+        className={cn(
+          'absolute top-1.5 right-1.5 size-3 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100',
+          KPI_CAPTION[tone],
+        )}
+        aria-hidden
+      />
+    </Link>
   );
 }
 
@@ -204,6 +178,10 @@ export function KpiCardsSkeleton() {
  * ⚠️ Foizlar frontendda QAYTA HISOBLANMAYDI — ular serverdan tayyor keladi.
  * Ikki joyda hisoblansa, yaxlitlash farqi tufayli karta va hisobot
  * boshqa-boshqa raqam ko‘rsatishi mumkin edi.
+ *
+ * ⚠️ Yorliq va ikonka `KPI_META` dan olinadi — batafsil sahifaning
+ * sarlavhasi ham o‘sha yerdan. Ikki joyda yozilsa, karta «Xavfli
+ * holatda», ichkaridagi sahifa esa boshqa nom ko‘rsatishi mumkin edi.
  */
 export function KpiCards({ summary }: { summary: DashboardSummary }) {
   const { cards, completingThisYear, finance } = summary;
@@ -220,19 +198,21 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
           foydalanuvchi ikki ekranda ikki xil son ko‘rib, qaysi biri
           to‘g‘ri ekanini bilmay qolardi. */}
       <KpiCard
-        label="Jami obyektlar"
+        metric="total"
+        label={KPI_META.total.label}
         value={formatCount(summary.total)}
         caption="Topshirilganlarsiz"
-        icon={Building2}
-        tone="brand"
+        icon={KPI_META.total.icon}
+        tone={KPI_META.total.tone}
       />
 
       <KpiCard
-        label="Reja asosida"
+        metric="on-plan"
+        label={KPI_META['on-plan'].label}
         value={formatCount(cards.onPlan.count)}
         caption={formatPercent(cards.onPlan.percent)}
-        icon={CircleCheckBig}
-        tone="ok"
+        icon={KPI_META['on-plan'].icon}
+        tone={KPI_META['on-plan'].tone}
         visual={
           <MiniDonut
             size={30}
@@ -245,11 +225,12 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       />
 
       <KpiCard
-        label="Kechikayotgan"
+        metric="delayed"
+        label={KPI_META.delayed.label}
         value={formatCount(cards.delayed.count)}
         caption={formatPercent(cards.delayed.percent)}
-        icon={Clock}
-        tone="warn"
+        icon={KPI_META.delayed.icon}
+        tone={KPI_META.delayed.tone}
         visual={
           <MiniDonut
             size={30}
@@ -262,11 +243,12 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       />
 
       <KpiCard
-        label="Xavfli holatda"
+        metric="at-risk"
+        label={KPI_META['at-risk'].label}
         value={formatCount(cards.atRisk.count)}
         caption={formatPercent(cards.atRisk.percent)}
-        icon={ShieldAlert}
-        tone="danger"
+        icon={KPI_META['at-risk'].icon}
+        tone={KPI_META['at-risk'].tone}
         visual={
           <MiniDonut
             size={30}
@@ -279,11 +261,12 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       />
 
       <KpiCard
-        label="Joriy yil yakunlanadi"
+        metric="completing"
+        label={KPI_META.completing.label}
         value={formatCount(completingThisYear.count)}
         caption={`${completingThisYear.year}-yil oxirigacha`}
-        icon={Construction}
-        tone="done"
+        icon={KPI_META.completing.icon}
+        tone={KPI_META.completing.tone}
         floatVisual
         visual={
           /* ⚠️ Ustunlar KARTANING TUSIDA (binafsha), neytral kulrangda
@@ -301,11 +284,12 @@ export function KpiCards({ summary }: { summary: DashboardSummary }) {
       />
 
       <KpiCard
-        label="Umumiy qiymat"
+        metric="cost"
+        label={KPI_META.cost.label}
         value={<span className="text-[17px]">{formatCompact(finance.totalCost)} so‘m</span>}
         caption={`Ajratilgan: ${formatCompact(finance.fundedAmount)} so‘m`}
-        icon={Database}
-        tone="brand"
+        icon={KPI_META.cost.icon}
+        tone={KPI_META.cost.tone}
         floatVisual
         visual={
           <SparkBars
