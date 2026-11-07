@@ -8,8 +8,29 @@ import type { ObjectDelay } from '@/shared/api/types';
 import { DELAY_STATUS_META, RISK_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
-  Badge, Button, Card, CardBody, CardHeader, ErrorState, Modal, PageHeader, Pagination,
-  SearchInput, Select, StatPills, Table, TableEmpty, TableWrap, TBody, Td, Textarea, Th, THead, Tr
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  ErrorState,
+  Modal,
+  ObjectMetaLines,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  Select,
+  StatPills,
+  TBody,
+  THead,
+  Table,
+  TableEmpty,
+  TableWrap,
+  Td,
+  Textarea,
+  Th,
+  Tr,
+  toObjectBrief,
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCount, formatPercent } from '@/shared/utils/money.utils';
@@ -164,6 +185,13 @@ export default function DelaysPage() {
                                 <span className="block truncate text-micro text-muted">
                                   {delay.object?.district?.shortName ?? '—'}
                                 </span>
+                                {/* ⚠️ Kechikish yozuvida IKKI XIL mas'ul
+                                    bor: yondagi ustundagi odam shu
+                                    kechikishni hal qilishga biriktirilgan,
+                                    bu yerdagisi esa OBYEKT kuratori.
+                                    Ular ko'pincha boshqa-boshqa shaxslar
+                                    va ikkalasi ham ko'rinishi kerak. */}
+                                <ObjectMetaLines brief={toObjectBrief(delay.object)} />
                               </Td>
                               <Td>
                                 <span className="flex items-center gap-1.5">

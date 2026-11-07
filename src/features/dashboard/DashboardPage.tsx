@@ -94,14 +94,19 @@ export default function DashboardPage() {
      * u yerda kartalar ustma-ust tushadi va ularni bir ekranga siqish
      * o‘qib bo‘lmas holga keltirardi — odatiy oqim va skroll.
      *
-     * ⚠️ `min-h-[760px]` — KONTENTNING eng kichik ehtiyoji. Past
+     * ⚠️ `min-h-[880px]` — KONTENTNING eng kichik ehtiyoji. Past
      * (768px) ekranda oyna shuncha joy bermaydi; chegara bo‘lmasa
      * kartalar ichidagi oxirgi qatorlar QIRQILIB qolardi. Chegara
-     * bilan esa sahifa 40–50px skroll bo‘ladi — bu qirqilgan
-     * ma’lumotdan ko‘ra yaxshiroq. 1080px li monitorda bu chegara
-     * umuman sezilmaydi.
-     */
-    <div className="rise-in flex flex-col gap-1 lg:h-[calc(100dvh-80px)] lg:min-h-[760px]">
+     * bilan esa sahifa skroll bo‘ladi — bu qirqilgan ma’lumotdan
+     * ko‘ra yaxshiroq. 1080px li monitorda bu chegara umuman
+     * sezilmaydi.
+     *
+     * ⚠️ Son 760 dan 880 ga KO‘TARILDI: uchinchi va to‘rtinchi
+     * qatordagi jadvallarga obyekt joylashuvi va mas'uli qo‘shildi
+     * (har qatorga bitta ixcham satr, ~12px). Ikkala jadval ham
+     * beshta qatorli, ya’ni har biriga ~60px kerak. Chegara
+     * ko‘tarilmasa, qo‘shilgan ma'lumot mavjudini QIRQIB qo‘yardi.*/
+    <div className="rise-in flex flex-col gap-1 lg:h-[calc(100dvh-80px)] lg:min-h-[880px]">
       {/* ───── 1-qator: ko‘rsatkichlar ───── */}
       {/* ⚠️ Oltita TENG ustun. Ilgari oxirgi ikkitasiga kengroq ulush
           berilgan edi (`1.1fr`, `1.35fr`) va 1280px li ekranda oltinchi

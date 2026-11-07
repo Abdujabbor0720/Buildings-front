@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { resolveFileUrl } from '@/shared/api/client';
 import type { RecentPhotoItem } from '@/shared/api/types';
 import { AI_VERDICT_META } from '@/shared/constants/health';
+import { ObjectMetaInline } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
 
@@ -64,6 +65,11 @@ function PhotoCard({ item }: { item: RecentPhotoItem }) {
 
       <div className="shrink-0 p-2">
         <p className="truncate text-micro font-medium text-strong">{item.objectName}</p>
+        {/* ⚠️ Surat qaysi obyektniki ekani yetarli emas: «qayerda va
+            kim javobgar» savoli fotoarxivda ham darhol tug'iladi.
+            Rasm `flex-1` bo'lgani uchun bu qator uning balandligidan
+            oladi — kartochka o'zi balandlashmaydi. */}
+        <ObjectMetaInline brief={item} className="mt-0.5" />
         {/* Sana va AI xulosasi BITTA qatorda — alohida qatorda
             turganda kartochka 20px baland bo‘lib, uchtasi qatorga
             sig‘masdi. */}

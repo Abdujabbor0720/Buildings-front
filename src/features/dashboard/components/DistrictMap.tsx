@@ -310,11 +310,33 @@ function objectIcon(
   palette: ReturnType<typeof useChartColors>,
 ): L.DivIcon {
   const hex = palette.statusHex(HEALTH_META[object.healthStatus]);
+
+  /*
+   * ⚠️ KO‘RSATMA KO‘P QATORLI: nom va foizdan tashqari manzil ham,
+   * mas'ul ham bor. Bu nuqta atigi 12px — unga Leaflet `Popup`
+   * sig‘maydi va bosilganda obyekt kartasiga o‘tadi; shuning uchun
+   * «qayerda va kim javobgar» savoliga javob BROUZER ko‘rsatmasida
+   * beriladi.
+   *
+   * ⚠️ `\n` haqiqiy qator uzilishi sifatida ishlaydi (`title`
+   * atributi shuni qo‘llab-quvvatlaydi), `<br>` esa matn bo‘lib
+   * ko‘rinib qolardi.
+   */
+  const tooltip = [
+    `${object.name} — ${Math.round(object.progressPercent)}%`,
+    object.address ?? 'Manzil kiritilmagan',
+    object.responsibleName
+      ? `Mas'ul: ${object.responsibleFullName ?? object.responsibleName}${
+          object.responsiblePosition ? ` (${object.responsiblePosition})` : ''
+        }`
+      : "Mas'ul biriktirilmagan",
+  ].join('\n');
+
   return L.divIcon({
     className: '',
     iconSize: [12, 12],
     iconAnchor: [6, 6],
-    html: `<span title="${esc(object.name)} — ${Math.round(object.progressPercent)}%" style="
+    html: `<span title="${esc(tooltip)}" style="
       display:block;width:12px;height:12px;border-radius:999px;cursor:pointer;
       background:${hex};
       border:2px solid var(--surface);

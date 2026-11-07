@@ -5,8 +5,24 @@ import { getErrorMessage } from '@/shared/api/client';
 import { useContractor, useObjects } from '@/shared/api/queries';
 import { CONTRACTOR_STATUS_META, HEALTH_META } from '@/shared/constants/health';
 import {
-  Badge, Button, Card, CardBody, CardHeader, ErrorState, LoadingBlock, ProgressBar,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  ErrorState,
+  LoadingBlock,
+  ObjectMetaLines,
+  ProgressBar,
+  TBody,
+  THead,
+  Table,
+  TableEmpty,
+  TableWrap,
+  Td,
+  Th,
+  Tr,
+  toObjectBrief,
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';
@@ -155,6 +171,7 @@ export default function ContractorDetailPage() {
                           <Link to={`/objects/${object.id}`} className="block truncate font-medium text-strong hover:text-brand-600">
                             {object.name}
                           </Link>
+                          <ObjectMetaLines brief={toObjectBrief(object)} />
                         </Td>
                         <Td muted className="whitespace-nowrap">{object.district?.shortName ?? '—'}</Td>
                         <Td className="tabular whitespace-nowrap">{formatDateUz(object.plannedEndDate)}</Td>

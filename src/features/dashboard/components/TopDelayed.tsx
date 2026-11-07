@@ -1,7 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import type { TopDelayedItem } from '@/shared/api/types';
 import { HEALTH_META } from '@/shared/constants/health';
-import { ProgressBar, Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr } from '@/shared/ui';
+import {
+  ObjectAddress,
+  ObjectResponsible,
+  ProgressBar,
+  Table,
+  TableEmpty,
+  TableWrap,
+  TBody,
+  Td,
+  Th,
+  THead,
+  Tr,
+} from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 
 /** «Kechikayotgan obyektlar (TOP 5)» — ortda qolish kunlari bo‘yicha. */
@@ -65,6 +77,11 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
                   >
                     {item.name}
                   </span>
+                  {/* ⚠️ MANZIL — ikkinchi qatorda, alohida ustunda
+                      emas: bu kartaga 606px ajratilgan va yettita
+                      ustun allaqachon bor. Mas'ul yondagi ustunda
+                      turgani uchun bu yerda faqat joylashuv. */}
+                  <ObjectAddress brief={item} className="mt-px" />
                 </Td>
                 {/*
                   ⚠️ Mas'ul YO'Q bo'lsa «—» ko'rsatiladi, katak bo'sh
@@ -73,23 +90,13 @@ export function TopDelayed({ items }: { items: TopDelayedItem[] }) {
                   bo'lgan muammo; bo'sh katak esa «ma'lumot yuklanmadi»
                   bo'lib o'qilardi.
                 */}
-                <Td className="truncate px-2 whitespace-nowrap">
-                  {item.responsibleName ? (
-                    <span
-                      className="text-strong"
-                      title={
-                        item.responsiblePosition
-                          ? `${item.responsibleFullName} — ${item.responsiblePosition}`
-                          : (item.responsibleFullName ?? undefined)
-                      }
-                    >
-                      {item.responsibleName}
-                    </span>
-                  ) : (
-                    <span className="text-faint" title="Mas'ul biriktirilmagan">
-                      —
-                    </span>
-                  )}
+                {/* ⚠️ Mas'ul UMUMIY komponentda (`ObjectMeta.tsx`):
+                    ilgari bu katak o'z mantig'ini yozardi va
+                    biriktirilmagan holat xira «—» bo'lib ko'rinardi,
+                    boshqa ekranlarda esa qahrabo ogohlantirish
+                    bo'lardi. */}
+                <Td className="max-w-[1px] px-2">
+                  <ObjectResponsible brief={item} withIcon={false} />
                 </Td>
                 <Td className="px-2 text-meta whitespace-nowrap">{formatDateUz(item.plannedEndDate)}</Td>
                 {/* ⚠️ Maketdagi kabi SOF QIZIL MATN, «pill» emas:

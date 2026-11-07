@@ -4,8 +4,27 @@ import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveCo
 import { getErrorMessage } from '@/shared/api/client';
 import { useFundingAllocations, useFundingSummary, useFundingTransactions } from '@/shared/api/queries';
 import {
-  Badge, Card, CardBody, CardHeader, ErrorState, LoadingBlock, PageHeader, Pagination, ProgressBar,
-  Tabs, type TabOption, Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
+  Badge,
+  Card,
+  CardBody,
+  CardHeader,
+  ErrorState,
+  LoadingBlock,
+  ObjectMetaLines,
+  PageHeader,
+  Pagination,
+  ProgressBar,
+  TBody,
+  THead,
+  Table,
+  TableEmpty,
+  TableWrap,
+  Tabs,
+  Td,
+  Th,
+  Tr,
+  toObjectBrief,
+  type TabOption,
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatMoneyFull, formatPercent, toNumber } from '@/shared/utils/money.utils';
@@ -203,6 +222,11 @@ export default function FundingPage() {
                                 <Link to={`/objects/${item.objectId}`} className="block truncate text-meta font-medium text-strong hover:text-brand-600">
                                   {item.object?.name ?? '—'}
                                 </Link>
+                                {/* ⚠️ Mablag‘ ajratilgan obyekt QAYERDA va
+                                    uni kim nazorat qiladi — moliyaviy
+                                    qarorda bu ikki savol doimo birga
+                                    keladi. */}
+                                <ObjectMetaLines brief={toObjectBrief(item.object)} />
                               </Td>
                               <Td className="num font-semibold">{item.year}</Td>
                               <Td>
@@ -255,6 +279,7 @@ export default function FundingPage() {
                                 <Link to={`/objects/${tx.objectId}`} className="block truncate text-meta hover:text-brand-600">
                                   {tx.object?.name ?? '—'}
                                 </Link>
+                                <ObjectMetaLines brief={toObjectBrief(tx.object)} />
                               </Td>
                               <Td><Badge className={meta.chip}>{meta.label}</Badge></Td>
                               <Td align="right" className="num font-medium">{formatMoneyFull(tx.amount)}</Td>

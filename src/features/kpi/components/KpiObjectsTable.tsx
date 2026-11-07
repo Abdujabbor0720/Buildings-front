@@ -10,6 +10,8 @@ import {
   Card,
   CardHeader,
   ErrorState,
+  ObjectAddress,
+  ObjectResponsible,
   Pagination,
   ProgressBar,
   SearchInput,
@@ -150,6 +152,7 @@ export function KpiObjectsTable({ metric, meta, scopeParams, chips, filtered }: 
                     <Th sortKey="district" activeSort={activeSort} onSort={toggleSort} className="w-28">
                       Tuman
                     </Th>
+                    <Th className="w-44">Manzil</Th>
                     <Th sortKey="type" activeSort={activeSort} onSort={toggleSort} className="w-36">
                       Turi
                     </Th>
@@ -175,13 +178,13 @@ export function KpiObjectsTable({ metric, meta, scopeParams, chips, filtered }: 
                   {isLoading ? (
                     Array.from({ length: 8 }).map((_, index) => (
                       <Tr key={index}>
-                        <Td colSpan={10}>
+                        <Td colSpan={11}>
                           <Skeleton className="h-6" />
                         </Td>
                       </Tr>
                     ))
                   ) : data && data.items.length === 0 ? (
-                    <TableEmpty colSpan={10}>
+                    <TableEmpty colSpan={11}>
                       {search.trim()
                         ? 'Qidiruvga mos obyekt topilmadi'
                         : 'Bu kesimda obyekt yo‘q'}
@@ -214,6 +217,9 @@ export function KpiObjectsTable({ metric, meta, scopeParams, chips, filtered }: 
                           <Td muted className="whitespace-nowrap">
                             {object.districtName}
                           </Td>
+                          <Td className="max-w-[180px]">
+                            <ObjectAddress brief={object} variant="cell" />
+                          </Td>
                           <Td>
                             <span className="flex items-center gap-1.5">
                               <span
@@ -226,17 +232,13 @@ export function KpiObjectsTable({ metric, meta, scopeParams, chips, filtered }: 
                               </span>
                             </span>
                           </Td>
-                          <Td className="truncate whitespace-nowrap">
-                            {object.responsibleName ? (
-                              <span className="text-meta text-muted">{object.responsibleName}</span>
-                            ) : (
-                              /* ⚠️ «—» emas, OGOHLANTIRISH: mas'ulsiz
-                                 obyekt ma'lumot to'liq emasligining eng
-                                 qimmat ko'rinishi. */
-                              <span className="text-micro text-warn-600 dark:text-warn-400">
-                                biriktirilmagan
-                              </span>
-                            )}
+                          {/* ⚠️ Mas'ul UMUMIY komponent bilan
+                              (`ObjectMeta.tsx`): ro‘yxat, xarita va
+                              kechikishlar ekranlarida ham AYNI
+                              ko‘rinish va AYNI ko‘rsatma bo‘lishi
+                              kerak. */}
+                          <Td className="max-w-[120px]">
+                            <ObjectResponsible brief={object} variant="cell" />
                           </Td>
                           <Td className="tabular whitespace-nowrap">
                             <span className="block">{formatDateUz(object.plannedEndDate)}</span>

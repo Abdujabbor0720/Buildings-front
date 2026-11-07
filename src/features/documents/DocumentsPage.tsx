@@ -6,8 +6,25 @@ import { useDistricts, useDocuments } from '@/shared/api/queries';
 import { DOCUMENT_TYPE_LABELS } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
-  Badge, Card, ErrorState, LoadingBlock, PageHeader, Pagination, SearchInput, Select, StatPills,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
+  Badge,
+  Card,
+  ErrorState,
+  LoadingBlock,
+  ObjectMetaLines,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  Select,
+  StatPills,
+  TBody,
+  THead,
+  Table,
+  TableEmpty,
+  TableWrap,
+  Td,
+  Th,
+  Tr,
+  toObjectBrief,
 } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { diffInDays, formatDateUz, tashkentToday } from '@/shared/utils/date.utils';
@@ -122,9 +139,16 @@ export default function DocumentsPage() {
                             <Td muted className="mono text-meta">{document.number ?? '—'}</Td>
                             <Td className="max-w-[240px]">
                               {document.object ? (
-                                <Link to={`/objects/${document.object.id}`} className="block truncate text-meta hover:text-brand-600">
-                                  {document.object.name}
-                                </Link>
+                                <>
+                                  <Link to={`/objects/${document.object.id}`} className="block truncate text-meta hover:text-brand-600">
+                                    {document.object.name}
+                                  </Link>
+                                  {/* ⚠️ Hujjatni YUKLAGAN odam bilan obyekt
+                                      MAS'ULI boshqa-boshqa shaxslar: hujjat
+                                      bo‘yicha savol tug‘ilganda kimga
+                                      murojaat qilish shu yerda aytiladi. */}
+                                  <ObjectMetaLines brief={toObjectBrief(document.object)} />
+                                </>
                               ) : (
                                 <span className="text-meta text-muted">Umumiy hujjat</span>
                               )}

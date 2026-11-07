@@ -8,8 +8,22 @@ import type { PhotoReport } from '@/shared/api/types';
 import { AI_VERDICT_META, PHOTO_STATUS_LABELS } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
-  Badge, Button, Card, EmptyState, ErrorState, LoadingBlock, Modal, PageHeader, Pagination,
-  SearchInput, Select, StatPills, Textarea
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  LoadingBlock,
+  Modal,
+  ObjectMetaInline,
+  ObjectMetaLines,
+  PageHeader,
+  Pagination,
+  SearchInput,
+  Select,
+  StatPills,
+  Textarea,
+  toObjectBrief,
 } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
@@ -188,6 +202,11 @@ export default function PhotosPage() {
                         <Link to={`/objects/${report.objectId}`} className="block truncate text-meta font-medium text-strong hover:text-brand-600">
                           {report.object?.name ?? '—'}
                         </Link>
+                        {/* ⚠️ Fotoarxivda ham obyekt joylashuvi va
+                            mas'uli ko‘rinadi: surat «qayerdan kelgani»
+                            va «kim javobgar» — hisobotni ko‘rib
+                            chiqayotgan odamning birinchi ikki savoli. */}
+                        <ObjectMetaLines brief={toObjectBrief(report.object)} className="mt-0" />
                         <p className="tabular text-micro text-muted">{formatDateTimeUz(report.capturedAt)}</p>
                         <div className="flex flex-wrap gap-1">
                           <Badge className={meta.chip}><Sparkles className="size-2.5" />{meta.label}</Badge>
@@ -239,7 +258,17 @@ function PreviewModal({
       onClose={onClose}
       size="xl"
       title={report?.object?.name ?? 'Foto-hisobot'}
-      description={report ? formatDateTimeUz(report.capturedAt) : undefined}
+      description={
+        report ? (
+          <span className="flex flex-col gap-0.5">
+            <span>{formatDateTimeUz(report.capturedAt)}</span>
+            {/* ⚠️ Suratni tasdiqlayotgan odam «bu qayerdagi obyekt va
+                kim javobgar» degan savolga javobni AYNI oynada
+                ko‘rishi kerak — boshqa ekranga o‘tmasdan. */}
+            <ObjectMetaInline brief={toObjectBrief(report.object)} />
+          </span>
+        ) : undefined
+      }
       footer={
         report && report.status === 'pending' && canModerate ? (
           <>

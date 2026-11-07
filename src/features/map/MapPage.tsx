@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { GeoJSON as GeoJsonLayer, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import { Link } from 'react-router-dom';
 import { useCatalogs, useDistrictGeoJson, useObjectsMap } from '@/shared/api/queries';
-import type { DistrictGeoJson, ObjectHealth } from '@/shared/api/types';
+import type { DistrictGeoJson, ObjectHealth, ObjectMapPoint } from '@/shared/api/types';
 import { HEALTH_LEGEND, HEALTH_META } from '@/shared/constants/health';
 import { getErrorMessage } from '@/shared/api/client';
-import { Badge, Card, ErrorState, LoadingBlock, PageHeader, Select, StatPills } from '@/shared/ui';
+import { Badge, Card, ErrorState, LoadingBlock, ObjectAddress, ObjectResponsible, PageHeader, Select, StatPills } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatCount } from '@/shared/utils/money.utils';
 import { useFiltersStore } from '@/store/filters.store';
@@ -165,11 +165,13 @@ function ObjectsMap({
   points,
   geojson,
 }: {
-  points: Array<{
-    id: string; code: string; name: string; lat: number; lng: number;
-    healthStatus: ObjectHealth; progressPercent: number; districtName: string;
-    typeName: string; typeColor: string;
-  }>;
+  /**
+   * ⚠️ Shakl QO‘LDA takrorlanmaydi — `ObjectMapPoint` shartnomasidan.
+   * Ilgari u shu yerda qaytadan yozilgan edi va serverga joylashuv
+   * bilan mas'ul qo‘shilganda bu ro‘yxat eskirib qoldi: ma'lumot
+   * javobda bor, lekin ekranda yo‘q edi.
+   */
+  points: ObjectMapPoint[];
   geojson: DistrictGeoJson | null;
 }) {
   const { statusHex } = useChartColors();
@@ -240,6 +242,14 @@ function ObjectsMap({
                   <p className="t-meta mt-1 text-micro">
                     {point.districtName} · {point.typeName}
                   </p>
+                  {/* ⚠️ Xaritadagi nuqtani bosgan odamning BIRINCHI
+                      savoli — «bu aniq qayerda va kim javobgar».
+                      Ilgari javob faqat obyekt kartasini ochgandan
+                      keyin topilardi; endi ko'rsatmaning o'zida. */}
+                  <div className="mt-1.5 flex flex-col gap-0.5">
+                    <ObjectAddress brief={point} variant="block" />
+                    <ObjectResponsible brief={point} variant="block" />
+                  </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <Badge className={meta.chip} dot={meta.dot}>{meta.label}</Badge>
                     <span className="num text-meta text-strong">

@@ -6,7 +6,11 @@ import { apiGetPaginated } from '@/shared/api/client';
 import type { ConstructionObject } from '@/shared/api/types';
 import { HEALTH_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import { Badge } from '@/shared/ui';
+import {
+  Badge,
+  ObjectMetaInline,
+  toObjectBrief,
+} from '@/shared/ui';
 import { CATEGORICAL_REST_HEX } from '@/shared/constants/health';
 import { cn } from '@/shared/utils/cn';
 
@@ -147,6 +151,10 @@ export function GlobalSearch() {
                         <span className="text-faint block truncate text-meta">
                           <span className="mono">{object.code}</span>{' · '}{object.district?.shortName ?? '—'}
                         </span>
+                        {/* ⚠️ Qidiruv natijasida ham joylashuv va mas'ul:
+                            bir xil nomli obyektlarni («18-son bog‘cha»)
+                            faqat manzil ajratib turadi. */}
+                        <ObjectMetaInline brief={toObjectBrief(object)} />
                       </span>
                       <Badge className={meta.chip} dot={meta.dot}>
                         {meta.label}

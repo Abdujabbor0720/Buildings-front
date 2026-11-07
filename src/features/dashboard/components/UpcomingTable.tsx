@@ -1,7 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import type { UpcomingItem } from '@/shared/api/types';
 import { HEALTH_META, STATUS_META } from '@/shared/constants/health';
-import { Badge, ProgressBar, Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr } from '@/shared/ui';
+import {
+  Badge,
+  ObjectMetaInline,
+  ProgressBar,
+  Table,
+  TableEmpty,
+  TableWrap,
+  TBody,
+  Td,
+  Th,
+  THead,
+  Tr,
+} from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { cn } from '@/shared/utils/cn';
 
@@ -41,6 +53,12 @@ export function UpcomingTable({ items }: { items: UpcomingItem[] }) {
                     <span className="block truncate font-medium text-strong" title={item.name}>
                       {item.name}
                     </span>
+                    {/* ⚠️ Joylashuv va mas'ul BITTA qatorda: bu kartada
+                        atigi beshta ustun bor, lekin balandlik qattiq
+                        cheklangan (bosh sahifa bitta ekranga sig'adi).
+                        Ikki alohida qator qatorni 48px ga ko'tarib,
+                        beshta qator kartadan chiqib ketardi. */}
+                    <ObjectMetaInline brief={item} className="mt-px" />
                   </Td>
                   {/* ⚠️ Sana va qolgan kun BITTA qatorda: ikki qatorda
                       qator balandligi 34px bo‘lib, beshta qator bosh

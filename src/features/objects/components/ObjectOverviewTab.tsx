@@ -1,8 +1,18 @@
+import type { ReactNode } from 'react';
 import { MapPin } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { AiAnalysis, ConstructionObject, ProgressUpdate } from '@/shared/api/types';
 import { RISK_META } from '@/shared/constants/health';
-import { Badge, Card, CardBody, CardHeader, EmptyState } from '@/shared/ui';
+import {
+  Badge,
+  Card,
+  CardBody,
+  CardHeader,
+  EmptyState,
+  ObjectAddress,
+  ObjectResponsible,
+  toObjectBrief,
+} from '@/shared/ui';
 import { LocationPicker } from './LocationPicker';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatAmount, formatCount, formatMoneyFull, formatPercent } from '@/shared/utils/money.utils';
@@ -66,7 +76,14 @@ export function ObjectOverviewTab({ object, progress, ai }: Props) {
             <dl className="space-y-2.5 text-ui">
               <Row label="Buyurtmachi" value={object.customer?.name ?? '—'} />
               <Row label="Pudratchi" value={object.contractor?.name ?? '—'} />
-              <Row label="Mas’ul" value={object.responsible ? `${object.responsible.lastName} ${object.responsible.firstName}` : '—'} />
+              <Row
+                label="Mas’ul"
+                value={<ObjectResponsible brief={toObjectBrief(object)} variant="block" withIcon={false} />}
+              />
+              <Row
+                label="Manzil"
+                value={<ObjectAddress brief={toObjectBrief(object)} variant="block" />}
+              />
               <Row label="Moliya manbai" value={object.fundingSource?.name ?? '—'} />
               {/* ⚠️ `toLocaleString('ru-RU')` ISHLATILMAYDI: natija kod
                   ishlayotgan muhitga (brauzer, Node ICU) bog‘liq va
@@ -146,7 +163,12 @@ const ANALYSIS_LABELS: Record<string, string> = {
   photo_check: 'Foto tekshiruvi',
 };
 
-function Row({ label, value }: { label: string; value: string }) {
+/**
+ * ⚠️ `value` — `ReactNode`, `string` EMAS. Mas'ul qatori umumiy
+ * komponent bilan chiziladi (`ObjectMeta.tsx`): ism shakli, lavozim
+ * va telefon ko‘rsatmasi butun tizimda bitta joydan keladi.
+ */
+function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4">
       <dt className="shrink-0 text-muted">{label}</dt>

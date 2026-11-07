@@ -6,7 +6,19 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { apiPost, getErrorMessage } from '@/shared/api/client';
 import { useAiOverview } from '@/shared/api/queries';
 import { RISK_META } from '@/shared/constants/health';
-import { Badge, Button, Card, CardBody, CardHeader, EmptyState, LoadingBlock, PageHeader, ProgressBar, ErrorState} from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  EmptyState,
+  ErrorState,
+  LoadingBlock,
+  ObjectMetaLines,
+  PageHeader,
+  ProgressBar,
+} from '@/shared/ui';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
 import { formatCount, formatPercent } from '@/shared/utils/money.utils';
 import { useAuthStore } from '@/store/auth.store';
@@ -139,6 +151,10 @@ export default function AiPage() {
                             {risk.objectName}
                           </Link>
                           <p className="truncate text-micro text-muted">{risk.districtName}</p>
+                          {/* ⚠️ «Eng yuqori riskli obyekt» ro‘yxatida
+                              javobgar kimligi tavsiyadan ham muhim:
+                              tahlil natijasi odamga yetib borishi kerak. */}
+                          <ObjectMetaLines brief={risk} />
                         </div>
                         <Badge className={meta.chip}>{meta.label} · {risk.score}</Badge>
                       </div>

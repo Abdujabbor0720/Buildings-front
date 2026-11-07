@@ -5,7 +5,15 @@ import { getErrorMessage } from '@/shared/api/client';
 import { useAnalyzeMany, useObjects, type AnalyzeManyResult } from '@/shared/api/queries';
 import { HEALTH_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import { Badge, Button, LoadingBlock, Modal, SearchInput } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  LoadingBlock,
+  Modal,
+  ObjectMetaInline,
+  SearchInput,
+  toObjectBrief,
+} from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatPercent } from '@/shared/utils/money.utils';
 import { useFiltersStore } from '@/store/filters.store';
@@ -225,7 +233,14 @@ export function AnalyzeObjectsModal({ open, onClose }: { open: boolean; onClose:
                       className="size-3.5 shrink-0 accent-[var(--color-brand-500)]"
                     />
                     <span className="mono text-micro text-muted">{object.code}</span>
-                    <span className="min-w-0 flex-1 truncate text-meta text-strong">{object.name}</span>
+                    {/* ⚠️ Tahlilga obyekt TANLAYOTGAN odam bir xil
+                        nomli ikkita obyektni («18-son bog‘cha») faqat
+                        manzil bilan ajrata oladi; mas'ul esa tahlil
+                        natijasi kimga ketishini oldindan aytadi. */}
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-meta text-strong">{object.name}</span>
+                      <ObjectMetaInline brief={toObjectBrief(object)} />
+                    </span>
                     <span className="num shrink-0 text-micro text-muted">
                       {formatPercent(object.progressPercent)}
                     </span>

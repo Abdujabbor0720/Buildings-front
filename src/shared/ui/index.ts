@@ -20,3 +20,17 @@ export { BrandMark } from './BrandMark';
 export { SparkBars } from './SparkBars';
 export { MiniDonut } from './MiniDonut';
 export { PageHeader, StatPills } from './PageHeader';
+export {
+  ObjectLocation,
+  ObjectAddress,
+  ResponsiblePerson,
+  ObjectResponsible,
+  ObjectMetaLines,
+  ObjectMetaInline,
+} from './ObjectMeta';
+// ⚠️ Sof funksiya ALOHIDA faylda — komponent fayli bilan aralashsa,
+// Vite'ning tez yangilanishi ishlamay qoladi.
+export {
+  toObjectBrief,
+  type NestedObjectSource,
+} from '../utils/object-brief.utils';

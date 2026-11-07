@@ -126,6 +126,31 @@ export interface Catalogs {
   delayReasons: CatalogItem[];
 }
 
+/**
+ * OBYEKT JOYLASHUVI VA MAS'ULI — SHARTNOMA, YAGONA MANBA.
+ *
+ * ⚠️ Serverdagi `common/contracts/object-brief.contract.ts` bilan
+ * AYNI. Obyekt ko'rinadigan HAR BIR javobda shu maydonlar bor:
+ * ro'yxat, xarita, kechikishlar, fotoarxiv, hujjatlar, kalendar,
+ * moliyalashtirish, AI tahlili, ko'rsatkich sahifalari.
+ *
+ * ⚠️ `null` — XATO EMAS, MA'LUMOT TO'LIQ EMAS: ekranda ochiq
+ * aytiladi («Manzil kiritilmagan», «Mas'ul biriktirilmagan»),
+ * yashirilmaydi.
+ */
+export interface ObjectBrief {
+  address: string | null;
+  lat: number | null;
+  lng: number | null;
+  responsibleId: string | null;
+  /** «J. Karimov» — jadval katagi uchun. */
+  responsibleName: string | null;
+  /** «Karimov Jahongir» — ko'rsatma uchun. */
+  responsibleFullName: string | null;
+  responsiblePosition: string | null;
+  responsiblePhone: string | null;
+}
+
 /* ───────────────────────── Obyekt ───────────────────────── */
 
 export interface Contractor {
@@ -240,7 +265,7 @@ export interface ConstructionObject {
   primaryDelayReason?: CatalogItem | null;
 }
 
-export interface ObjectMapPoint {
+export interface ObjectMapPoint extends ObjectBrief {
   id: string;
   code: string;
   name: string;
@@ -298,7 +323,7 @@ export interface MilestoneSubmission {
   analysis: AiAnalysis | null;
 }
 
-export interface CalendarItem {
+export interface CalendarItem extends ObjectBrief {
   id: string;
   objectId: string;
   objectName: string;
@@ -478,10 +503,12 @@ export interface AiAnalysis {
 }
 
 export interface AiOverview {
-  topRisks: Array<{
-    objectId: string; objectName: string; districtName: string;
-    score: number; riskLevel: RiskLevel; summary: string;
-  }>;
+  topRisks: Array<
+    ObjectBrief & {
+      objectId: string; objectName: string; districtName: string;
+      score: number; riskLevel: RiskLevel; summary: string;
+    }
+  >;
   distribution: Array<{ level: RiskLevel; count: number; percent: number }>;
   commonRecommendations: Array<{ text: string; count: number }>;
   analyzedObjects: number;
@@ -574,7 +601,7 @@ export interface TypeBreakdownItem {
   avgProgress: number;
 }
 
-export interface TopDelayedItem {
+export interface TopDelayedItem extends ObjectBrief {
   id: string;
   code: string;
   name: string;
@@ -585,13 +612,9 @@ export interface TopDelayedItem {
   healthStatus: ObjectHealth;
   primaryReason: string | null;
   primaryReasonColor: string | null;
-  /** Obyekt mas'uli (kurator). `null` — biriktirilmagan. */
-  responsibleName: string | null;
-  responsibleFullName: string | null;
-  responsiblePosition: string | null;
 }
 
-export interface UpcomingItem {
+export interface UpcomingItem extends ObjectBrief {
   id: string;
   code: string;
   name: string;
@@ -603,7 +626,7 @@ export interface UpcomingItem {
   status: ObjectStatus;
 }
 
-export interface RecentPhotoItem {
+export interface RecentPhotoItem extends ObjectBrief {
   id: string;
   objectId: string;
   objectName: string;
@@ -753,7 +776,7 @@ export interface KpiMetricDetail {
   generatedAt: string;
 }
 
-export interface KpiMetricObject {
+export interface KpiMetricObject extends ObjectBrief {
   id: string;
   code: string;
   name: string;
@@ -772,7 +795,6 @@ export interface KpiMetricObject {
   totalCost: string;
   fundedAmount: string;
   contractorName: string | null;
-  responsibleName: string | null;
   primaryReason: string | null;
   lastReportAt: string | null;
 }
@@ -789,7 +811,7 @@ export interface DistrictGeoJson {
 }
 
 /** Tuman xaritasidagi obyekt nuqtasi. */
-export interface MapObjectPoint {
+export interface MapObjectPoint extends ObjectBrief {
   id: string;
   code: string;
   name: string;

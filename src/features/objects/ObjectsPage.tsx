@@ -8,8 +8,9 @@ import type { ObjectHealth } from '@/shared/api/types';
 import { HEALTH_META } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import {
-  Badge, Button, Card, ErrorState, PageHeader, Pagination, ProgressBar, SearchInput, Select,
-  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr
+  Badge, Button, Card, ErrorState, ObjectLocation, ObjectResponsible, PageHeader, Pagination,
+  ProgressBar, SearchInput, Select,
+  Table, TableEmpty, TableWrap, TBody, Td, Th, THead, Tr, toObjectBrief
 } from '@/shared/ui';
 import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCompact, formatCount } from '@/shared/utils/money.utils';
@@ -223,7 +224,15 @@ export default function ObjectsPage() {
                       <Th sortKey="code" activeSort={{ by: sortBy, order: sortOrder }} onSort={toggleSort} className="w-[116px]">Kod</Th>
                       <Th sortKey="name" activeSort={{ by: sortBy, order: sortOrder }} onSort={toggleSort}>Obyekt nomi</Th>
                       <Th className="w-28">Tuman</Th>
+                      {/* ⚠️ MANZIL ALOHIDA USTUNDA, obyekt nomi ostida
+                          emas: bu ro‘yxatda qator balandligi erkin va
+                          manzil — qidiruv mezoni (server `address`
+                          bo‘yicha ham qidiradi). Ikkinchi qatorga
+                          tushirilsa, foydalanuvchi uni ustun bo‘yicha
+                          solishtira olmasdi. */}
+                      <Th className="w-48">Manzil</Th>
                       <Th className="w-40">Turi</Th>
+                      <Th className="w-32">Mas’ul</Th>
                       <Th sortKey="plannedEndDate" activeSort={{ by: sortBy, order: sortOrder }} onSort={toggleSort} className="w-36">Reja muddati</Th>
                       <Th sortKey="progressPercent" activeSort={{ by: sortBy, order: sortOrder }} onSort={toggleSort} className="w-[130px]">Bajarilish</Th>
                       <Th className="w-36">Holati</Th>
@@ -234,11 +243,11 @@ export default function ObjectsPage() {
                     {isLoading ? (
                       Array.from({ length: 8 }).map((_, index) => (
                         <Tr key={index}>
-                          <Td colSpan={8}><div className="skeleton h-6 rounded" /></Td>
+                          <Td colSpan={10}><div className="skeleton h-6 rounded" /></Td>
                         </Tr>
                       ))
                     ) : data?.items.length === 0 ? (
-                      <TableEmpty colSpan={8}>
+                      <TableEmpty colSpan={10}>
                         {hasFilters ? 'Filtrga mos obyekt topilmadi' : 'Obyektlar hali qo‘shilmagan'}
                       </TableEmpty>
                     ) : (
@@ -254,11 +263,30 @@ export default function ObjectsPage() {
                               ) : null}
                             </Td>
                             <Td muted className="whitespace-nowrap">{object.district?.shortName ?? '—'}</Td>
+                            <Td className="max-w-[200px]">
+                              <ObjectLocation
+                                address={object.address}
+                                lat={object.lat}
+                                lng={object.lng}
+                                variant="cell"
+                              />
+                            </Td>
                             <Td>
                               <span className="flex items-center gap-1.5">
                                 <span className="size-2 shrink-0 rounded-[3px]" style={{ backgroundColor: object.type?.color }} />
                                 <span className="truncate text-meta text-muted">{object.type?.name}</span>
                               </span>
+                            </Td>
+                            <Td className="max-w-[130px]">
+                              {/* ⚠️ Mas'ul `toObjectBrief` orqali o‘qiladi:
+                                  bu endpoint TO‘LIQ entity qaytaradi
+                                  (`object.responsible`), dashboard esa
+                                  yassi shakl yuboradi. Ikkalasi bitta
+                                  komponentga bir xil kirishi kerak. */}
+                              <ObjectResponsible
+                                brief={toObjectBrief(object)}
+                                variant="cell"
+                              />
                             </Td>
                             <Td className="tabular whitespace-nowrap">{formatDateUz(object.plannedEndDate)}</Td>
                             <Td>

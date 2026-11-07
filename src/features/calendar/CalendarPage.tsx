@@ -5,7 +5,20 @@ import { useCalendar, useDistricts } from '@/shared/api/queries';
 import type { CalendarItem } from '@/shared/api/types';
 import { MILESTONE_LABELS } from '@/shared/constants/health';
 import { getErrorMessage } from '@/shared/api/client';
-import { Badge, Button, Card, CardBody, CardHeader, EmptyState, ErrorState, LoadingBlock, PageHeader, ProgressBar, Select } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  EmptyState,
+  ErrorState,
+  LoadingBlock,
+  ObjectMetaInline,
+  PageHeader,
+  ProgressBar,
+  Select,
+} from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { MONTHS_UZ_CAP, WEEKDAYS_UZ_SHORT, formatDateUz, tashkentToday } from '@/shared/utils/date.utils';
 import { useFiltersStore } from '@/store/filters.store';
@@ -192,9 +205,14 @@ export default function CalendarPage() {
                   {ongoing.slice(0, 20).map((item) => (
                     <li key={item.id} className="flex flex-wrap items-center gap-3 py-2.5">
                       <span className="size-2 shrink-0 rounded-[3px]" style={{ backgroundColor: item.typeColor }} />
-                      <Link to={`/objects/${item.objectId}`} className="min-w-0 flex-1 truncate text-ui font-medium text-strong hover:text-brand-600">
-                        {item.objectName}
-                      </Link>
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <Link to={`/objects/${item.objectId}`} className="truncate text-ui font-medium text-strong hover:text-brand-600">
+                          {item.objectName}
+                        </Link>
+                        {/* ⚠️ Kalendar — ish rejasi: «qaysi bosqich» dan
+                            keyingi savol «qayerda va kimdan so‘ray». */}
+                        <ObjectMetaInline brief={item} />
+                      </span>
                       <span className="truncate text-meta text-muted">{item.name}</span>
                       <span className="tabular shrink-0 text-meta text-muted">{formatDateUz(item.plannedEnd)}</span>
                       <ProgressBar value={item.progressPercent} showValue size="xs" className="w-28 shrink-0" />
