@@ -435,12 +435,27 @@ export interface ObjectDocument {
   number: string | null;
   issuedDate: string | null;
   expiryDate: string | null;
+  /**
+   * Faylga to‘g‘ridan-to‘g‘ri havola.
+   *
+   * ⚠️ `file.url` NUSXASI (server yaratishda ko‘chiradi), lekin eski
+   * yozuvlarda faqat shu maydon bo‘lishi mumkin. Shuning uchun
+   * yuklab olishda IKKALASI ham tekshiriladi.
+   */
   url: string | null;
   note: string | null;
   createdAt: string;
   daysUntilExpiry?: number | null;
   object?: ConstructionObject | null;
   uploadedBy?: UserSummary | null;
+  /**
+   * Biriktirilgan fayl — nomi, hajmi va turi bilan.
+   *
+   * ⚠️ Server uni ro‘yxatda ham yuboradi (`leftJoinAndSelect('doc.file')`),
+   * lekin bu shartnomada e'lon qilinmagan edi: natijada hujjat
+   * oynasida fayl haqida hech narsa ko‘rsatib bo‘lmasdi.
+   */
+  file?: StoredFileRef | null;
 }
 
 export interface FundingAllocation {

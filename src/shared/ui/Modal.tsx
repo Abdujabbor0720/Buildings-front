@@ -22,7 +22,14 @@ const SIZES = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl'
  */
 export function Modal({ open, onClose, title, description, children, footer, size = 'md' }: ModalProps) {
   return (
-    <Transition show={open} as={Fragment}>
+    /*
+     * ⚠️ `appear` — oyna ALLAQACHON ochiq holatda ulanganda ham
+     * animatsiya ishlashi uchun. Modal `open={false}` bilan
+     * ulanadigan joylarda bu bayroq hech narsani o‘zgartirmaydi,
+     * lekin oyna faqat kerak bo‘lganda ulanadigan joyda (hujjat
+     * ko‘rish oynasi) usiz u birinchi safar «chaqnab» paydo bo‘lardi.
+     */
+    <Transition show={open} as={Fragment} appear>
       <Dialog onClose={onClose} className="relative z-50">
         <TransitionChild
           as={Fragment}

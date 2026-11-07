@@ -2,6 +2,9 @@ import { Download, FileText, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getErrorMessage, resolveFileUrl } from '@/shared/api/client';
+import type { ObjectDocument } from '@/shared/api/types';
+import { resolveExpiry } from './document-expiry';
+import { DocumentPreviewModal } from './components/DocumentPreviewModal';
 import { useDistricts, useDocuments } from '@/shared/api/queries';
 import { DOCUMENT_TYPE_LABELS } from '@/shared/constants/health';
 import { useDebounce } from '@/shared/hooks/useDebounce';
@@ -27,7 +30,7 @@ import {
   toObjectBrief,
 } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
-import { diffInDays, formatDateUz, tashkentToday } from '@/shared/utils/date.utils';
+import { formatDateUz } from '@/shared/utils/date.utils';
 import { formatCount } from '@/shared/utils/money.utils';
 import { useFiltersStore } from '@/store/filters.store';
 
@@ -40,6 +43,9 @@ export default function DocumentsPage() {
   const [type, setType] = useState('');
   const [districtId, setDistrictId] = useState('');
   const [expiringOnly, setExpiringOnly] = useState(false);
+  // ⚠️ Tanlangan hujjat OBYEKT sifatida saqlanadi: oyna qatordan
+  // to‘g‘ridan-to‘g‘ri to‘ladi va qo‘shimcha so‘rov kutilmaydi.
+  const [preview, setPreview] = useState<ObjectDocument | null>(null);
 
   const { data: districts } = useDistricts(regionId ?? undefined);
 
@@ -56,7 +62,6 @@ export default function DocumentsPage() {
   );
 
   const { data, isLoading, isError, error, refetch } = useDocuments(params);
-  const today = tashkentToday();
 
   return (
     <>
@@ -127,13 +132,20 @@ export default function DocumentsPage() {
                       <TableEmpty colSpan={7}>Hujjat topilmadi</TableEmpty>
                     ) : (
                       data?.items.map((document) => {
-                        const url = resolveFileUrl(document.url);
-                        const daysLeft = document.expiryDate ? diffInDays(today, document.expiryDate) : null;
-                        const expiring = daysLeft !== null && daysLeft <= 30;
-                        const expired = daysLeft !== null && daysLeft < 0;
+                        // ⚠️ `file.url` BIRINCHI: `document.url` — uning
+                        // nusxasi va eski yozuvlarda bo‘sh qolishi mumkin.
+                        const url = resolveFileUrl(document.file?.url ?? document.url);
+                        // ⚠️ Muddat mantig‘i YAGONA manbadan — obyekt
+                        // kartasidagi tab bilan AYNI (`document-expiry.ts`).
+                        const expiry = resolveExpiry(document);
+                        const expiring = expiry.state === 'soon' || expiry.state === 'expired';
+                        const expired = expiry.state === 'expired';
 
                         return (
-                          <Tr key={document.id}>
+                          /* ⚠️ Qator bosilganda batafsil oyna ochiladi —
+                             obyekt kartasidagi «Hujjatlar» tabi bilan AYNI
+                             komponent va AYNI ko‘rinish. */
+                          <Tr key={document.id} onClick={() => setPreview(document)}>
                             <Td className="font-medium text-strong">{document.title}</Td>
                             <Td><Badge className="surface-muted text-muted">{DOCUMENT_TYPE_LABELS[document.type]}</Badge></Td>
                             <Td muted className="mono text-meta">{document.number ?? '—'}</Td>
@@ -158,12 +170,23 @@ export default function DocumentsPage() {
                               <span className="inline-flex items-center gap-1.5">
                                 {expiring ? <TriangleAlert className="size-3.5" /> : null}
                                 {formatDateUz(document.expiryDate)}
-                                {daysLeft !== null ? (
-                                  <span className="text-micro">({expired ? `${Math.abs(daysLeft)} kun oldin` : `${daysLeft} kun`})</span>
+                                {/* ⚠️ «3 kun qoldi» / «12 kun oldin tugagan»
+                                    matni ham yagona manbadan: jadval va
+                                    batafsil oyna bir xil so‘z bilan
+                                    gapirishi kerak. */}
+                                {expiry.detail && expiry.state !== 'none' ? (
+                                  <span className="text-micro">({expiry.detail})</span>
                                 ) : null}
                               </span>
                             </Td>
-                            <Td align="right">
+                            {/* ⚠️ Amal tugmalari qator bosilishini
+                                TO‘XTATADI, aks holda «o‘chirish» bilan
+                                birga batafsil oyna ham ochilardi. */}
+                            <Td
+                              align="right"
+                              onClick={(event) => event.stopPropagation()}
+                              onKeyDown={(event) => event.stopPropagation()}
+                            >
                               {url ? (
                                 <a
                                   href={url}
@@ -191,6 +214,11 @@ export default function DocumentsPage() {
           )}
         </div>
       </Card>
+
+      {/* ⚠️ Obyekt kartasidagi «Hujjatlar» tabi bilan AYNI komponent:
+          ikki ekranda bir xil oyna ochiladi. Bu yerda obyekt nomi ham
+          ko‘rsatiladi — umumiy ro‘yxatda u kontekstdan ma'lum emas. */}
+      <DocumentPreviewModal document={preview} onClose={() => setPreview(null)} />
     </>
   );
 }
