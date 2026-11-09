@@ -173,6 +173,20 @@ export function DistrictMap({
   const hasAreas = geojson.features.some((feature) => Boolean(feature.geometry));
   const bareDistrict = level === 'district' && !hasAreas;
 
+  /*
+   * TUMAN MAYDONINING POG‘ONASI — viloyat xaritasidagi O‘Z rangi.
+   *
+   * ⚠️ Tuman kesimiga kirgan odam viloyat xaritasida ko‘rgan rangni
+   * YO‘QOTMASLIGI kerak: Jalaquduq u yerda to‘qroq, Asaka ochroq
+   * edi va tumanga kirganda ikkalasi bir xil ochiq ko‘k bo‘lib
+   * qolsa, rang hech narsa aytmay qo‘yadi.
+   *
+   * ⚠️ Ichidagi chegaralar shu pog‘onadan YUQORIGA qarab bo‘yaladi
+   * (`densityHexOf` ning uchinchi argumenti) — shunda «to‘q — demak
+   * ko‘p» qoidasi tuman ichida ham buzilmaydi.
+   */
+  const baseStep = palette.densityBaseStep(outlineStats?.total ?? 0);
+
   return (
     <div
       className={cn(
@@ -239,7 +253,7 @@ export function DistrictMap({
                turardi va natija shu edi: bir tumandan boshqasiga
                o‘tilganda ekranda ESKI tumanning konturi qolib,
                yangisining faqat nuqtalari ko‘rinardi. */
-            key={`district-fill:${geometryKey(outline)}:${bareDistrict ? (outlineStats?.total ?? 0) : 'base'}:${palette.dark ? 'd' : 'l'}`}
+            key={`district-fill:${geometryKey(outline)}:${bareDistrict ? (outlineStats?.total ?? 0) : `b${baseStep}`}:${palette.dark ? 'd' : 'l'}`}
             data={outline as GeoJSON.Geometry}
             /* ⚠️ Chegara qatlami bo‘lmasa tuman O‘ZI ko‘rsatkich
                ko‘pburchagi bo‘ladi: bosiladi va ko‘rsatma beradi.
@@ -270,15 +284,12 @@ export function DistrictMap({
               /*
                * RANG — IKKI XIL, chunki tumanning ROLI ikki xil.
                *
-               * ⚠️ Chegara qatlami BOR bo‘lsa, tuman — FON. U aniq
-               * ko‘k bo‘ladi (`densityBaseHex`), lekin ma‘lumot
-               * ranglaridan ochroq: viloyat kesimida butun maydon
-               * ko‘k ko‘pburchaklarga bo‘lingan va bo‘sh joy
-               * qolmaydi — tuman kesimi ham xuddi shunday
-               * ko‘rinishi kerak. Fon tumanning O‘Z yig‘indisi
-               * bo‘yicha bo‘yalmaydi: u paytda tuman (5 ta obyekt)
-               * ichidagi mahallalardan (0–2 ta) to‘qroq chiqib,
-               * «to‘q — demak ko‘p» qoidasi buzilardi.
+               * ⚠️ Chegara qatlami BOR bo‘lsa, tuman — FON, lekin
+               * rangi viloyat xaritasidagi O‘Z rangi bo‘lib qoladi
+               * (`densityBaseStep`): hokim viloyatdan tumanga
+               * kirganda rang o‘zgarib ketmaydi. Ichidagi chegaralar
+               * esa shu pog‘onadan YUQORIGA qarab bo‘yaladi, ya’ni
+               * «to‘q — demak ko‘p» qoidasi buzilmaydi.
                *
                * ⚠️ Chegara qatlami YO‘Q bo‘lsa esa tuman yagona
                * ko‘rsatkich ko‘pburchagi va viloyat xaritasidagi
@@ -289,7 +300,7 @@ export function DistrictMap({
                */
               fillColor: bareDistrict
                 ? palette.densityHex(outlineStats?.total ?? 0)
-                : palette.densityBaseHex,
+                : palette.densityHexAt(baseStep),
               fillOpacity: 1,
             }}
           />
@@ -301,6 +312,7 @@ export function DistrictMap({
           palette={palette}
           level={level}
           labelAreas={labelAreas}
+          floorStep={baseStep}
         />
 
         {/* ⚠️ Tuman CHETI chegaralar USTIDAN chiziladi va bosilmaydi:
@@ -651,19 +663,24 @@ function DistrictLayer({
   palette,
   level,
   labelAreas,
+  floorStep,
 }: {
   geojson: DistrictGeoJson | MahallaGeoJson;
   onSelect: (district: DistrictStats) => void;
   palette: ReturnType<typeof useChartColors>;
   level: 'region' | 'district';
   labelAreas: boolean;
+  /** Tuman maydonining pog‘onasi — chegaralar shundan to‘qroq bo‘ladi. */
+  floorStep: number;
 }) {
   const signature = useMemo(
     () =>
       geojson.features
         .map((f) => `${f.properties.code}:${f.properties.total}:${f.properties.dominantHealth}`)
-        .join('|') + (palette.dark ? '|dark' : '|light'),
-    [geojson, palette.dark],
+        .join('|') +
+      `|${floorStep}` +
+      (palette.dark ? '|dark' : '|light'),
+    [geojson, palette.dark, floorStep],
   );
 
   const crowded = useMemo(() => crowdedDistricts(geojson.features), [geojson]);
@@ -707,14 +724,14 @@ function DistrictLayer({
              * sababi bor edi: obyekti yo‘q chegara deyarli OQ
              * (`ramp[0]`) bo‘lib bo‘yalar, oq chiziq esa unga
              * butunlay singib ketardi. Endi bunday chegara ham, tuman
-             * maydoni ham KO‘K (`densityBaseHex`), ya‘ni to‘siq
-             * yo‘qoldi.
+             * maydoni ham KO‘K (`densityHexAt(floorStep)`), ya’ni
+             * to‘siq yo‘qoldi.
              */
             color: palette.dark ? '#0d1721' : '#ffffff',
             weight: areaWeight,
             fillColor:
               level === 'district'
-                ? palette.densityHexOf(total, maxTotal)
+                ? palette.densityHexOf(total, maxTotal, floorStep)
                 : palette.densityHex(total),
             fillOpacity: 1,
           };

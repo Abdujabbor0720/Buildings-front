@@ -87,35 +87,79 @@ export function useChartColors() {
    * tumanlar rangi o'zgarmasligi kerak.
    */
   const densityHexOf = useCallback(
-    (total: number, max: number) => {
+    (total: number, max: number, floorStep = 0) => {
       const ramp = dark ? DENSITY_RAMP_DARK : DENSITY_RAMP;
+      const last = ramp.length - 1;
+      const floor = Math.min(Math.max(floorStep, 0), last);
       /*
-       * ⚠️ OBYEKTI YO‘Q CHEGARA — `ramp[0]` (deyarli oq) EMAS,
-       * `densityBaseHex` (tuman maydonining rangi).
+       * ⚠️ OBYEKTI YO‘Q CHEGARA — `ramp[0]` (deyarli oq) EMAS, TUMAN
+       * MAYDONINING rangi (`floorStep`).
        *
-       * Sabab: tuman kesimida chegaralar tumanning KO‘K maydoni
-       * ustida turadi va ular `ramp[0]` bilan bo‘yalsa, ko‘k fonda
-       * OQ dog‘ bo‘lib ko‘rinardi — ya‘ni «bu yerda obyekt yo‘q»
-       * degani «bu yer tumandan tashqarida» degandek o‘qilardi.
-       * Fon bilan bir xil rang esa to‘g‘ri gapni aytadi: bu yer
-       * tumanniki, shunchaki ko‘rsatiladigan soni yo‘q. Chegara
-       * baribir CHIZIQ bilan ajralib turadi.
+       * Sabab: tuman kesimida chegaralar tumanning ko‘k maydoni
+       * USTIDA turadi va ular eng och pog‘ona bilan bo‘yalsa, to‘q
+       * ko‘k fonda OQ dog‘ bo‘lib ko‘rinardi — ya’ni «bu yerda
+       * obyekt yo‘q» degani «bu yer tumandan tashqarida» degandek
+       * o‘qilardi. Fon bilan bir xil rang esa to‘g‘ri gapni aytadi:
+       * bu yer tumanniki, shunchaki ko‘rsatiladigan soni yo‘q.
+       * Chegara baribir oq CHIZIQ bilan ajralib turadi.
        */
-      if (total <= 0) return ramp[1];
-      if (max <= 1) return ramp[ramp.length - 1];
+      if (total <= 0) return ramp[floor];
       /*
-       * ⚠️ Shkala 2-pog'onadan boshlanadi, 1-dan emas. Mahalla
-       * kesimida sonlar kichik (ko'pincha 1) va eng past pog'ona
-       * («#d5e2f7») bo'sh mahalladan deyarli farq qilmasdi: xarita
-       * oq bo'lib, «qayerda obyekt bor» degan savol javobsiz
-       * qolardi. Ikkinchi pog'onadan boshlanganda esa bitta obyektli
-       * mahalla ham darhol ko'rinadi, nol esa baribir eng och qoladi.
+       * ⚠️ Obyekti bor chegara TUMAN FONIDAN kamida bitta pog‘ona
+       * to‘qroq boshlanadi. Ilgari shkala doimiy `2` dan boshlanardi
+       * va tumanning o‘z rangi undan to‘q bo‘lsa (masalan 12 ta
+       * obyektli Jalaquduq — 3-pog‘ona), bitta obyektli chegara
+       * FONDAN OCHROQ chiqib, xarita teskari o‘qilardi: «och —
+       * demak ko‘p».
        */
-      const FIRST = 2;
+      const first = Math.min(last, floor + 1);
+      if (max <= 1 || first >= last) return ramp[last];
       const t = (total - 1) / (max - 1);
-      return ramp[Math.min(ramp.length - 1, FIRST + Math.round(t * (ramp.length - 1 - FIRST)))];
+      return ramp[Math.min(last, first + Math.round(t * (last - first)))];
     },
     [dark],
+  );
+
+  /**
+   * Rangning shkaladagi POG‘ONASI — `densityHex` bilan AYNI chegaralar.
+   *
+   * ⚠️ Tuman kesimida kerak: u yerda tuman maydoni viloyat
+   * xaritasidagi O‘Z rangini saqlab qoladi, ichidagi chegaralar esa
+   * o‘sha pog‘onadan yuqoriga qarab bo‘yaladi. Pog‘ona raqami
+   * bo‘lmasa, «fondan to‘qroq» degan qoidani ifodalash imkonsiz
+   * bo‘lardi.
+   */
+  const densityStep = useCallback(
+    (total: number) => {
+      const ramp = dark ? DENSITY_RAMP_DARK : DENSITY_RAMP;
+      if (total <= 0) return 0;
+      return Math.min(ramp.length - 1, 1 + Math.floor(total / 5));
+    },
+    [dark],
+  );
+
+  /** Shkaladagi aniq pog‘onaning rangi. */
+  const densityHexAt = useCallback(
+    (step: number) => {
+      const ramp = dark ? DENSITY_RAMP_DARK : DENSITY_RAMP;
+      return ramp[Math.min(Math.max(step, 0), ramp.length - 1)];
+    },
+    [dark],
+  );
+
+  /**
+   * ⚠️ Tuman FON bo‘lganda eng to‘q pog‘ona BERILMAYDI: ichidagi
+   * chegaralarga undan to‘qroq rang kerak. Shuning uchun fon
+   * oxirgidan bitta past pog‘onada to‘xtaydi — eng zich ikki tuman
+   * (26 va 29 ta obyekt) viloyat xaritasidagidan bir pog‘ona
+   * ochroq ko‘rinadi, lekin ichidagi ma’lumot ko‘rinadigan bo‘lib
+   * qoladi. Teskarisi — fon eng to‘q bo‘lib, ichidagi hamma narsa
+   * u bilan qo‘shilib ketishi — ancha yomon.
+   */
+  const densityBaseStep = useCallback(
+    (total: number) =>
+      Math.min(densityStep(total), (dark ? DENSITY_RAMP_DARK : DENSITY_RAMP).length - 2),
+    [dark, densityStep],
   );
 
   return {
@@ -126,21 +170,9 @@ export function useChartColors() {
     deadlineHex,
     densityHex,
     densityHexOf,
-    /**
-     * TUMAN MAYDONINING RANGI — chegaralar ostidagi ko‘k fon.
-     *
-     * ⚠️ Bu MA‘LUMOT rangi emas, tuman TANASINING rangi: viloyat
-     * kesimida butun maydon ko‘k ko‘pburchaklarga bo‘lingan va bo‘sh
-     * joy qolmaydi, tuman kesimi ham xuddi shunday o‘qilishi kerak.
-     * Mahalla va aholi punkti maydonlari tumanni to‘liq qoplamaydi,
-     * shuning uchun ular ostida ko‘k fon turadi.
-     *
-     * ⚠️ Shkalaning 2-pog‘onasi (`ramp[1]`): u aniq ko‘k, lekin
-     * ma‘lumot ranglaridan (`ramp[2]` va undan to‘q) OCHROQ —
-     * obyekti bor chegara fondan darhol ajralib turadi. To‘qroq
-     * fon olinsa, shkalaning yarmi yo‘qolardi.
-     */
-    densityBaseHex: (dark ? DENSITY_RAMP_DARK : DENSITY_RAMP)[1],
+    densityStep,
+    densityHexAt,
+    densityBaseStep,
     /** Diagramma to‘ri va o‘qi — matndan ancha ochroq. */
     grid: dark ? 'rgba(255,255,255,0.08)' : 'rgba(16,42,76,0.08)',
     axis: dark ? '#6f8299' : '#94a6bd',
