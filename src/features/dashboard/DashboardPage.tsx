@@ -136,7 +136,11 @@ export default function DashboardPage() {
                 ? `${mahallas.data!.district.name} — mahallalar kesimida`
                 : 'Andijon viloyati xaritasi'
             }
-            subtitle={districtView ? coverageNote(mahallas.data!.coverage) : undefined}
+            subtitle={
+                districtView
+                  ? coverageNote(mahallas.data!.coverage, mahallas.data!.settlements.length)
+                  : undefined
+              }
             action={<DistrictMapLegend />}
           />
           <CardBody className="mt-1.5 flex min-h-0 flex-1">
@@ -145,6 +149,11 @@ export default function DashboardPage() {
               level={districtView ? 'district' : 'region'}
               objects={districtView ? mahallas.data!.objects : undefined}
               outline={districtView ? mahallas.data!.district.geometry : undefined}
+              /* ⚠️ Mo‘ljal yozuvlari — chegarasi yo‘q tumanda YAGONA
+                 orientir. Mahalla chegarasi bor tumanda ham foydali:
+                 «Oxunboboyev» degan yozuv mahalla nomidan ko‘ra
+                 tanishroq. */
+              settlements={districtView ? mahallas.data!.settlements : undefined}
               /*
                * ⚠️ Viloyat ko‘rinishida tuman bosilsa — SARLAVHADAGI
                * FILTR o‘zgaradi va xarita o‘sha tumanning mahallalariga
@@ -346,9 +355,20 @@ function TableCard({
  * jim turilsa, hokim xaritadagi nuqtalar bilan jadvaldagi sonlar
  * nega mos kelmayotganini tushunmasdi.
  */
-function coverageNote(coverage: { mahallas: number; withoutMahalla: number }): string {
+function coverageNote(
+  coverage: { mahallas: number; withoutMahalla: number },
+  settlements: number,
+): string {
+  /*
+   * ⚠️ «Chegara yo‘q» degani «xarita bo‘sh» degani EMAS. Bunday
+   * tumanda tuman konturi va qishloq nomlari chiziladi — izoh ham
+   * aynan shuni aytishi kerak, aks holda foydalanuvchi ekranda
+   * ko‘rib turgan narsasi nima ekanini bilmay qolardi.
+   */
   if (coverage.mahallas === 0) {
-    return 'Mahalla chegaralari hali yuklanmagan — obyektlar nuqta bilan ko‘rsatilgan';
+    return settlements > 0
+      ? `Mahalla chegaralari ochiq manbada yo‘q — ${settlements} ta aholi punkti va obyektlar ko‘rsatilgan`
+      : 'Mahalla chegaralari ochiq manbada yo‘q — obyektlar nuqta bilan ko‘rsatilgan';
   }
   const base = `${coverage.mahallas} ta mahalla`;
   return coverage.withoutMahalla > 0

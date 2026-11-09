@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import { Maximize2, Minimize2, Minus, Plus } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GeoJSON as GeoJsonLayer, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import type {
@@ -46,6 +46,14 @@ interface DistrictMapProps {
   /** Tumanning o‘z konturi — mahalla chegaralari ustidan chiziladi. */
   outline?: GeoJSON.Geometry | null;
   /**
+   * MO‘LJAL YOZUVLARI — shahar, shaharcha, qishloq nomlari.
+   *
+   * ⚠️ Chegarasi yo‘q tumanda BU YAGONA mo‘ljal: usiz xarita
+   * bo‘m-bo‘sh ko‘pburchakka aylanadi va obyekt nuqtalari qayerda
+   * ekani bilinmaydi.
+   */
+  settlements?: Array<{ name: string; kind: string; rank: number; lat: number; lng: number }>;
+  /**
    * Fon xaritasi ko‘rsatilsinmi. Dashboard'da toza ko‘rinish afzal.
    * ⚠️ `true` bo‘lsa ham, fon FAQAT sozlangan bo‘lsa chiziladi
    * (`VITE_BASEMAP_URL`) — aks holda plitka serveri xato matnini
@@ -69,6 +77,7 @@ export function DistrictMap({
   level = 'region',
   objects,
   outline,
+  settlements,
   showTiles = false,
   className,
   heightClass = 'h-[300px]',
@@ -77,14 +86,27 @@ export function DistrictMap({
   const navigate = useNavigate();
   const palette = useChartColors();
 
+  /*
+   * ⚠️ BOG'LIQLIK — QIYMAT, MASSIV IDENTIFIKATORI EMAS.
+   *
+   * `geojson.bbox` — serverdan kelgan massiv va react-query har
+   * yangilanishda YANGI massiv qaytaradi (qiymati o'sha bo'lsa ham).
+   * Ilgari `useMemo` aynan shu identifikatorga bog'langan edi:
+   * fonda bitta qayta so'rov ketishi bilan `bounds` «o'zgargan»
+   * hisoblanib, xarita avtomatik `fitBounds` qilardi va
+   * FOYDALANUVCHI KATTALASHTIRGAN ko'rinish o'z-o'zidan orqaga
+   * qaytardi — zoom tugmasi «ishlamayotgandek» tuyulardi.
+   */
+  const bboxKey = geojson?.bbox?.join(',') ?? '';
   const bounds = useMemo<L.LatLngBoundsExpression | undefined>(() => {
-    if (!geojson?.bbox || geojson.bbox.length < 4) return undefined;
-    const [minLng, minLat, maxLng, maxLat] = geojson.bbox;
+    const bbox = bboxKey ? bboxKey.split(',').map(Number) : [];
+    if (bbox.length < 4 || bbox.some((n) => !Number.isFinite(n))) return undefined;
+    const [minLng, minLat, maxLng, maxLat] = bbox;
     return [
       [minLat, minLng],
       [maxLat, maxLng],
     ];
-  }, [geojson?.bbox]);
+  }, [bboxKey]);
 
   // Escape bilan to‘liq ekrandan chiqish — brauzerning o‘z F11 rejimi emas,
   // shuning uchun klaviaturani o‘zimiz ulaymiz.
@@ -144,7 +166,7 @@ export function DistrictMap({
         bounds={bounds}
         boundsOptions={{ padding: [14, 14] }}
         zoomControl={false}
-        attributionControl={(showTiles || bareDistrict) && HAS_BASEMAP}
+        attributionControl={showTiles && HAS_BASEMAP}
         scrollWheelZoom={false}
         // ⚠️ Sukut bo‘yicha Leaflet FAQAT butun zoom darajalarini ishlatadi
         // va `fitBounds` konteynerga sig‘adigan eng katta BUTUN darajani
@@ -156,11 +178,14 @@ export function DistrictMap({
         className="size-full"
         style={{ background: 'transparent' }}
       >
-        {/* ⚠️ Chegarasiz tuman ko'rinishida fon MAJBURIY, chaqiruvchi
-            `showTiles` bermagan bo'lsa ham: usiz ekranda nuqtalardan
-            boshqa hech narsa qolmaydi. Viloyat ko'rinishida esa
-            avvalgidek toza — u yerda tumanlar butun maydonni to'ldiradi. */}
-        {(showTiles || bareDistrict) && HAS_BASEMAP ? (
+        {/* ⚠️ FON PLITKASI TUMAN KO'RINISHIDA HAM CHIZILMAYDI.
+            Ilgari chegarasi yo'q tumanda u yoqilardi va ekran birdan
+            boshqa xaritaga — kulrang OSM rastriga — aylanib qolardi;
+            viloyat ko'rinishidagi ko'k dizayn bilan hech qanday
+            aloqasi yo'q edi. Endi tuman ham AYNI dizaynda chiziladi:
+            ko'k ko'pburchak, nom yorlig'i, son belgisi va mo'ljal
+            yozuvlari. */}
+        {showTiles && HAS_BASEMAP ? (
           <TileLayer url={BASEMAP_URL!} attribution={BASEMAP_ATTRIBUTION} />
         ) : null}
 
@@ -181,19 +206,52 @@ export function DistrictMap({
             data={outline as GeoJSON.Geometry}
             interactive={false}
             style={{
-              color: palette.dark ? '#7f9ec9' : '#35465a',
-              weight: 2,
-              /* ⚠️ Mahalla chegaralari bo'lmasa kontur TO'LDIRILADI va
-                 uzuq-yuluq emas, YAXLIT chiziq bo'ladi: u endi
-                 «mahallalar ustidagi yordamchi kontur» emas, xaritadagi
-                 YAGONA hudud belgisi. */
+              /* ⚠️ MAHALLA CHEGARASI BO'LMASA — tuman O'ZI ko'rsatkich
+                 ko'pburchagi bo'ladi: viloyat xaritasidagi tumanlar
+                 bilan AYNI shkaladan rang oladi (`densityHex`), yaxlit
+                 oq chiziq bilan ajraladi va to'liq to'ldiriladi.
+                 Shunda tuman kesimi viloyat kesimi bilan bir xil
+                 dizaynda ko'rinadi — faqat masshtab boshqacha. */
+              color: bareDistrict
+                ? palette.dark
+                  ? '#0d1721'
+                  : '#ffffff'
+                : palette.dark
+                  ? '#7f9ec9'
+                  : '#35465a',
+              weight: bareDistrict ? 1.5 : 2,
               fill: bareDistrict,
-              fillColor: palette.dark ? '#4d93f6' : '#0a6cf0',
-              fillOpacity: bareDistrict ? 0.07 : 0,
+              fillColor: palette.densityHex(objects?.length ?? 0),
+              fillOpacity: bareDistrict ? 1 : 0,
               dashArray: bareDistrict ? undefined : '4 3',
             }}
           />
         ) : null}
+
+        {/*
+          MO‘LJAL YOZUVLARI — chegarasi yo‘q tumanda YAGONA orientir.
+          ⚠️ Faqat tuman ko‘rinishida: viloyat xaritasida 425 ta qishloq
+          nomi bir-birining ustiga tushib, tumanlarni butunlay yopib
+          qo‘yardi.
+        */}
+        {level === 'district'
+          ? (settlements ?? [])
+              /* ⚠️ Eng mayda punktlar (`hamlet`) faqat TO‘LIQ EKRANDA:
+                 oddiy kartada ular yozuvlar to‘riga aylanib, obyekt
+                 belgilarini yopib qo‘yardi. */
+              .filter((place) => (fullscreen ? place.rank <= 4 : place.rank <= 3))
+              .map((place) => (
+                <Marker
+                  key={`${place.name}-${place.lat}-${place.lng}`}
+                  position={[place.lat, place.lng]}
+                  /* ⚠️ Bosilmaydi: yozuv ostidagi mahalla yoki obyekt
+                     bosilishi kerak, yorliq esa faqat o‘qish uchun. */
+                  interactive={false}
+                  zIndexOffset={-200}
+                  icon={settlementIcon(place, palette)}
+                />
+              ))
+          : null}
 
         {objects?.map((object) => (
           <Marker
@@ -219,7 +277,10 @@ export function DistrictMap({
             ))
           : null}
 
-        <BoundsKeeper bounds={bounds} fullscreen={fullscreen} />
+        {/* ⚠️ `viewKey` — ko'rinish identifikatori. O'zgarganda
+            (viloyat ↔ tuman, to'liq ekran) avtomatik moslash
+            tiklanadi; o'zgarmasa, foydalanuvchi zoomi saqlanadi. */}
+        <BoundsKeeper bounds={bounds} viewKey={`${level}:${bboxKey}:${fullscreen}`} />
 
         {/* ⚠️ Boshqaruvlar MapContainer ICHIDA: `useMap()` faqat shu
             kontekstda ishlaydi. Tashqarida bo‘lsa, kattalashtirish tugmasi
@@ -372,6 +433,42 @@ function objectIcon(
   });
 }
 
+/**
+ * MO‘LJAL YOZUVI — belgisiz, faqat matn.
+ *
+ * ⚠️ Nuqta (marker) QO‘YILMAYDI: xaritada allaqachon obyekt belgilari
+ * bor va ikkinchi xil nuqta ular bilan chalkashardi — hokim qishloq
+ * belgisini obyekt deb o‘qib qolardi. Yozuvning o‘zi yetarli.
+ *
+ * ⚠️ Matn atrofida OQ HOSHIYA (`paint-order` + `stroke` o‘rniga
+ * `text-shadow`): yozuv har xil to‘qlikdagi ko‘k ko‘pburchak ustida
+ * turadi va hoshiyasiz och fonda ham, to‘q fonda ham o‘qilmay
+ * qolardi.
+ */
+function settlementIcon(
+  place: { name: string; rank: number },
+  palette: ReturnType<typeof useChartColors>,
+): L.DivIcon {
+  // Shahar — yirikroq va qalinroq; qishloq — mayda.
+  const size = place.rank <= 1 ? 12 : place.rank === 2 ? 11 : 10;
+  const weight = place.rank <= 2 ? 600 : 500;
+  const color = palette.dark ? '#e8eef6' : '#1f3147';
+  const halo = palette.dark ? 'rgba(10,16,24,.85)' : 'rgba(255,255,255,.92)';
+
+  return L.divIcon({
+    className: '',
+    iconSize: [120, 16],
+    iconAnchor: [60, 8],
+    html: `<span style="
+      display:block;width:120px;text-align:center;
+      font-size:${size}px;font-weight:${weight};line-height:16px;
+      color:${color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      text-shadow:0 0 3px ${halo},0 0 3px ${halo},0 0 3px ${halo};
+      pointer-events:none;
+    ">${esc(place.name)}</span>`,
+  });
+}
+
 /** Geometriya chegaralovchi to‘rtburchagining yuzasi (daraja²). */
 function bboxSpan(geometry: GeoJSON.Geometry | null): number {
   if (!geometry) return 0;
@@ -465,8 +562,16 @@ function DistrictLayer({
             mouseover: (event) => {
               (event.target as L.Path).setStyle({ weight: 2.5, fillOpacity: 0.78 });
             },
+            /* ⚠️ Sichqoncha ketganda chiziq O‘Z qalinligiga qaytadi.
+               Ilgari bu yerda `1.5` qotirib yozilgan edi va mahalla
+               darajasida (0.7) ustidan o‘tilgan har bir chegara
+               ikki baravar qalin bo‘lib QOLARDI — xarita asta-sekin
+               «to‘r» ga aylanardi. */
             mouseout: (event) => {
-              (event.target as L.Path).setStyle({ weight: 1.5, fillOpacity: 1 });
+              (event.target as L.Path).setStyle({
+                weight: level === 'district' ? 0.7 : 1.5,
+                fillOpacity: 1,
+              });
             },
           });
           layer.bindTooltip(tooltipHtml(props, palette), { sticky: true, direction: 'top', opacity: 1, className: '!border-0 !bg-transparent !p-0 !shadow-none' });
@@ -616,45 +721,92 @@ function tooltipHtml(props: DistrictStats, palette: ReturnType<typeof useChartCo
   </div>`;
 }
 
-/** Xarita o‘lchami o‘zgarganda (to‘liq ekran) qayta moslashtiriladi. */
-function BoundsKeeper({ bounds, fullscreen }: { bounds?: L.LatLngBoundsExpression; fullscreen: boolean }) {
+/**
+ * KO'RINISHNI MOSLASH — faqat KERAK BO'LGANDA.
+ *
+ * ⚠️ FOYDALANUVCHI ZOOMI USTUN. Ilgari bu komponent har o'lcham
+ * o'zgarishida va har `bounds` yangilanishida `fitBounds` chaqirardi.
+ * `ResizeObserver` esa kuzatuv BOSHLANISHIDA ham bir marta ishga
+ * tushadi — ya'ni har qayta chizishda xarita o'z-o'zidan boshlang'ich
+ * ko'rinishga qaytardi va kattalashtirish «ishlamayotgandek»
+ * tuyulardi. Endi odam bir marta zoom qilsa yoki xaritani sursa,
+ * avtomatik moslash TO'XTAYDI va faqat ko'rinish almashganda
+ * (viloyat ↔ tuman) qayta yoqiladi.
+ *
+ * ⚠️ `invalidateSize` esa HAR DOIM chaqiriladi: konteyner o'lchami
+ * CSS orqali o'zgarganini Leaflet o'zi sezmaydi va xarita yarim
+ * bo'sh qolardi. U zoomga tegmaydi.
+ */
+function BoundsKeeper({
+  bounds,
+  viewKey,
+}: {
+  bounds?: L.LatLngBoundsExpression;
+  /** Ko'rinish identifikatori: o'zgarsa — avtomatik moslash tiklanadi. */
+  viewKey: string;
+}) {
   const map = useMap();
+  /* ⚠️ `useRef`, `useState` EMAS: qiymat o'zgarishi qayta chizishni
+     keltirib chiqarmasligi kerak — aks holda Leaflet hodisasi
+     React yangilanishi bilan aralashib, xarita «sakrab» ketardi. */
+  const userMoved = useRef(false);
 
+  /*
+   * ⚠️ Faqat ODAM qilgan harakat hisobga olinadi. `fitBounds` ning
+   * o'zi ham `zoomend`/`moveend` hodisasini yuboradi; agar ular ham
+   * sanalsa, birinchi moslashdan keyin avtomatik rejim darhol
+   * o'chib qolardi. Shuning uchun Leaflet ning o'z bayrog'iga
+   * tayanmay, FOYDALANUVCHI hodisalari kuzatiladi.
+   */
   useEffect(() => {
-    // ⚠️ `invalidateSize` MAJBURIY: konteyner o‘lchami CSS orqali
-    // o‘zgarganini Leaflet o‘zi sezmaydi va xarita yarim bo‘sh qoladi.
+    const onUserMove = () => {
+      userMoved.current = true;
+    };
+    map.on('zoomstart', onUserMove);
+    map.on('dragstart', onUserMove);
+    return () => {
+      map.off('zoomstart', onUserMove);
+      map.off('dragstart', onUserMove);
+    };
+  }, [map]);
+
+  /*
+   * Ko'rinish yoki chegara o'zgarganda — bir marta moslash.
+   *
+   * ⚠️ Bayroq AYNAN shu yerda tozalanadi, render paytida emas: ref ga
+   * render davomida tegish React ning qoidasini buzadi (komponent
+   * yangilanmay qolishi mumkin) va bu effekt baribir `viewKey`
+   * o'zgarishida ishga tushadi.
+   */
+  useEffect(() => {
+    userMoved.current = false;
     const timer = setTimeout(() => {
       map.invalidateSize();
-      if (bounds) map.fitBounds(bounds, { padding: [10, 10] });
+      if (bounds && !userMoved.current) map.fitBounds(bounds, { padding: [10, 10] });
     }, 220);
     return () => clearTimeout(timer);
-  }, [map, bounds, fullscreen]);
+  }, [map, bounds, viewKey]);
 
   /*
    * ⚠️ `ResizeObserver` — TAYMERDAN TASHQARI va undan muhimroq.
-   *
-   * Xarita kartasining balandligi gridning o‘sha qatoridagi ENG BALAND
-   * ustundan kelib chiqadi; u esa ma’lumot yuklangach o‘zgaradi.
-   * Qat’iy 220 ms taymer bu lahzani o‘tkazib yuborishi mumkin va
-   * Leaflet eski o‘lchamni keshlab qoladi: chegaralar konteynerning
-   * o‘rtasida kichkina bo‘lib chizilib, atrofida katta bo‘sh joy
-   * qoladi — xarita «buzuq» bo‘lib ko‘rinadi.
-   *
-   * Kuzatuvchi har o‘lcham o‘zgarishida qayta moslaydi, shuning uchun
-   * oyna kattalashganda ham, to‘liq ekranga o‘tganda ham bir xil
-   * ishlaydi.
+   * Xarita kartasining balandligi gridning o'sha qatoridagi eng
+   * baland ustundan kelib chiqadi; u esa ma'lumot yuklangach
+   * o'zgaradi. Qat'iy taymer bu lahzani o'tkazib yuborishi mumkin va
+   * Leaflet eski o'lchamni keshlab qoladi: chegaralar konteynerning
+   * o'rtasida kichkina bo'lib chizilardi.
    */
   useEffect(() => {
     const container = map.getContainer();
     let frame = 0;
     const observer = new ResizeObserver(() => {
-      // Bir kadrga kechiktirish: kuzatuvchi o‘lcham o‘zgarishi
-      // DAVOMIDA bir necha marta ishga tushadi va har safar
-      // `fitBounds` chaqirilsa xarita «titraydi».
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         map.invalidateSize({ animate: false });
-        if (bounds) map.fitBounds(bounds, { padding: [10, 10], animate: false });
+        /* ⚠️ Odam zoom qilgan bo'lsa — chegaraga QAYTARILMAYDI.
+           Faqat o'lcham to'g'rilanadi, ko'rinish tegilmaydi. */
+        if (bounds && !userMoved.current) {
+          map.fitBounds(bounds, { padding: [10, 10], animate: false });
+        }
       });
     });
     observer.observe(container);

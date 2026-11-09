@@ -859,6 +859,15 @@ export interface MahallaGeoJson {
     geometry: GeoJSON.Geometry | null;
   };
   bbox: number[] | null;
+  /**
+   * MO‘LJAL YOZUVLARI — shahar, shaharcha, qishloq nomlari.
+   *
+   * ⚠️ Bu MA’MURIY CHEGARA EMAS, nuqta. OSM da mahalla chegarasi
+   * faqat ikki tumanda bor; qolganlarida xarita bo‘m-bo‘sh
+   * ko‘pburchak bo‘lib qolardi. Qishloq nomlari obyekt qayerda
+   * ekanini aytadi va buning uchun soxta chegara chizish shart emas.
+   */
+  settlements: Array<{ name: string; kind: string; rank: number; lat: number; lng: number }>;
   /** Qoplama o‘lchovi — ekranda ochiq aytiladi, yashirilmaydi. */
   coverage: { mahallas: number; withMahalla: number; withoutMahalla: number };
   objects: MapObjectPoint[];
