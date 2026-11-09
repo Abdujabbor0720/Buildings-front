@@ -6,7 +6,7 @@ import { Card, CardBody, CardHeader, ErrorState, Skeleton } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { formatDateTimeUz } from '@/shared/utils/date.utils';
 import { useNavigate } from 'react-router-dom';
-import { useFilterParams } from '@/store/filters.store';
+import { useFilterParams, useFiltersStore } from '@/store/filters.store';
 import { DeadlineDonut } from './components/DeadlineDonut';
 import { DelayReasons } from './components/DelayReasons';
 import { DistrictMap, DistrictMapLegend } from './components/DistrictMap';
@@ -42,6 +42,7 @@ import { UpcomingTable } from './components/UpcomingTable';
 
 export default function DashboardPage() {
   const params = useFilterParams();
+  const selectDistrict = useFiltersStore((state) => state.selectDistrict);
   const navigate = useNavigate();
   const dashboard = useDashboard(params);
   const geojson = useDistrictGeoJson({
@@ -144,6 +145,27 @@ export default function DashboardPage() {
               level={districtView ? 'district' : 'region'}
               objects={districtView ? mahallas.data!.objects : undefined}
               outline={districtView ? mahallas.data!.district.geometry : undefined}
+              /*
+               * ⚠️ Viloyat ko‘rinishida tuman bosilsa — SARLAVHADAGI
+               * FILTR o‘zgaradi va xarita o‘sha tumanning mahallalariga
+               * o‘tadi. Ilgari bosish obyektlar ro‘yxatiga olib ketardi:
+               * «tumanni alohida ko‘rish» uchun foydalanuvchi orqaga
+               * qaytib, sarlavhadan qo‘lda tanlashi kerak edi.
+               *
+               * ⚠️ Tuman ko‘rinishida ham handler MAJBURIY. Mahalla
+               * ko‘pburchagining `properties.districtId` maydonida
+               * MAHALLA id si turadi (`geo.service.mahallaStats`:
+               * `select('m.id', 'districtId')`), ya’ni sukut
+               * xatti-harakati `/objects?districtIds=<mahalla-id>` ga
+               * olib borib, BO‘SH ro‘yxat ochardi. Jadval tomonida bu
+               * tuzoq allaqachon hisobga olingan edi, xarita tomonida
+               * esa yo‘q.
+               */
+              onDistrictClick={
+                districtView
+                  ? () => navigate(`/objects?districtIds=${focusedDistrictId}`)
+                  : (district) => selectDistrict(district.districtId)
+              }
               className="flex-1"
               heightClass="h-full"
             />

@@ -10,13 +10,27 @@ import { persist } from 'zustand/middleware';
  */
 interface FiltersState {
   regionId: string | null;
+  /**
+   * TANLANGAN TUMAN — ko‘pi bilan BITTA.
+   *
+   * ⚠️ Tur MASSIV bo‘lib qoladi, lekin ichida nol yoki bitta element
+   * bo‘ladi. Sabab: so‘rov parametri (`districtIds`) serverda ro‘yxat
+   * sifatida o‘qiladi va uni bitta satrga o‘zgartirish o‘n besh
+   * joydagi shartnomani qayta yozishni talab qilardi. Massiv shakli
+   * saqlangani uchun server ham, jadval filtrlari ham tegilmaydi.
+   *
+   * ⚠️ BIR NECHTA TUMAN TANLASH OLIB TASHLANDI (biznes qarori):
+   * ikkita tuman tanlanganda «qaysi tumanning mahallalari» degan
+   * savolga javob yo‘q edi va xarita tuman kesimiga umuman
+   * o‘tolmasdi — natijada hokim tumanni alohida ko‘ra olmasdi.
+   */
   districtIds: string[];
   yearFrom: number;
   yearTo: number;
 
   setRegion: (regionId: string | null) => void;
-  setDistricts: (districtIds: string[]) => void;
-  toggleDistrict: (districtId: string) => void;
+  /** `null` — «Barcha tumanlar». */
+  selectDistrict: (districtId: string | null) => void;
   setYearRange: (from: number, to: number) => void;
   reset: () => void;
 }
@@ -41,17 +55,18 @@ export const useFiltersStore = create<FiltersState>()(
         set({ regionId, districtIds: [] });
       },
 
-      setDistricts(districtIds) {
-        set({ districtIds });
-      },
-
-      toggleDistrict(districtId) {
+      /**
+       * ⚠️ AYNI tuman qayta tanlansa — tanlov BEKOR qilinadi
+       * («Barcha tumanlar» ga qaytadi). Busiz tanlangan tumandan
+       * chiqish uchun alohida «Tozalash» ni topish kerak bo‘lardi.
+       */
+      selectDistrict(districtId) {
         const current = get().districtIds;
-        set({
-          districtIds: current.includes(districtId)
-            ? current.filter((id) => id !== districtId)
-            : [...current, districtId],
-        });
+        if (districtId === null || current[0] === districtId) {
+          set({ districtIds: [] });
+          return;
+        }
+        set({ districtIds: [districtId] });
       },
 
       setYearRange(from, to) {

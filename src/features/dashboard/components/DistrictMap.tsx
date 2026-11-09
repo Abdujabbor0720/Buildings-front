@@ -109,6 +109,23 @@ export function DistrictMap({
     return <div className={cn('skeleton rounded-xl', heightClass, className)} />;
   }
 
+  /*
+   * MAHALLA CHEGARALARI UMUMAN BORMI.
+   *
+   * ⚠️ OpenStreetMap'da mahalla (MFY) chegaralari HAMMA tumanda ham
+   * yo'q. Bunday tumanda xarita faqat obyekt nuqtalaridan iborat
+   * bo'lib qolardi: oq fon ustida o'nta rangli nuqta — hokim ular
+   * qayerda ekanini umuman tushunmasdi.
+   *
+   * ⚠️ Bu holatda SOXTA chegara chizilmaydi (`andijon-mahallas.geojson`
+   * izohidagi qaror). Buning o'rniga ikkita haqiqiy narsa ko'rsatiladi:
+   * tumanning O'Z konturi to'ldirib beriladi va ostiga FON XARITASI
+   * (ko'chalar, qishloqlar) qo'yiladi — nuqta endi bo'shliqda emas,
+   * ko'cha ustida turadi.
+   */
+  const hasAreas = geojson.features.some((feature) => Boolean(feature.geometry));
+  const bareDistrict = level === 'district' && !hasAreas;
+
   return (
     <div
       className={cn(
@@ -127,7 +144,7 @@ export function DistrictMap({
         bounds={bounds}
         boundsOptions={{ padding: [14, 14] }}
         zoomControl={false}
-        attributionControl={showTiles && HAS_BASEMAP}
+        attributionControl={(showTiles || bareDistrict) && HAS_BASEMAP}
         scrollWheelZoom={false}
         // ⚠️ Sukut bo‘yicha Leaflet FAQAT butun zoom darajalarini ishlatadi
         // va `fitBounds` konteynerga sig‘adigan eng katta BUTUN darajani
@@ -139,7 +156,11 @@ export function DistrictMap({
         className="size-full"
         style={{ background: 'transparent' }}
       >
-        {showTiles && HAS_BASEMAP ? (
+        {/* ⚠️ Chegarasiz tuman ko'rinishida fon MAJBURIY, chaqiruvchi
+            `showTiles` bermagan bo'lsa ham: usiz ekranda nuqtalardan
+            boshqa hech narsa qolmaydi. Viloyat ko'rinishida esa
+            avvalgidek toza — u yerda tumanlar butun maydonni to'ldiradi. */}
+        {(showTiles || bareDistrict) && HAS_BASEMAP ? (
           <TileLayer url={BASEMAP_URL!} attribution={BASEMAP_ATTRIBUTION} />
         ) : null}
 
@@ -162,8 +183,14 @@ export function DistrictMap({
             style={{
               color: palette.dark ? '#7f9ec9' : '#35465a',
               weight: 2,
-              fill: false,
-              dashArray: '4 3',
+              /* ⚠️ Mahalla chegaralari bo'lmasa kontur TO'LDIRILADI va
+                 uzuq-yuluq emas, YAXLIT chiziq bo'ladi: u endi
+                 «mahallalar ustidagi yordamchi kontur» emas, xaritadagi
+                 YAGONA hudud belgisi. */
+              fill: bareDistrict,
+              fillColor: palette.dark ? '#4d93f6' : '#0a6cf0',
+              fillOpacity: bareDistrict ? 0.07 : 0,
+              dashArray: bareDistrict ? undefined : '4 3',
             }}
           />
         ) : null}

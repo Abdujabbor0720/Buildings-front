@@ -12,7 +12,7 @@ import { useFiltersStore } from '@/store/filters.store';
  * va sahifalar almashganda saqlanib qoladi.
  */
 export function ScopeFilters() {
-  const { regionId, districtIds, yearFrom, yearTo, setRegion, toggleDistrict, setDistricts, setYearRange } =
+  const { regionId, districtIds, yearFrom, yearTo, setRegion, selectDistrict, setYearRange } =
     useFiltersStore();
 
   const { data: regions } = useRegions();
@@ -21,13 +21,16 @@ export function ScopeFilters() {
 
   const activeRegion = regions?.find((r) => r.id === activeRegionId) ?? regions?.[0];
 
+  /**
+   * ⚠️ Ko‘pi bilan BITTA tuman tanlanadi, shuning uchun «3 ta tuman»
+   * degan yorliq ham yo‘q: sarlavhada har doim yo «Barcha tumanlar»,
+   * yo tumanning o‘z nomi turadi.
+   */
+  const selectedDistrictId = districtIds[0] ?? null;
   const districtLabel = useMemo(() => {
-    if (districtIds.length === 0) return 'Barcha tumanlar';
-    if (districtIds.length === 1) {
-      return districts?.find((d) => d.id === districtIds[0])?.shortName ?? '1 ta tuman';
-    }
-    return `${districtIds.length} ta tuman`;
-  }, [districtIds, districts]);
+    if (!selectedDistrictId) return 'Barcha tumanlar';
+    return districts?.find((d) => d.id === selectedDistrictId)?.shortName ?? 'Tanlangan tuman';
+  }, [selectedDistrictId, districts]);
 
   return (
     <div className="flex items-center gap-2">
@@ -85,35 +88,45 @@ export function ScopeFilters() {
           <ChevronDown className="text-faint size-3.5 shrink-0" />
         </PopoverButton>
         <DropdownPanel className="w-72">
-          {() => (
+          {({ close }) => (
             <>
-              <div className="flex items-center justify-between border-b border-subtle px-3 py-2">
-                <span className="t-label">Tumanlar</span>
-                <button
-                  type="button"
-                  onClick={() => setDistricts([])}
-                  className="text-meta font-medium text-brand-700 underline decoration-brand-500/40 underline-offset-4 transition-colors hover:text-brand-500 dark:text-brand-400"
-                >
-                  Tozalash
-                </button>
+              <div className="border-b border-subtle px-3 py-2">
+                <span className="t-label">Tumanni tanlang</span>
+                {/* ⚠️ «Bittasini tanlang» deb ochiq aytiladi: ilgari
+                    katakchalar turardi va foydalanuvchi bir nechta
+                    tumanni belgilashi mumkin deb o‘ylardi. */}
+                <p className="text-nano text-muted">
+                  Bir vaqtda bitta tuman — xarita o‘sha tumanning mahallalariga o‘tadi
+                </p>
               </div>
-              <ul className="max-h-72 overflow-y-auto py-1">
-                {(districts ?? []).map((district) => {
-                  const checked = districtIds.includes(district.id);
-                  return (
-                    <li key={district.id}>
-                      <label className="flex cursor-pointer items-center gap-2.5 px-3 py-1.5 text-ui transition-colors hover:bg-neutral-100/70 dark:hover:bg-white/6">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleDistrict(district.id)}
-                          className="size-3.5 rounded-[3px] border-neutral-300 text-brand-500 focus:ring-brand-500"
-                        />
-                        <span className="flex-1 truncate">{district.name}</span>
-                      </label>
-                    </li>
-                  );
-                })}
+              {/*
+                ⚠️ Ro‘yxat `radiogroup` semantikasida: katakcha emas,
+                belgi (✓). Katakcha BIR NECHTA tanlash mumkinligini
+                bildiradi va interfeys yolg‘on va'da berardi.
+              */}
+              <ul className="max-h-72 overflow-y-auto py-1" role="radiogroup" aria-label="Tumanlar">
+                <li>
+                  <DistrictOption
+                    label="Barcha tumanlar"
+                    selected={!selectedDistrictId}
+                    onSelect={() => {
+                      selectDistrict(null);
+                      close();
+                    }}
+                  />
+                </li>
+                {(districts ?? []).map((district) => (
+                  <li key={district.id}>
+                    <DistrictOption
+                      label={district.name}
+                      selected={selectedDistrictId === district.id}
+                      onSelect={() => {
+                        selectDistrict(district.id);
+                        close();
+                      }}
+                    />
+                  </li>
+                ))}
               </ul>
             </>
           )}
@@ -134,6 +147,39 @@ export function ScopeFilters() {
         </DropdownPanel>
       </Popover>
     </div>
+  );
+}
+
+/**
+ * Ro‘yxatdagi bitta tuman.
+ *
+ * ⚠️ Tanlanganda panel YOPILADI: bitta tanlov qilinadi va panelni
+ * ochiq qoldirish «yana nimadir tanlash kerakmi» degan savol
+ * tug‘dirardi. Viloyat ro‘yxati ham AYNI shunday ishlaydi.
+ */
+function DistrictOption({
+  label,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={cn(
+        'flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left text-ui transition-colors hover:bg-neutral-100/70 dark:hover:bg-white/6',
+        selected && 'font-medium text-strong',
+      )}
+    >
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {selected ? <Check className="size-4 shrink-0 text-brand-600 dark:text-brand-400" /> : null}
+    </button>
   );
 }
 
