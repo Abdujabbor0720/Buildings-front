@@ -93,6 +93,16 @@ export function ObjectMilestonesTab({
   const doneCount = milestones.filter((m) => m.status === 'done').length;
   const today = tashkentToday();
 
+  /*
+   * OBYEKTNING O'ZI YOPILGANMI.
+   *
+   * ⚠️ Topshirilgan (yoki bekor qilingan) obyekt bo'yicha yangi
+   * topshiruv qabul qilinmaydi: obyekt nazoratdan chiqqan va unga
+   * maydondan foiz yozish tarixni orqadan o'zgartirish bo'lardi.
+   * Server ham shu shartni tekshiradi (`milestones.service.submit`).
+   */
+  const objectClosed = object.status === 'completed' || object.status === 'cancelled';
+
   /* ───── Reja yo‘q ───── */
   if (milestones.length === 0) {
     return (
@@ -258,10 +268,27 @@ export function ObjectMilestonesTab({
 
                 {/* ───── Amallar ───── */}
                 <div className="flex shrink-0 items-center gap-1.5">
-                  {canSubmit && milestone.status !== 'cancelled' ? (
+                  {/*
+                    ⚠️ YAKUNLANGAN BOSQICHGA «Topshirish» KO'RSATILMAYDI.
+                    Bosqich 100% ga yetganda u `done` bo'ladi va
+                    `actualEnd` yoziladi — topshiriladigan narsa qolmaydi.
+                    Ilgari tugma xira ko'rinishda bo'lsa ham turardi va
+                    «Yakunlangan · 100% · Yakunlandi: 22-iyun» yozuvi
+                    yonida «Topshirish» ni ko'rgan odam ish tugamaganmi
+                    deb o'ylardi.
+
+                    ⚠️ Bu TUZATISH YO'LINI yopmaydi: xato bilan 100%
+                    qo'yilgan bosqich qalam belgisi orqali tahrirlanadi
+                    (`MilestoneFormModal` foizni o'zgartiradi), serverda
+                    esa foizni KAMAYTIRUVCHI topshiruv sabab bilan
+                    avvalgidek qabul qilinadi.
+                  */}
+                  {canSubmit &&
+                  !objectClosed &&
+                  milestone.status !== 'cancelled' &&
+                  milestone.status !== 'done' ? (
                     <Button
                       size="sm"
-                      variant={milestone.status === 'done' ? 'secondary' : 'primary'}
                       onClick={() => setSubmitFor(milestone)}
                       leftIcon={<Upload className="size-3.5" />}
                     >
