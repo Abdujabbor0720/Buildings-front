@@ -857,6 +857,15 @@ export interface MahallaGeoJson {
     centerLat: number;
     centerLng: number;
     geometry: GeoJSON.Geometry | null;
+    /**
+     * TUMANNING O‘Z YIG‘INDISI — viloyat kesimidagi AYNI raqamlar.
+     *
+     * ⚠️ Mahalla chegarasi yo‘q tumanda xarita aynan shu bilan
+     * chiziladi: tuman ko‘pburchagi sanoq belgisi, nom yorlig‘i va
+     * ko‘rsatma oladi — ya’ni viloyat kesimidagi tumandan farq
+     * qilmaydi, faqat masshtabi boshqa.
+     */
+    stats: DistrictStats | null;
   };
   bbox: number[] | null;
   /**
@@ -868,8 +877,28 @@ export interface MahallaGeoJson {
    * ekanini aytadi va buning uchun soxta chegara chizish shart emas.
    */
   settlements: Array<{ name: string; kind: string; rank: number; lat: number; lng: number }>;
-  /** Qoplama o‘lchovi — ekranda ochiq aytiladi, yashirilmaydi. */
-  coverage: { mahallas: number; withMahalla: number; withoutMahalla: number };
+  /**
+   * Qoplama o‘lchovi — ekranda ochiq aytiladi, yashirilmaydi.
+   *
+   * ⚠️ `layer` — xaritada AYNAN NIMA chizilgani:
+   *   • `mahalla`  — MFY chegaralari (ma’muriy birlik, OSM’da faqat
+   *     ikki tumanda bor);
+   *   • `locality` — AHOLI PUNKTI maydonlari (qishloq va
+   *     shaharchalarning yashash hududlari). Ma’muriy birlik EMAS,
+   *     lekin real va o‘lchangan;
+   *   • `none`     — hech biri; tumanning o‘z konturi chiziladi.
+   *
+   * ⚠️ Sarlavha va izoh SHUNGA qarab yoziladi. Aholi punkti
+   * maydonini «mahalla» deb atash — hokimga mavjud bo‘lmagan
+   * ma’muriy chegarani ko‘rsatish bo‘lardi.
+   */
+  coverage: {
+    layer: 'mahalla' | 'locality' | 'none';
+    mahallas: number;
+    localities: number;
+    withMahalla: number;
+    withoutMahalla: number;
+  };
   objects: MapObjectPoint[];
   features: Array<{
     type: 'Feature';

@@ -46,6 +46,29 @@ interface DistrictMapProps {
   /** Tumanning o‘z konturi — mahalla chegaralari ustidan chiziladi. */
   outline?: GeoJSON.Geometry | null;
   /**
+   * TUMANNING O‘Z YIG‘INDISI — mahalla chegarasi YO‘Q tuman uchun.
+   *
+   * ⚠️ Bunday tumanda ko‘rsatkich ko‘pburchagi tumanning O‘ZI bo‘ladi,
+   * ya‘ni unga ham viloyat kesimidagi tumanlar kabi sanoq belgisi,
+   * nom yorlig‘i va ko‘rsatma kerak. Busiz tuman kesimi «rangli dog‘»
+   * bo‘lib qolardi: ekranda bir nechta nuqta bor-u, nechta obyekt
+   * borligi va tuman qanday ahvolda ekani hech qayerda yozilmagan.
+   */
+  outlineStats?: DistrictStats | null;
+  /**
+   * CHEGARA NOMLARI HAR DOIM YOZILSINMI.
+   *
+   * ⚠️ Mahalla kesimida nom faqat obyekti ko‘p chegarada yoziladi:
+   * bitta tumanda to‘qsondan ortiq mahalla bo‘ladi va ularning
+   * yorliqlari bir-birining ustiga tushardi. AHOLI PUNKTI kesimida
+   * esa aksincha — chegaralar yigirmatacha va nom YAGONA tanish
+   * belgidir: «Oqtom», «Zulfiqor» degan yozuvsiz hokim ko‘k dog‘ning
+   * qayer ekanini bilmaydi. Serverda esa aynan shu nomlar mo‘ljal
+   * yozuvlaridan OLIB TASHLANGAN (takror bo‘lmasin deb), ya‘ni nom
+   * bu yerda yozilmasa, u umuman yo‘qoladi.
+   */
+  labelAreas?: boolean;
+  /**
    * MO‘LJAL YOZUVLARI — shahar, shaharcha, qishloq nomlari.
    *
    * ⚠️ Chegarasi yo‘q tumanda BU YAGONA mo‘ljal: usiz xarita
@@ -77,6 +100,8 @@ export function DistrictMap({
   level = 'region',
   objects,
   outline,
+  outlineStats,
+  labelAreas = false,
   settlements,
   showTiles = false,
   className,
@@ -194,6 +219,7 @@ export function DistrictMap({
           onSelect={handleClick}
           palette={palette}
           level={level}
+          labelAreas={labelAreas}
         />
 
         {/* ⚠️ Tuman konturi chegaralar USTIDAN chiziladi va bosilmaydi
@@ -202,9 +228,34 @@ export function DistrictMap({
             tugashi umuman bilinmasdi. */}
         {outline ? (
           <GeoJsonLayer
-            key="district-outline"
+            /* ⚠️ `key` ichida rang manbai ham bor: Leaflet GeoJSON
+               qatlami `style` o‘zgarganda o‘zini qayta chizmaydi va
+               filtr almashganda tuman eski rangida qolib ketardi. */
+            key={`district-outline:${bareDistrict ? (outlineStats?.total ?? 0) : 'plain'}:${palette.dark ? 'd' : 'l'}`}
             data={outline as GeoJSON.Geometry}
-            interactive={false}
+            /* ⚠️ Mahalla chegarasi YO‘Q tumanda kontur BOSILADI va
+               ko‘rsatma beradi — u endi shunchaki ramka emas, xaritaning
+               YAGONA ko‘rsatkich ko‘pburchagi. Mahallalari bor tumanda
+               esa avvalgidek o‘tkazib yuboriladi: ostidagi mahallani
+               bosish kerak. */
+            interactive={bareDistrict}
+            eventHandlers={
+              bareDistrict && outlineStats
+                ? { click: () => navigate(`/objects?districtIds=${outlineStats.districtId}`) }
+                : undefined
+            }
+            onEachFeature={
+              bareDistrict && outlineStats
+                ? (_feature, layer) => {
+                    layer.bindTooltip(tooltipHtml(outlineStats, palette), {
+                      sticky: true,
+                      direction: 'top',
+                      opacity: 1,
+                      className: '!border-0 !bg-transparent !p-0 !shadow-none',
+                    });
+                  }
+                : undefined
+            }
             style={{
               /* ⚠️ MAHALLA CHEGARASI BO'LMASA — tuman O'ZI ko'rsatkich
                  ko'pburchagi bo'ladi: viloyat xaritasidagi tumanlar
@@ -221,10 +272,36 @@ export function DistrictMap({
                   : '#35465a',
               weight: bareDistrict ? 1.5 : 2,
               fill: bareDistrict,
-              fillColor: palette.densityHex(objects?.length ?? 0),
+              /* ⚠️ Zichlik rangi TUMAN YIG‘INDISIDAN olinadi, xaritadagi
+                 nuqtalar sonidan emas: koordinatasi yo‘q obyekt nuqta
+                 bo‘lib chizilmaydi, lekin u ham shu tumanniki — aks
+                 holda xarita rangi yonidagi jadvaldagi sondan past
+                 zinapoyani ko‘rsatardi. */
+              fillColor: palette.densityHex(outlineStats?.total ?? objects?.length ?? 0),
               fillOpacity: bareDistrict ? 1 : 0,
               dashArray: bareDistrict ? undefined : '4 3',
             }}
+          />
+        ) : null}
+
+        {/*
+          TUMANNING O‘Z BELGISI — faqat mahalla chegarasi yo‘q tumanda.
+
+          ⚠️ Viloyat kesimidagi tuman belgisi bilan AYNI funksiyadan
+          chiziladi (`statMarkerIcon`): hokim viloyatdan tumanga
+          o‘tganda belgining shakli, o‘lchami va rangi o‘zgarmaydi —
+          faqat masshtab kattalashadi.
+        */}
+        {bareDistrict && outlineStats ? (
+          <Marker
+            position={[outlineStats.centerLat, outlineStats.centerLng]}
+            eventHandlers={{ click: () => handleClick(outlineStats) }}
+            zIndexOffset={400}
+            icon={statMarkerIcon(outlineStats, palette, {
+              size: 30,
+              showName: true,
+              nameText: outlineStats.name,
+            })}
           />
         ) : null}
 
@@ -499,11 +576,13 @@ function DistrictLayer({
   onSelect,
   palette,
   level,
+  labelAreas,
 }: {
   geojson: DistrictGeoJson | MahallaGeoJson;
   onSelect: (district: DistrictStats) => void;
   palette: ReturnType<typeof useChartColors>;
   level: 'region' | 'district';
+  labelAreas: boolean;
 }) {
   const signature = useMemo(
     () =>
@@ -591,8 +670,7 @@ function DistrictLayer({
          * ⚠️ Viloyat darajasida esa nol ham ko'rsatiladi: 16 ta
          * tuman kam va «bu tumanda obyekt yo'q» degani — xabar.
          */
-        if (level === 'district' && props.total === 0) return null;
-        const hex = palette.statusHex(HEALTH_META[props.dominantHealth]);
+        if (level === 'district' && props.total === 0 && !labelAreas) return null;
         /*
          * ⚠️ MAHALLA pufakchasi KICHIKROQ (18–22px, tumanda 24–30px).
          * Bitta tumanda yigirmagacha belgi bo'ladi va ular tuman
@@ -618,7 +696,9 @@ function DistrictLayer({
          * ko'rsatma (hover) va yonidagi jadval baribir aytadi.
          */
         const showName =
-          level === 'district' ? props.total >= 3 : !crowded.has(props.districtId);
+          level === 'district'
+            ? labelAreas || props.total >= 3
+            : !crowded.has(props.districtId);
 
         return (
           <Marker
@@ -630,56 +710,95 @@ function DistrictLayer({
             // bo‘lsa, kichik tumanning nomi kattasining ustini yopib,
             // ikkalasi ham o‘qilmay qolardi.
             zIndexOffset={props.total}
-            icon={L.divIcon({
-              className: '',
-              // ⚠️ `iconSize` BELGI kengligi emas, butun blok kengligi:
-              // nom doiradan kengroq bo‘ladi va markazlash shunga qarab
-              // hisoblanadi. Tor qilib qo‘yilsa, uzun nomli tuman
-              // («Qo‘rg‘ontepa») chapga siljib qolardi.
-              iconSize: [110, size + 18],
-              iconAnchor: [55, (size + 18) / 2],
-              html: `<span style="
-                display:flex;flex-direction:column;align-items:center;gap:3px;
-                width:110px;cursor:pointer;
-              ">
-                <span style="
-                  display:grid;place-items:center;
-                  width:${size}px;height:${size}px;border-radius:999px;
-                  /* ⚠️ Yassi doira EMAS: yuqori chapda yupqa yorug'lik
-                     (radial gradient) — belgi xarita ustida sharsimon
-                     bo'lib ko'rinadi. Yassi rangli doira poligon bilan
-                     bitta tekislikda turib, «bo'yoq dog'i» bo'lib
-                     ko'rinardi. Rang O'ZGARMAYDI — faqat oq alfa. */
-                  background:
-                    radial-gradient(120% 120% at 32% 24%, rgba(255,255,255,.34), rgba(255,255,255,0) 58%),
-                    ${hex};
-                  color:#fff;
-                  font:600 ${props.total >= 100 ? 10 : 11.5}px/1 var(--font-sans);
-                  font-variant-numeric:tabular-nums;
-                  box-shadow:0 1px 3px rgba(2,24,58,.34),0 4px 10px -4px rgba(2,24,58,.45);
-                  border:2px solid var(--surface);
-                ">${esc(props.total)}</span>
-                ${
-                  showName
-                    ? `<span style="
-                  display:inline-block;padding:1px 5px;border-radius:5px;
-                  background:var(--surface);
-                  /* Halqa + yumshoq soya: yorliq xarita poligoni ustida
-                     turadi va faqat 1px halqa bilan u fonga singib
-                     ketardi. */
-                  box-shadow:0 0 0 1px rgb(16 42 76 / .1),0 2px 5px -2px rgba(2,24,58,.3);
-                  font:600 9.5px/1.35 var(--font-sans);
-                  color:var(--ink-body);white-space:nowrap;
-                ">${esc(props.shortName)}</span>`
-                    : ''
-                }
-              </span>`,
+            /* ⚠️ Obyekti YO‘Q chegarada sanoq doirasi chizilmaydi,
+               faqat nom qoladi: «0» yozilgan o‘nlab pufakcha xaritani
+               nollar to‘riga aylantirardi, nom esa kerak. */
+            icon={statMarkerIcon(props, palette, {
+              size,
+              showName,
+              showCount: props.total > 0,
             })}
           />
         );
       })}
     </>
   );
+}
+
+/**
+ * SANOQ BELGISI — doira + nom yorlig‘i.
+ *
+ * ⚠️ BITTA funksiya UCH joyga xizmat qiladi: viloyat kesimidagi tuman,
+ * tuman kesimidagi mahalla va mahalla chegarasi yo‘q tumandagi
+ * TUMANNING O‘ZI. Ilgari bu markup faqat qatlam ichida, satr ichida
+ * yozilgan edi va tumanning o‘z belgisi uchun uni nusxalash kerak
+ * bo‘lardi — nusxa esa birinchi tuzatishdayoq asl nusxadan ajralib
+ * ketardi (o‘lcham bir joyda o‘zgarib, ikkinchisida qolib).
+ */
+function statMarkerIcon(
+  props: DistrictStats,
+  palette: ReturnType<typeof useChartColors>,
+  {
+    size,
+    showName,
+    nameText,
+    showCount = true,
+  }: { size: number; showName: boolean; nameText?: string; showCount?: boolean },
+): L.DivIcon {
+  const hex = palette.statusHex(HEALTH_META[props.dominantHealth]);
+  const label = nameText ?? props.shortName;
+  /* ⚠️ Sanoq doirasi YO‘Q bo‘lsa, blok balandligi ham qisqaradi —
+     aks holda yorliq ko‘pburchak markazidan pastga siljib qolardi. */
+  const height = showCount ? size + 18 : 16;
+
+  return L.divIcon({
+    className: '',
+    // ⚠️ `iconSize` BELGI kengligi emas, butun blok kengligi: nom
+    // doiradan kengroq bo‘ladi va markazlash shunga qarab hisoblanadi.
+    // Tor qilib qo‘yilsa, uzun nomli tuman («Qo‘rg‘ontepa») chapga
+    // siljib qolardi.
+    iconSize: [110, height],
+    iconAnchor: [55, height / 2],
+    html: `<span style="
+        display:flex;flex-direction:column;align-items:center;gap:3px;
+        width:110px;cursor:pointer;
+      ">
+        ${
+          showCount
+            ? `<span style="
+          display:grid;place-items:center;
+          width:${size}px;height:${size}px;border-radius:999px;
+          /* ⚠️ Yassi doira EMAS: yuqori chapda yupqa yorug'lik
+             (radial gradient) — belgi xarita ustida sharsimon bo'lib
+             ko'rinadi. Yassi rangli doira poligon bilan bitta
+             tekislikda turib, «bo'yoq dog'i» bo'lib ko'rinardi.
+             Rang O'ZGARMAYDI — faqat oq alfa. */
+          background:
+            radial-gradient(120% 120% at 32% 24%, rgba(255,255,255,.34), rgba(255,255,255,0) 58%),
+            ${hex};
+          color:#fff;
+          font:600 ${props.total >= 100 ? 10 : 11.5}px/1 var(--font-sans);
+          font-variant-numeric:tabular-nums;
+          box-shadow:0 1px 3px rgba(2,24,58,.34),0 4px 10px -4px rgba(2,24,58,.45);
+          border:2px solid var(--surface);
+        ">${esc(props.total)}</span>`
+            : ''
+        }
+        ${
+          showName
+            ? `<span style="
+          display:inline-block;padding:1px 5px;border-radius:5px;
+          background:var(--surface);
+          /* Halqa + yumshoq soya: yorliq xarita poligoni ustida turadi
+             va faqat 1px halqa bilan u fonga singib ketardi. */
+          box-shadow:0 0 0 1px rgb(16 42 76 / .1),0 2px 5px -2px rgba(2,24,58,.3);
+          font:600 9.5px/1.35 var(--font-sans);
+          color:var(--ink-body);white-space:nowrap;
+        ">${esc(label)}</span>`
+            : ''
+        }
+      </span>`,
+  });
 }
 
 /**

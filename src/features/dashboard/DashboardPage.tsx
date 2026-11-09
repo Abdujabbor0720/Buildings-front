@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react';
 import { useDashboard, useDistrictGeoJson, useMahallaGeoJson } from '@/shared/api/queries';
 import { getErrorMessage } from '@/shared/api/client';
+import type { MahallaGeoJson } from '@/shared/api/types';
 import type { ReactNode } from 'react';
 import { Card, CardBody, CardHeader, ErrorState, Skeleton } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
@@ -131,9 +132,14 @@ export default function DashboardPage() {
               xarita o‘sha tumanniki bo‘ladi va «Andijon viloyati
               xaritasi» degan yozuv yolg‘on bo‘lib qolardi. */}
           <CardHeader
+            /* ⚠️ Sarlavha QATLAMGA ergashadi. «Mahallalar kesimida»
+               degan yozuv faqat MFY chegarasi chizilganda to‘g‘ri;
+               qolgan tumanlarda xaritada aholi punktlari maydoni
+               turadi va uni mahalla deb atash hokimga mavjud
+               bo‘lmagan ma’muriy chegarani ko‘rsatish bo‘lardi. */
             title={
               districtView
-                ? `${mahallas.data!.district.name} — mahallalar kesimida`
+                ? `${mahallas.data!.district.name} — ${layerTitle(mahallas.data!.coverage.layer)}`
                 : 'Andijon viloyati xaritasi'
             }
             subtitle={
@@ -149,6 +155,15 @@ export default function DashboardPage() {
               level={districtView ? 'district' : 'region'}
               objects={districtView ? mahallas.data!.objects : undefined}
               outline={districtView ? mahallas.data!.district.geometry : undefined}
+              /* ⚠️ Mahalla chegarasi yo‘q tumanda ko‘rsatkich
+                 ko‘pburchagi tumanning O‘ZI bo‘ladi — raqamlari ham
+                 shu yerdan keladi (`district.stats`). */
+              outlineStats={districtView ? mahallas.data!.district.stats : undefined}
+              /* ⚠️ Aholi punkti kesimida HAR BIR maydon nomi yoziladi:
+                 serverda aynan shu nomlar mo‘ljal yozuvlaridan olib
+                 tashlangan (takror bo‘lmasin deb), ya‘ni bu yerda
+                 yozilmasa, qishloq nomi umuman yo‘qolardi. */
+              labelAreas={districtView && mahallas.data!.coverage.layer === 'locality'}
               /* ⚠️ Mo‘ljal yozuvlari — chegarasi yo‘q tumanda YAGONA
                  orientir. Mahalla chegarasi bor tumanda ham foydali:
                  «Oxunboboyev» degan yozuv mahalla nomidan ko‘ra
@@ -185,7 +200,11 @@ export default function DashboardPage() {
           className="xl:col-span-4"
           header={
             <CardHeader
-              title={districtView ? 'Mahallalar kesimida obyektlar' : 'Tumanlar kesimida obyektlar'}
+              title={
+                districtView
+                  ? layerTableTitle(mahallas.data!.coverage.layer)
+                  : 'Tumanlar kesimida obyektlar'
+              }
               moreTo="/districts"
             />
           }
@@ -204,7 +223,19 @@ export default function DashboardPage() {
             */}
             {districtView ? (
               <DistrictTable
-                districts={mahallas.data!.features.map((f) => f.properties)}
+                /* ⚠️ Chegara qatlami umuman bo‘lmasa (Xonobod shahri —
+                   OSM da na MFY, na aholi punkti maydoni chizilgan)
+                   jadval BO‘SH qolardi. Bunday holatda tumanning o‘z
+                   yig‘indisi bitta qator bo‘lib ko‘rsatiladi: panel
+                   bo‘sh turgandan ko‘ra, «bu tumanda jami shuncha»
+                   degan javob foydaliroq. */
+                districts={
+                  mahallas.data!.features.length > 0
+                    ? mahallas.data!.features.map((f) => f.properties)
+                    : mahallas.data!.district.stats
+                      ? [mahallas.data!.district.stats]
+                      : []
+                }
                 level="district"
                 onRowClick={() => navigate(`/objects?districtIds=${focusedDistrictId}`)}
               />
@@ -355,17 +386,53 @@ function TableCard({
  * jim turilsa, hokim xaritadagi nuqtalar bilan jadvaldagi sonlar
  * nega mos kelmayotganini tushunmasdi.
  */
+type MapLayer = MahallaGeoJson['coverage']['layer'];
+
+/**
+ * XARITADA NIMA CHIZILGANI — BITTA joydan.
+ *
+ * ⚠️ Nom uch joyda kerak: xarita sarlavhasi, yonidagi jadval
+ * sarlavhasi va izoh. Uchtasi alohida yozilsa, bittasi tuzatilib
+ * qolganlari eskirib qolardi — ekranda esa «Mahallalar kesimida»
+ * degan jadval yonida aholi punktlari ro‘yxati turardi.
+ */
+/** Xarita sarlavhasining ikkinchi qismi: «Baliqchi tumani — …». */
+function layerTitle(layer: MapLayer): string {
+  if (layer === 'mahalla') return 'mahallalar kesimida';
+  if (layer === 'locality') return 'aholi punktlari kesimida';
+  /* ⚠️ Chegarasi yo‘q tumanda «kesim» degan so‘z ishlatilmaydi:
+     kesiladigan narsaning o‘zi yo‘q, xaritada faqat tuman konturi
+     va obyekt nuqtalari turadi. */
+  return 'obyektlar xaritasi';
+}
+
+/** Yondagi jadval sarlavhasi — xarita bilan AYNI qatlamni nomlaydi. */
+function layerTableTitle(layer: MapLayer): string {
+  if (layer === 'mahalla') return 'Mahallalar kesimida obyektlar';
+  if (layer === 'locality') return 'Aholi punktlari kesimida obyektlar';
+  return 'Tuman bo‘yicha jami';
+}
+
 function coverageNote(
-  coverage: { mahallas: number; withoutMahalla: number },
+  coverage: MahallaGeoJson['coverage'],
   settlements: number,
 ): string {
   /*
    * ⚠️ «Chegara yo‘q» degani «xarita bo‘sh» degani EMAS. Bunday
-   * tumanda tuman konturi va qishloq nomlari chiziladi — izoh ham
-   * aynan shuni aytishi kerak, aks holda foydalanuvchi ekranda
-   * ko‘rib turgan narsasi nima ekanini bilmay qolardi.
+   * tumanda tuman konturi, aholi punkti maydonlari va qishloq
+   * nomlari chiziladi — izoh ham aynan shuni aytishi kerak, aks
+   * holda foydalanuvchi ekranda ko‘rib turgan narsasi nima ekanini
+   * bilmay qolardi.
    */
-  if (coverage.mahallas === 0) {
+  if (coverage.layer === 'locality') {
+    /* ⚠️ MFY chegarasi yo‘qligi YASHIRILMAYDI: aholi punkti maydoni
+       ma’muriy birlik emas va ekranda shunday deb aytiladi. */
+    const base = `${coverage.localities} ta aholi punkti — mahalla (MFY) chegaralari ochiq manbada yo‘q`;
+    return coverage.withoutMahalla > 0
+      ? `${base} · obyektlar nuqta bilan ham ko‘rsatilgan`
+      : base;
+  }
+  if (coverage.layer === 'none') {
     return settlements > 0
       ? `Mahalla chegaralari ochiq manbada yo‘q — ${settlements} ta aholi punkti va obyektlar ko‘rsatilgan`
       : 'Mahalla chegaralari ochiq manbada yo‘q — obyektlar nuqta bilan ko‘rsatilgan';
