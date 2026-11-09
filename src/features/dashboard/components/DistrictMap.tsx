@@ -214,34 +214,41 @@ export function DistrictMap({
           <TileLayer url={BASEMAP_URL!} attribution={BASEMAP_ATTRIBUTION} />
         ) : null}
 
-        <DistrictLayer
-          geojson={geojson}
-          onSelect={handleClick}
-          palette={palette}
-          level={level}
-          labelAreas={labelAreas}
-        />
+        {/*
+          TUMAN MAYDONI — chegaralar OSTIDA, ularga fon bo‘lib.
 
-        {/* ⚠️ Tuman konturi chegaralar USTIDAN chiziladi va bosilmaydi
-            (`interactive={false}`): mahallalar tumanni to‘liq
-            qoplamaydi va kontursiz tumanning chekkasi qayerda
-            tugashi umuman bilinmasdi. */}
-        {outline ? (
+          ⚠️ Tuman kesimi viloyat kesimi bilan BIR XIL o‘qilishi
+          kerak: u yerda butun maydon ko‘k ko‘pburchaklarga bo‘lingan
+          va bo‘sh joy qolmaydi. Tumanda esa mahalla ham, aholi punkti
+          maydoni ham tumanni TO‘LIQ qoplamaydi — ular orolcha bo‘lib
+          turadi. Tuman maydoni to‘ldirilmasa, ekranda oq fon ustida
+          bir nechta kichik dog‘ qolardi va foydalanuvchi buni
+          «xarita chiqmadi» deb o‘qiydi.
+
+          ⚠️ JSX da `DistrictLayer` DAN OLDIN turadi: Leaflet
+          qatlamlarni qo‘shilish tartibida chizadi va keyin
+          qo‘yilgani USTDA bo‘ladi. Pastga tushirilsa, tuman
+          to‘ldirmasi mahallalarni butunlay yopib qo‘yardi.
+        */}
+        {level === 'district' && outline ? (
           <GeoJsonLayer
-            /* ⚠️ `key` ichida rang manbai ham bor: Leaflet GeoJSON
-               qatlami `style` o‘zgarganda o‘zini qayta chizmaydi va
-               filtr almashganda tuman eski rangida qolib ketardi. */
-            key={`district-outline:${bareDistrict ? (outlineStats?.total ?? 0) : 'plain'}:${palette.dark ? 'd' : 'l'}`}
+            /* ⚠️⚠️ `key` ichida GEOMETRIYA identifikatori BOR va u
+               shart. `react-leaflet` ning `GeoJSON` qatlami `data`
+               o‘zgarganda O‘ZINI YANGILAMAYDI — React uni qayta
+               yaratishi kerak. Ilgari bu yerda o‘zgarmas `key`
+               turardi va natija shu edi: bir tumandan boshqasiga
+               o‘tilganda ekranda ESKI tumanning konturi qolib,
+               yangisining faqat nuqtalari ko‘rinardi. */
+            key={`district-fill:${geometryKey(outline)}:${outlineStats?.total ?? 0}:${palette.dark ? 'd' : 'l'}`}
             data={outline as GeoJSON.Geometry}
-            /* ⚠️ Mahalla chegarasi YO‘Q tumanda kontur BOSILADI va
-               ko‘rsatma beradi — u endi shunchaki ramka emas, xaritaning
-               YAGONA ko‘rsatkich ko‘pburchagi. Mahallalari bor tumanda
-               esa avvalgidek o‘tkazib yuboriladi: ostidagi mahallani
-               bosish kerak. */
+            /* ⚠️ Chegara qatlami bo‘lmasa tuman O‘ZI ko‘rsatkich
+               ko‘pburchagi bo‘ladi: bosiladi va ko‘rsatma beradi.
+               Chegaralari bor tumanda esa u shunchaki fon — bosish
+               ostidagi mahallaga o‘tishi kerak. */
             interactive={bareDistrict}
             eventHandlers={
               bareDistrict && outlineStats
-                ? { click: () => navigate(`/objects?districtIds=${outlineStats.districtId}`) }
+                ? { click: () => handleClick(outlineStats) }
                 : undefined
             }
             onEachFeature={
@@ -257,29 +264,57 @@ export function DistrictMap({
                 : undefined
             }
             style={{
-              /* ⚠️ MAHALLA CHEGARASI BO'LMASA — tuman O'ZI ko'rsatkich
-                 ko'pburchagi bo'ladi: viloyat xaritasidagi tumanlar
-                 bilan AYNI shkaladan rang oladi (`densityHex`), yaxlit
-                 oq chiziq bilan ajraladi va to'liq to'ldiriladi.
-                 Shunda tuman kesimi viloyat kesimi bilan bir xil
-                 dizaynda ko'rinadi — faqat masshtab boshqacha. */
-              color: bareDistrict
-                ? palette.dark
-                  ? '#0d1721'
-                  : '#ffffff'
-                : palette.dark
-                  ? '#7f9ec9'
-                  : '#35465a',
-              weight: bareDistrict ? 1.5 : 2,
-              fill: bareDistrict,
-              /* ⚠️ Zichlik rangi TUMAN YIG‘INDISIDAN olinadi, xaritadagi
-                 nuqtalar sonidan emas: koordinatasi yo‘q obyekt nuqta
-                 bo‘lib chizilmaydi, lekin u ham shu tumanniki — aks
-                 holda xarita rangi yonidagi jadvaldagi sondan past
-                 zinapoyani ko‘rsatardi. */
-              fillColor: palette.densityHex(outlineStats?.total ?? objects?.length ?? 0),
-              fillOpacity: bareDistrict ? 1 : 0,
-              dashArray: bareDistrict ? undefined : '4 3',
+              color: palette.dark ? '#0d1721' : '#ffffff',
+              weight: 1.5,
+              fill: true,
+              /*
+               * RANG — TUMAN O‘ZI KO‘RSATKICH BO‘LGANDAGINA.
+               *
+               * ⚠️ Chegara qatlami bo‘lsa, tuman shunchaki FON bo‘ladi
+               * va eng och zinapoyani oladi. Aks holda tuman o‘z
+               * YIG‘INDISI bo‘yicha (masalan 5 ta obyekt) ichidagi
+               * mahallalardan (0–2 ta) TO‘QROQ chiqib, xarita teskari
+               * o‘qilardi: «bu yer to‘q, demak bu yerda ko‘p» degan
+               * qoida buzilardi.
+               *
+               * ⚠️ Chegara qatlami YO‘Q bo‘lsa esa aksincha — tuman
+               * yagona ko‘rsatkich ko‘pburchagi va viloyat
+               * xaritasidagi tumanlar bilan AYNI shkaladan rang
+               * oladi. Rang tuman YIG‘INDISIDAN olinadi, xaritadagi
+               * nuqtalar sonidan emas: koordinatasi yo‘q obyekt
+               * nuqta bo‘lib chizilmaydi, lekin u ham shu tumanniki.
+               */
+              fillColor: palette.densityHex(
+                bareDistrict ? (outlineStats?.total ?? 0) : 0,
+              ),
+              fillOpacity: 1,
+            }}
+          />
+        ) : null}
+
+        <DistrictLayer
+          geojson={geojson}
+          onSelect={handleClick}
+          palette={palette}
+          level={level}
+          labelAreas={labelAreas}
+        />
+
+        {/* ⚠️ Tuman CHETI chegaralar USTIDAN chiziladi va bosilmaydi:
+            mahalla ham, aholi punkti maydoni ham tumanni to‘liq
+            qoplamaydi va kontursiz tumanning chekkasi qayerda
+            tugashi bilinmasdi. Faqat chiziq — to‘ldirma pastdagi
+            qatlamda. */}
+        {level === 'district' && outline && !bareDistrict ? (
+          <GeoJsonLayer
+            key={`district-edge:${geometryKey(outline)}:${palette.dark ? 'd' : 'l'}`}
+            data={outline as GeoJSON.Geometry}
+            interactive={false}
+            style={{
+              color: palette.dark ? '#7f9ec9' : '#35465a',
+              weight: 1.6,
+              fill: false,
+              dashArray: '4 3',
             }}
           />
         ) : null}
@@ -294,6 +329,10 @@ export function DistrictMap({
         */}
         {bareDistrict && outlineStats ? (
           <Marker
+            /* ⚠️ `key` da tuman id si: `Marker` ning o‘zi `position`
+               va `icon` ni yangilaydi, lekin kalit bilan almashtirish
+               niyatni ochiq qiladi va tasodifiy holat qolmaydi. */
+            key={`district-badge:${outlineStats.districtId}`}
             position={[outlineStats.centerLat, outlineStats.centerLng]}
             eventHandlers={{ click: () => handleClick(outlineStats) }}
             zIndexOffset={400}
@@ -546,6 +585,38 @@ function settlementIcon(
   });
 }
 
+/**
+ * GEOMETRIYA IDENTIFIKATORI — React `key` uchun.
+ *
+ * ⚠️⚠️ `react-leaflet` ning `GeoJSON` qatlami `data` propi
+ * o‘zgarganda O‘ZINI QAYTA CHIZMAYDI (Leaflet qatlami bir marta
+ * yaratiladi va keyin React unga tegmaydi). Yagona ishonchli yo‘l —
+ * `key` ni o‘zgartirib, qatlamni QAYTA YARATISH. `key` ga obyekt
+ * identifikatorini berish yetmaydi: bitta so‘rov qayta yuklanganda
+ * ham yangi obyekt keladi, lekin geometriya o‘sha-o‘sha bo‘ladi va
+ * qatlam bekorga qayta qurilardi.
+ *
+ * Shuning uchun kalit MAZMUNDAN olinadi: tur, nuqtalar soni va
+ * birinchi nuqta. Ikki xil tumanda bu uchlik bir xil bo‘lishi
+ * amalda mumkin emas; butun JSON ni hisoblash esa har chizishda
+ * megabaytlab satr yasashni anglatardi.
+ */
+function geometryKey(geometry: GeoJSON.Geometry | null | undefined): string {
+  if (!geometry) return 'none';
+  let count = 0;
+  let first = '';
+  const visit = (coords: unknown): void => {
+    if (Array.isArray(coords) && typeof coords[0] === 'number') {
+      count += 1;
+      if (!first) first = `${coords[0]},${coords[1]}`;
+      return;
+    }
+    if (Array.isArray(coords)) coords.forEach(visit);
+  };
+  visit((geometry as { coordinates?: unknown }).coordinates);
+  return `${geometry.type}:${count}:${first}`;
+}
+
 /** Geometriya chegaralovchi to‘rtburchagining yuzasi (daraja²). */
 function bboxSpan(geometry: GeoJSON.Geometry | null): number {
   if (!geometry) return 0;
@@ -594,6 +665,19 @@ function DistrictLayer({
 
   const crowded = useMemo(() => crowdedDistricts(geojson.features), [geojson]);
 
+  /*
+   * CHEGARA CHIZIG‘INING QALINLIGI — NECHTA chegara borligiga qarab.
+   *
+   * ⚠️ Andijon shahrida 91 ta mahalla bor va ular yonma-yon turadi:
+   * qalin chiziq och to‘ldirishni yeb qo‘yib, xaritani to‘rga
+   * aylantirardi. Aholi punkti kesimida esa chegaralar yigirmatacha
+   * va ular tuman maydoni USTIDA orolcha bo‘lib turadi — ingichka
+   * chiziq bilan ular fonga singib ketardi va ekranda «faqat
+   * nuqtalar» qolardi.
+   */
+  const areaWeight =
+    level === 'district' ? (geojson.features.length > 40 ? 0.7 : 1.2) : 1.5;
+
   /* Qatlamdagi eng katta son — mahalla shkalasi shunga moslanadi
      (`densityHexOf` dagi izohga qarang). */
   const maxTotal = useMemo(
@@ -619,14 +703,12 @@ function DistrictLayer({
             color:
               level === 'district'
                 ? palette.dark
-                  ? '#3a5170'
-                  : '#9fb6d4'
+                  ? '#4a6a92'
+                  : '#7f9ec9'
                 : palette.dark
                   ? '#0d1721'
                   : '#ffffff',
-            // Ingichkaroq: mahallalar kichik va yonma-yon turadi,
-            // 1.5px li chiziq och to'ldirishni yeb qo'yardi.
-            weight: level === 'district' ? 0.7 : 1.5,
+            weight: areaWeight,
             fillColor:
               level === 'district'
                 ? palette.densityHexOf(total, maxTotal)
@@ -648,7 +730,7 @@ function DistrictLayer({
                «to‘r» ga aylanardi. */
             mouseout: (event) => {
               (event.target as L.Path).setStyle({
-                weight: level === 'district' ? 0.7 : 1.5,
+                weight: areaWeight,
                 fillOpacity: 1,
               });
             },

@@ -207,6 +207,12 @@ function ObjectsMap({
       >
         {geojson ? (
           <GeoJsonLayer
+            /* ⚠️ `key` SHART: `react-leaflet` ning `GeoJSON` qatlami
+               `data` o‘zgarganda o‘zini yangilamaydi (faqat `style`
+               ni). Kalitsiz qoldirilsa, chegaralar to‘plami
+               almashganda ekranda ESKISI qolib ketardi — tuman
+               xaritasida aynan shunday bo‘lgan edi. */
+            key={`backdrop:${geojson.features.map((f) => f.properties.code).join(',')}`}
             data={geojson as unknown as GeoJSON.FeatureCollection}
             interactive={false}
             style={{ color: 'var(--border-strong)', weight: 1, fillColor: 'var(--surface-inset)', fillOpacity: 1 }}
