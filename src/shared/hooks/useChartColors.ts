@@ -89,7 +89,19 @@ export function useChartColors() {
   const densityHexOf = useCallback(
     (total: number, max: number) => {
       const ramp = dark ? DENSITY_RAMP_DARK : DENSITY_RAMP;
-      if (total <= 0) return ramp[0];
+      /*
+       * ⚠️ OBYEKTI YO‘Q CHEGARA — `ramp[0]` (deyarli oq) EMAS,
+       * `densityBaseHex` (tuman maydonining rangi).
+       *
+       * Sabab: tuman kesimida chegaralar tumanning KO‘K maydoni
+       * ustida turadi va ular `ramp[0]` bilan bo‘yalsa, ko‘k fonda
+       * OQ dog‘ bo‘lib ko‘rinardi — ya‘ni «bu yerda obyekt yo‘q»
+       * degani «bu yer tumandan tashqarida» degandek o‘qilardi.
+       * Fon bilan bir xil rang esa to‘g‘ri gapni aytadi: bu yer
+       * tumanniki, shunchaki ko‘rsatiladigan soni yo‘q. Chegara
+       * baribir CHIZIQ bilan ajralib turadi.
+       */
+      if (total <= 0) return ramp[1];
       if (max <= 1) return ramp[ramp.length - 1];
       /*
        * ⚠️ Shkala 2-pog'onadan boshlanadi, 1-dan emas. Mahalla
@@ -114,6 +126,21 @@ export function useChartColors() {
     deadlineHex,
     densityHex,
     densityHexOf,
+    /**
+     * TUMAN MAYDONINING RANGI — chegaralar ostidagi ko‘k fon.
+     *
+     * ⚠️ Bu MA‘LUMOT rangi emas, tuman TANASINING rangi: viloyat
+     * kesimida butun maydon ko‘k ko‘pburchaklarga bo‘lingan va bo‘sh
+     * joy qolmaydi, tuman kesimi ham xuddi shunday o‘qilishi kerak.
+     * Mahalla va aholi punkti maydonlari tumanni to‘liq qoplamaydi,
+     * shuning uchun ular ostida ko‘k fon turadi.
+     *
+     * ⚠️ Shkalaning 2-pog‘onasi (`ramp[1]`): u aniq ko‘k, lekin
+     * ma‘lumot ranglaridan (`ramp[2]` va undan to‘q) OCHROQ —
+     * obyekti bor chegara fondan darhol ajralib turadi. To‘qroq
+     * fon olinsa, shkalaning yarmi yo‘qolardi.
+     */
+    densityBaseHex: (dark ? DENSITY_RAMP_DARK : DENSITY_RAMP)[1],
     /** Diagramma to‘ri va o‘qi — matndan ancha ochroq. */
     grid: dark ? 'rgba(255,255,255,0.08)' : 'rgba(16,42,76,0.08)',
     axis: dark ? '#6f8299' : '#94a6bd',

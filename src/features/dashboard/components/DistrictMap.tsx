@@ -239,7 +239,7 @@ export function DistrictMap({
                turardi va natija shu edi: bir tumandan boshqasiga
                o‘tilganda ekranda ESKI tumanning konturi qolib,
                yangisining faqat nuqtalari ko‘rinardi. */
-            key={`district-fill:${geometryKey(outline)}:${outlineStats?.total ?? 0}:${palette.dark ? 'd' : 'l'}`}
+            key={`district-fill:${geometryKey(outline)}:${bareDistrict ? (outlineStats?.total ?? 0) : 'base'}:${palette.dark ? 'd' : 'l'}`}
             data={outline as GeoJSON.Geometry}
             /* ⚠️ Chegara qatlami bo‘lmasa tuman O‘ZI ko‘rsatkich
                ko‘pburchagi bo‘ladi: bosiladi va ko‘rsatma beradi.
@@ -268,25 +268,28 @@ export function DistrictMap({
               weight: 1.5,
               fill: true,
               /*
-               * RANG — TUMAN O‘ZI KO‘RSATKICH BO‘LGANDAGINA.
+               * RANG — IKKI XIL, chunki tumanning ROLI ikki xil.
                *
-               * ⚠️ Chegara qatlami bo‘lsa, tuman shunchaki FON bo‘ladi
-               * va eng och zinapoyani oladi. Aks holda tuman o‘z
-               * YIG‘INDISI bo‘yicha (masalan 5 ta obyekt) ichidagi
-               * mahallalardan (0–2 ta) TO‘QROQ chiqib, xarita teskari
-               * o‘qilardi: «bu yer to‘q, demak bu yerda ko‘p» degan
-               * qoida buzilardi.
+               * ⚠️ Chegara qatlami BOR bo‘lsa, tuman — FON. U aniq
+               * ko‘k bo‘ladi (`densityBaseHex`), lekin ma‘lumot
+               * ranglaridan ochroq: viloyat kesimida butun maydon
+               * ko‘k ko‘pburchaklarga bo‘lingan va bo‘sh joy
+               * qolmaydi — tuman kesimi ham xuddi shunday
+               * ko‘rinishi kerak. Fon tumanning O‘Z yig‘indisi
+               * bo‘yicha bo‘yalmaydi: u paytda tuman (5 ta obyekt)
+               * ichidagi mahallalardan (0–2 ta) to‘qroq chiqib,
+               * «to‘q — demak ko‘p» qoidasi buzilardi.
                *
-               * ⚠️ Chegara qatlami YO‘Q bo‘lsa esa aksincha — tuman
-               * yagona ko‘rsatkich ko‘pburchagi va viloyat
-               * xaritasidagi tumanlar bilan AYNI shkaladan rang
-               * oladi. Rang tuman YIG‘INDISIDAN olinadi, xaritadagi
-               * nuqtalar sonidan emas: koordinatasi yo‘q obyekt
-               * nuqta bo‘lib chizilmaydi, lekin u ham shu tumanniki.
+               * ⚠️ Chegara qatlami YO‘Q bo‘lsa esa tuman yagona
+               * ko‘rsatkich ko‘pburchagi va viloyat xaritasidagi
+               * tumanlar bilan AYNI shkaladan rang oladi. Rang
+               * tuman YIG‘INDISIDAN olinadi, xaritadagi nuqtalar
+               * sonidan emas: koordinatasi yo‘q obyekt nuqta bo‘lib
+               * chizilmaydi, lekin u ham shu tumanniki.
                */
-              fillColor: palette.densityHex(
-                bareDistrict ? (outlineStats?.total ?? 0) : 0,
-              ),
+              fillColor: bareDistrict
+                ? palette.densityHex(outlineStats?.total ?? 0)
+                : palette.densityBaseHex,
               fillOpacity: 1,
             }}
           />
@@ -695,19 +698,19 @@ function DistrictLayer({
           const total = props?.total ?? 0;
           return {
             /*
-             * ⚠️ Mahalla chizig'i OQ emas, ko'kish-kulrang. Obyekti
-             * yo'q mahalla deyarli oq bo'ladi va oq chiziq bilan u
-             * fonga butunlay singib ketardi — chegarasi bormi yoki
-             * yo'qmi, bilib bo'lmasdi.
+             * ⚠️ CHIZIQ IKKALA DARAJADA HAM BIR XIL: oq (qorong‘i
+             * rejimda to‘q ko‘k). Tuman kesimi viloyat kesimi bilan
+             * bitta tilda gapirishi kerak — bu yerdagi yagona farq
+             * qalinlik bo‘lishi mumkin, rang emas.
+             *
+             * ⚠️ Ilgari bu yerda ko‘kish-kulrang chiziq turardi va
+             * sababi bor edi: obyekti yo‘q chegara deyarli OQ
+             * (`ramp[0]`) bo‘lib bo‘yalar, oq chiziq esa unga
+             * butunlay singib ketardi. Endi bunday chegara ham, tuman
+             * maydoni ham KO‘K (`densityBaseHex`), ya‘ni to‘siq
+             * yo‘qoldi.
              */
-            color:
-              level === 'district'
-                ? palette.dark
-                  ? '#4a6a92'
-                  : '#7f9ec9'
-                : palette.dark
-                  ? '#0d1721'
-                  : '#ffffff',
+            color: palette.dark ? '#0d1721' : '#ffffff',
             weight: areaWeight,
             fillColor:
               level === 'district'
@@ -720,8 +723,13 @@ function DistrictLayer({
           const props = feature.properties as DistrictStats;
           layer.on({
             click: () => onSelect(props),
+            /* ⚠️ Sichqoncha ostida FAQAT chiziq qalinlashadi.
+               Ilgari to‘ldirish ham shaffoflashardi (`0.78`) va bu oq
+               fonda ishlardi; endi chegaralar ostida tumanning KO‘K
+               maydoni turibdi va shaffoflashgan chegara o‘sha fonga
+               singib, ajralib turish o‘rniga YO‘QOLIB qolardi. */
             mouseover: (event) => {
-              (event.target as L.Path).setStyle({ weight: 2.5, fillOpacity: 0.78 });
+              (event.target as L.Path).setStyle({ weight: 2.5 });
             },
             /* ⚠️ Sichqoncha ketganda chiziq O‘Z qalinligiga qaytadi.
                Ilgari bu yerda `1.5` qotirib yozilgan edi va mahalla
